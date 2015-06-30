@@ -20,6 +20,8 @@
 
 open AbstractRule
 
+type lc = LocalSizeComplexity.localcomplexity
+
 module RV = struct
   module Make(RuleT : AbstractRule) = struct
     type t = RuleT.rule * Poly.var
@@ -35,8 +37,9 @@ module RV = struct
   end
 end
 
+module G = Tgraph.G
+
 module Make (RuleT : AbstractRule) = struct
-  module G = Graph.Persistent.Digraph.Concrete(Tgraph.Int)
   module SCC = Graph.Components.Make(G)
   module Topo = Graph.Topological.Make(G)
   module LSC = LocalSizeComplexity.Make(RuleT)

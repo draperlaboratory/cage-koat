@@ -1,12 +1,14 @@
 
 open AbstractRule
 
+module L = LocalSizeComplexity
+
 module Make(RuleT : AbstractRule) = struct
   module RVG = Rvgraph.Make(RuleT)
   module LSC = LocalSizeComplexity.Make(RuleT)
   module CTRSObl = Ctrsobl.Make(RuleT)
   module CTRS = CTRSObl.CTRS
-  module G = Graph.Persistent.Digraph.Concrete(Tgraph.Int)
+  module G = Tgraph.G
 
   open CTRSObl
   open CTRS
@@ -38,7 +40,7 @@ module Make(RuleT : AbstractRule) = struct
 
   and gscForNonTrivialScc ctrsobl rvgraph condensed scc accu =
     if List.exists isTooBig scc then
-      (LSC.Unknown, [])
+      (L.Unknown, [])
     else
       let vars = CTRS.getVars ctrsobl.ctrs in
       let possiblyScaledSumPlusConstants = List.filter isPossiblyScaledSumPlusConstant scc in
@@ -80,24 +82,24 @@ module Make(RuleT : AbstractRule) = struct
   and isTooBig ruleWithLSC =
     let lsc = getLSC (ruleWithLSC) in
       match lsc with
-        | (LSC.Max _, _) -> false
-        | (LSC.MaxPlusConstant _, _) -> false
-        | (LSC.SumPlusConstant _, _) -> false
-        | (LSC.ScaledSumPlusConstant _, _) -> false
-        | (LSC.P p, _) -> not (LSC.isConstant lsc)
-        | (LSC.Unknown, _) -> true
+        | (L.Max _, _) -> false
+        | (L.MaxPlusConstant _, _) -> false
+        | (L.SumPlusConstant _, _) -> false
+        | (L.ScaledSumPlusConstant _, _) -> false
+        | (L.P p, _) -> not (LSC.isConstant lsc)
+        | (L.Unknown, _) -> true
   and isPossiblyScaledSumPlusConstant ruleWithLSC =
     match (getLSC ruleWithLSC) with
-      | (LSC.SumPlusConstant _, _) -> true
-      | (LSC.ScaledSumPlusConstant _, _) -> true
+      | (L.SumPlusConstant _, _) -> true
+      | (L.ScaledSumPlusConstant _, _) -> true
       | _ -> false
   and isMaxPlusConstant ruleWithLSC =
     match (getLSC ruleWithLSC) with
-      | (LSC.MaxPlusConstant _, _) -> true
+      | (L.MaxPlusConstant _, _) -> true
       | _ -> false
   and isMax ruleWithLSC =
     match (getLSC ruleWithLSC) with
-      | (LSC.Max _, _) -> true
+      | (L.Max _, _) -> true
       | _ -> false
   and get_v_beta rvgraph scc ruleWithLSC =
     let preds = List.filter (inScc scc) (RVG.getPreds rvgraph [ruleWithLSC]) in
@@ -113,7 +115,7 @@ module Make(RuleT : AbstractRule) = struct
       | Some _ -> false
   and getAsPol ruleWithLSC =
     let lsc = getLSC ruleWithLSC in
-      (LSC.P (Expexp.fromConstant (LSC.getE lsc)), [])
+      (L.P (Expexp.fromConstant (LSC.getE lsc)), [])
   and getGSC accu scc =
     match accu with
       | [] -> failwith "Not found"

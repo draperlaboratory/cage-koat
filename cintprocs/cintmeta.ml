@@ -33,16 +33,16 @@ module UnsatProc = DeleteUnsatProc.Make(Comrule)
 module ChainProc = ComplexityChainProc.Make(Comrule)
 module SlicingProc = SlicingProc.Make(Comrule)
 
-IFDEF HAVE_APRON THEN
-module ApronInvariantsProc = ApronInvariantsProcessor.Make(Comrule)
-END
+(* IFDEF HAVE_APRON THEN *)
+(* module ApronInvariantsProc = ApronInvariantsProcessor.Make(Comrule) *)
+(* END *)
 
 let i = ref 1
 let proofs = ref []
 let output_nums = ref []
 let input_nums = ref []
 let did_ai = ref false
-let todo = ref (CTRSObl.getInitialObl [] "", (TGraph.G.empty, Array.of_list []), None, 0)
+let todo = ref (CTRSObl.getInitialObl [] "", (Tgraph.G.empty, Array.of_list []), None, 0)
 
 let rec check trs =
   if trs = [] then
@@ -180,26 +180,26 @@ and doFarkas () =
 and doFarkasSizeBound () =
   run_ite (Cintfarkaspolo.process true 1) doLoop doDesperateMeasures
 and doDesperateMeasures () =
-IFDEF HAVE_APRON THEN
-  if not(!did_ai) then
-    (
-      did_ai := true;
-      doApronInvariants ();
-      run UnsatProc.process; (* New invariants may show transitions to be unusable *)
-      doLoop ();
-    )
-  else
-    doChain1 ()
-ELSE
+(* IFDEF HAVE_APRON THEN *)
+(*   if not(!did_ai) then *)
+(*     ( *)
+(*       did_ai := true; *)
+(*       doApronInvariants (); *)
+(*       run UnsatProc.process; (\* New invariants may show transitions to be unusable *\) *)
+(*       doLoop (); *)
+(*     ) *)
+(*   else *)
+(*     doChain1 () *)
+(* ELSE *)
   doChain1 ()
-END
+(* END *)
 and doApronInvariants () =
   did_ai := true;
-IFDEF HAVE_APRON THEN
-  run ApronInvariantsProc.process_koat
-ELSE
+(* IFDEF HAVE_APRON THEN *)
+(*   run ApronInvariantsProc.process_koat *)
+(* ELSE *)
   ()
-END
+(* END *)
 and doChain1 () =
   run_ite (ChainProc.process 1) doLoop doChain2
 and doChain2 () =
