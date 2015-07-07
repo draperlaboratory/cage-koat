@@ -18,20 +18,21 @@
   limitations under the License.
 *)
 
-module RVG = Rvgraph.Make(Comrule)
-module LSC = LocalSizeComplexity.Make(Comrule)
-module GSC = GlobalSizeComplexity.Make(Comrule)
-module TGraph = Tgraph.Make(Comrule)
-module CTRSObl = Ctrsobl.Make(Comrule)
-module CTRS = CTRSObl.CTRS
+module RVG     = Cintfarkaspolo.RVG
+module CTRS    = Cintfarkaspolo.CTRS
+module CTRSObl = Cintfarkaspolo.CTRSObl
+module GSC     = Cintfarkaspolo.GSC
+module LSC     = Cintfarkaspolo.LSC
+module TGraph  = Cintfarkaspolo.TGraph
+
 open CTRSObl
 open CTRS
 
-module KnowledgeProc = KnowledgePropagationProc.Make(Comrule)
-module UnreachableProc = DeleteUnreachableProc.Make(Comrule)
-module UnsatProc = DeleteUnsatProc.Make(Comrule)
-module ChainProc = ComplexityChainProc.Make(Comrule)
-module SlicingProc = SlicingProc.Make(Comrule)
+module KnowledgeProc = KnowledgePropagationProc.Make(CTRSObl)
+module UnreachableProc = DeleteUnreachableProc.Make(CTRSObl)
+module UnsatProc = DeleteUnsatProc.Make(CTRSObl)
+module ChainProc = ComplexityChainProc.Make(CTRSObl)
+module SlicingProc = SlicingProc.Make(CTRSObl)
 
 (* IFDEF HAVE_APRON THEN *)
 (* module ApronInvariantsProc = ApronInvariantsProcessor.Make(Comrule) *)

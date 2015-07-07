@@ -20,11 +20,12 @@
 
 open AbstractRule
 
-module Make (RuleT : AbstractRule) = struct
+module Make (CTRSObl : Ctrsobl.S) = struct
+  module CTRS = CTRSObl.CTRS
+  module RuleT = CTRS.RuleT
   module TGraph = Tgraph.Make(RuleT)
   module RVG = Rvgraph.Make(RuleT)
-  module CTRSObl = Ctrsobl.Make(RuleT)
-  module CTRS = CTRSObl.CTRS
+
   open CTRSObl
   open CTRS
 

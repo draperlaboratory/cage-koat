@@ -21,9 +21,12 @@
 
 open AbstractRule
 
-module Make(RuleT : AbstractRule) = struct
-  module CTRS = Ctrs.Make(RuleT)
+module Make(CTRS : Ctrs.S) = struct
+  module CTRS = CTRS
+  module RuleT = CTRS.RuleT
   module RuleMap = CTRS.RuleMap
+  open Ctrs
+
 
   type t =
     { ctrs : CTRS.t ;
@@ -92,3 +95,26 @@ module Make(RuleT : AbstractRule) = struct
     RuleMap.cardinal obl1.complexity = RuleMap.cardinal obl2.complexity &&
     RuleMap.for_all (fun rule compl1 -> RuleMap.mem rule obl2.complexity && Complexity.equal compl1 (RuleMap.find rule obl2.complexity)) obl1.complexity
 end
+
+module type S =
+    sig
+      module CTRS : Ctrs.S
+      type t = {
+        ctrs : CTRS.t;
+        cost : Expexp.expexp CTRS.RuleMap.t;
+        complexity : Complexity.complexity CTRS.RuleMap.t;
+        leafCost : Expexp.expexp;
+      }
+      val getComplexity : t -> CTRS.RuleT.rule -> Complexity.complexity
+      val getCost : t -> CTRS.RuleT.rule -> Expexp.expexp
+      val toStringPrefix : string -> t -> string
+      val toString : t -> string
+      val toStringNumber : t -> int -> string
+      val isSolved : t -> bool
+      val hasUnknownComplexity : t -> CTRS.RuleT.rule -> bool
+      val getUnknownComplexityRules : t -> CTRS.RuleT.rule list
+      val getKnownComplexityRules : t -> CTRS.RuleT.rule list
+      val getInitialObl : CTRS.RuleT.rule list -> Term.funSym -> t
+      val haveSameComplexities : t -> t -> bool
+    end
+

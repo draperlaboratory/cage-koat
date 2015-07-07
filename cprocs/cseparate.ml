@@ -20,10 +20,11 @@
 
 module RVG = Rvgraph.Make(Rule)
 module LSC = LocalSizeComplexity.Make(Rule)
-module GSC = GlobalSizeComplexity.Make(Rule)
+module CTRS = Cleaf.CTRS
+module CTRSObl = Cleaf.CTRSObl
+module GSC = GlobalSizeComplexity.Make(CTRSObl)
 module TGraph = Tgraph.Make(Rule)
-module CTRSObl = Ctrsobl.Make(Rule)
-module CTRS = CTRSObl.CTRS
+
 open CTRSObl
 open CTRS
 

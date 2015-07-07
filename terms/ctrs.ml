@@ -22,19 +22,18 @@ open AbstractRule
 
 module type S =
     sig
-      type r
-      module RuleMap : Map.S with type key = r
+      module RuleT : AbstractRule.AbstractRule
+      module RuleMap : Map.S with type key = RuleT.rule
       val removeRulesFromMap :
         'a RuleMap.t -> RuleMap.key list -> 'a RuleMap.t
-      type t = { rules : r list; startFun : Term.funSym; }
-      val contains : t -> r -> bool
+      type t = { rules : RuleT.rule list; startFun : Term.funSym; }
+      val contains : t -> RuleT.rule -> bool
       val getVars : t -> Poly.var list
     end
 
-
 module Make(RuleT : AbstractRule) = struct
 
-  type r = RuleT.rule
+  module RuleT = RuleT
 
   module RuleMap =
     Map.Make(struct
@@ -45,9 +44,7 @@ module Make(RuleT : AbstractRule) = struct
   let removeRulesFromMap ruleMap rules =
     List.fold_left (fun newMap rule -> RuleMap.remove rule newMap) ruleMap rules
 
-  type t = { rules : RuleT.rule list ;
-             startFun : Term.funSym ;
-           }
+  type t = { rules : RuleT.rule list; startFun : Term.funSym; }
 
   let contains ctrs rule =
     Utils.containsC (fun r e -> RuleT.equal r e) ctrs.rules rule

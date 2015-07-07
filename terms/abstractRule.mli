@@ -14,10 +14,10 @@ module type AbstractRule =
     val getRightFuns: rule -> string list
 
     (** Get all used variables (in lhs, rhs, cond) *)
-    val getVars: rule -> string list
+    val getVars: rule -> Poly.var list
 
     (** Rename rule variables such that no variables listed in first parameter are used. *)
-    val renameVars: string list -> rule -> rule
+    val renameVars: Poly.var list -> rule -> rule
 
     val isLinear: rule -> bool
     val isRightLinear: rule -> bool

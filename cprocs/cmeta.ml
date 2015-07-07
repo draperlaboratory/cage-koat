@@ -18,24 +18,25 @@
   limitations under the License.
 *)
 
+module CTRS = Cleaf.CTRS
+module CTRSObl = Cleaf.CTRSObl
 module RVG = Rvgraph.Make(Rule)
 module LSC = LocalSizeComplexity.Make(Rule)
-module GSC = GlobalSizeComplexity.Make(Rule)
+module GSC = Cseparate.GSC
 module TGraph = Tgraph.Make(Rule)
-module CTRSObl = Ctrsobl.Make(Rule)
-module CTRS = CTRSObl.CTRS
+
 open CTRSObl
 open CTRS
 
-module KnowledgeProc = KnowledgePropagationProc.Make(Rule)
-module UnreachableProc = DeleteUnreachableProc.Make(Rule)
-module UnsatProc = DeleteUnsatProc.Make(Rule)
-module ChainProc = ComplexityChainProc.Make(Rule)
-module SlicingProc = SlicingProc.Make(Rule)
+module KnowledgeProc = KnowledgePropagationProc.Make(CTRSObl)
+module UnreachableProc = DeleteUnreachableProc.Make(CTRSObl)
+module UnsatProc = DeleteUnsatProc.Make(CTRSObl)
+module ChainProc = ComplexityChainProc.Make(CTRSObl)
+module SlicingProc = SlicingProc.Make(CTRSObl)
 
-IFDEF HAVE_APRON THEN
-module ApronInvariantsProc = ApronInvariantsProcessor.Make(Rule)
-END
+(* IFDEF HAVE_APRON THEN *)
+(* module ApronInvariantsProc = ApronInvariantsProcessor.Make(Rule) *)
+(* END *)
 
 let sep = 10000
 
@@ -227,11 +228,11 @@ and doLoop () =
   doFarkasConstant ()
 and doApronInvariants () =
   did_ai := true;
-IFDEF HAVE_APRON THEN
-  run ApronInvariantsProc.process_koat
-ELSE
+(* IFDEF HAVE_APRON THEN *)
+(*   run ApronInvariantsProc.process_koat *)
+(* ELSE *)
   ()
-END
+(* END *)
 and doUnreachableRemoval () =
   run UnreachableProc.process
 and doKnowledgePropagation () =
@@ -302,19 +303,19 @@ and doFarkasSizeBound () =
 and doFarkasMinimal () =
   run_ite (Cfarkaspolo.process false true 1) doLoop doDesperateMeasures
 and doDesperateMeasures () =
-IFDEF HAVE_APRON THEN
-  if not(!did_ai) then
-    (
-      did_ai := true;
-      doApronInvariants ();
-      run UnsatProc.process; (* New invariants may show transitions to be unusable *)
-      doLoop ();
-    )
-  else
-    doChain1 ()
-ELSE
+(* IFDEF HAVE_APRON THEN *)
+(*   if not(!did_ai) then *)
+(*     ( *)
+(*       did_ai := true; *)
+(*       doApronInvariants (); *)
+(*       run UnsatProc.process; (\* New invariants may show transitions to be unusable *\) *)
+(*       doLoop (); *)
+(*     ) *)
+(*   else *)
+(*     doChain1 () *)
+(* ELSE *)
   doChain1 ()
-END
+(* END *)
 and doChain1 () =
   run_ite (ChainProc.process 1) doLoop doChain2
 and doChain2 () =

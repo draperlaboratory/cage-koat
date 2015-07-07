@@ -111,10 +111,6 @@ module type S =
       val getNum : (G.vertex * r) array -> r -> int
       val computeRulesInTwigs :
         G.t * (G.vertex * r) array -> r list
-      val computeLeavesAux :
-        G.t -> (G.vertex * r) array -> int -> int list ref -> unit
-      val computeLeavesAuxStep :
-        G.t -> (G.vertex * r) array -> int -> int list ref -> bool
     end
 
 

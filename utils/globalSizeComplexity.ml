@@ -3,11 +3,12 @@ open AbstractRule
 
 module L = LocalSizeComplexity
 
-module Make(RuleT : AbstractRule) = struct
+module Make(CTRSObl : Ctrsobl.S) = struct
+
+  module CTRS = CTRSObl.CTRS
+  module RuleT = CTRS.RuleT
   module RVG = Rvgraph.Make(RuleT)
   module LSC = LocalSizeComplexity.Make(RuleT)
-  module CTRSObl = Ctrsobl.Make(RuleT)
-  module CTRS = CTRSObl.CTRS
   module G = Tgraph.G
 
   open CTRSObl

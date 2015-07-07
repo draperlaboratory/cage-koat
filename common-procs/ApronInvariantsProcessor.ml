@@ -28,8 +28,8 @@ module Make(RuleT : AbstractRule) = struct
   module TGraph = Tgraph.Make(RuleT)
   module VarMap = Map.Make(String)
   module FunMap = Map.Make(String)
-  module CTRSObl = Ctrsobl.Make(RuleT)
-  module CTRS = CTRSObl.CTRS
+  module CTRS = Ctrs.Make(RuleT)
+  module CTRSObl = Ctrsobl.Make(CTRS)
   open CTRSObl
   open CTRS
 

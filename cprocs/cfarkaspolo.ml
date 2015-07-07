@@ -19,10 +19,10 @@
 *)
 
 module LSC = LocalSizeComplexity.Make(Rule)
-module GSC = GlobalSizeComplexity.Make(Rule)
 module TGraph = Tgraph.Make(Rule)
-module CTRSObl = Ctrsobl.Make(Rule)
-module CTRS = CTRSObl.CTRS
+module CTRS = Ctrs.Make(Rule)
+module CTRSObl = Ctrsobl.Make(CTRS)
+module GSC = GlobalSizeComplexity.Make(CTRSObl)
 module VarMap = Poly.VarMap
 open CTRSObl
 open CTRS

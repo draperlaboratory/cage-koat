@@ -1,23 +1,26 @@
-module Make :
-  functor (RuleT : AbstractRule.AbstractRule) ->
+module type S =
     sig
-      module CTRS : Ctrs.S with type r = RuleT.rule
-      (* module RuleMap : Map.S with type key = RuleT.rule *)
+      module CTRS : Ctrs.S
       type t = {
         ctrs : CTRS.t;
         cost : Expexp.expexp CTRS.RuleMap.t;
         complexity : Complexity.complexity CTRS.RuleMap.t;
         leafCost : Expexp.expexp;
       }
-      val getComplexity : t -> RuleT.rule -> Complexity.complexity
-      val getCost : t -> RuleT.rule -> Expexp.expexp
+      val getComplexity : t -> CTRS.RuleT.rule -> Complexity.complexity
+      val getCost : t -> CTRS.RuleT.rule -> Expexp.expexp
       val toStringPrefix : string -> t -> string
       val toString : t -> string
       val toStringNumber : t -> int -> string
       val isSolved : t -> bool
-      val hasUnknownComplexity : t -> RuleT.rule -> bool
-      val getUnknownComplexityRules : t -> RuleT.rule list
-      val getKnownComplexityRules : t -> RuleT.rule list
-      val getInitialObl : RuleT.rule list -> Term.funSym -> t
+      val hasUnknownComplexity : t -> CTRS.RuleT.rule -> bool
+      val getUnknownComplexityRules : t -> CTRS.RuleT.rule list
+      val getKnownComplexityRules : t -> CTRS.RuleT.rule list
+      val getInitialObl : CTRS.RuleT.rule list -> Term.funSym -> t
       val haveSameComplexities : t -> t -> bool
     end
+
+
+
+module Make(CTRS : Ctrs.S) : S with module CTRS = CTRS
+

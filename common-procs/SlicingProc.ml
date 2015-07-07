@@ -20,9 +20,8 @@
 
 open AbstractRule
 
-module Make (RuleT : AbstractRule) = struct
+module Make (CTRSObl : Ctrsobl.S) = struct
   module VarMap = Map.Make(String)
-  module CTRSObl = Ctrsobl.Make(RuleT)
   module CTRS = CTRSObl.CTRS
   open CTRSObl
   open CTRS
