@@ -18,6 +18,7 @@
   limitations under the License.
 *)
 
+module RuleT = Rule
 module CTRS = Cleaf.CTRS
 module CTRSObl = Cleaf.CTRSObl
 module RVG = Rvgraph.Make(Rule)

@@ -7,9 +7,9 @@ module Make(RuleT : AbstractRule.AbstractRule) :
       module CTRS : Ctrs.S
       module TGraph : Tgraph.S
 
-      val toDot : Tgraph.G.t * (Tgraph.G.vertex * LSC.local_size_data) array -> string
-      val getNodes : (Tgraph.G.vertex * LSC.local_size_data) array -> string
-      val getEdges : Tgraph.G.t -> (Tgraph.G.vertex * LSC.local_size_data) array -> string
+      val toDot : Tgraph.G.t * (Tgraph.G.vertex * LSC.local_trans_data) array -> string
+      val getNodes : (Tgraph.G.vertex * LSC.local_trans_data) array -> string
+      val getEdges : Tgraph.G.t -> (Tgraph.G.vertex * LSC.local_trans_data) array -> string
       val compute :
         (RuleT.rule * (('a * 'b) * ('c * 'b list))) list ->
         Tgraph.G.t * (Tgraph.G.vertex * RuleT.rule) array ->
@@ -68,34 +68,34 @@ module Make(RuleT : AbstractRule.AbstractRule) :
         (Tgraph.G.vertex * (RuleT.rule * 'a)) array ->
         RuleT.rule list -> (int * Tgraph.G.vertex) list
       val addNodes :
-        Tgraph.G.t * (Tgraph.G.vertex * LSC.local_size_data) array ->
-        LSC.lsds ->
+        Tgraph.G.t * (Tgraph.G.vertex * LSC.local_trans_data) array ->
+        LSC.ltds ->
         Tgraph.G.t * (Tgraph.G.vertex * RuleT.rule) array ->
-        Tgraph.G.t * (Tgraph.G.vertex * LSC.local_size_data) array
-      val getMaxNum : (Tgraph.G.vertex * LSC.local_size_data) array -> Tgraph.G.vertex
+        Tgraph.G.t * (Tgraph.G.vertex * LSC.local_trans_data) array
+      val getMaxNum : (Tgraph.G.vertex * LSC.local_trans_data) array -> Tgraph.G.vertex
       val getNewPairs :
-        LSC.lsds -> Tgraph.G.vertex -> (Tgraph.G.vertex * LSC.local_size_data) list
+        LSC.ltds -> Tgraph.G.vertex -> (Tgraph.G.vertex * LSC.local_trans_data) list
       val addToGraph : Tgraph.G.t -> Tgraph.G.vertex list -> Tgraph.G.t
       val addNeededEdges :
         Tgraph.G.t ->
         Tgraph.G.t * (Tgraph.G.vertex * RuleT.rule) array ->
-        (Tgraph.G.vertex * LSC.local_size_data) array ->
-        (Tgraph.G.vertex * LSC.local_size_data) list -> Tgraph.G.t
+        (Tgraph.G.vertex * LSC.local_trans_data) array ->
+        (Tgraph.G.vertex * LSC.local_trans_data) list -> Tgraph.G.t
       val addNeededEdgesOne :
         Tgraph.G.t ->
         Tgraph.G.t * (Tgraph.G.vertex * RuleT.rule) array ->
-        (Tgraph.G.vertex * LSC.local_size_data) array ->
-        Tgraph.G.vertex * LSC.local_size_data -> Tgraph.G.t
+        (Tgraph.G.vertex * LSC.local_trans_data) array ->
+        Tgraph.G.vertex * LSC.local_trans_data -> Tgraph.G.t
       val addToArray :
-        (Tgraph.G.vertex * LSC.local_size_data) array ->
-        (Tgraph.G.vertex * LSC.local_size_data) list ->
-        (Tgraph.G.vertex * LSC.local_size_data) array
+        (Tgraph.G.vertex * LSC.local_trans_data) array ->
+        (Tgraph.G.vertex * LSC.local_trans_data) list ->
+        (Tgraph.G.vertex * LSC.local_trans_data) array
       val updateOptionRVGraph :
-        (Tgraph.G.t * (Tgraph.G.vertex * LSC.local_size_data) array) option ->
+        (Tgraph.G.t * (Tgraph.G.vertex * LSC.local_trans_data) array) option ->
         RuleT.rule list ->
         RuleT.rule list ->
         Tgraph.G.t * (Tgraph.G.vertex * RuleT.rule) array ->
-        (Tgraph.G.t * (Tgraph.G.vertex * LSC.local_size_data) array) option
+        (Tgraph.G.t * (Tgraph.G.vertex * LSC.local_trans_data) array) option
       val keepNodes :
         Tgraph.G.t * (Tgraph.G.vertex * (RuleT.rule * 'a)) array ->
         RuleT.rule list -> Tgraph.G.t * (Tgraph.G.vertex * (RuleT.rule * 'a)) array
@@ -140,12 +140,12 @@ module Make(RuleT : AbstractRule.AbstractRule) :
       val getNodesInTopologicalOrder : Tgraph.G.t * (Tgraph.G.V.t * 'a) array -> 'a list
       val getNodesTopo : (Tgraph.G.V.t * 'a) array -> Tgraph.G.V.t -> 'a
       val condensedToDot :
-        Tgraph.G.t * (Tgraph.G.vertex * (LSC.local_size_data list * bool)) array -> string
-      val dumpScc : LSC.local_size_data list * bool -> string
+        Tgraph.G.t * (Tgraph.G.vertex * (LSC.local_trans_data list * bool)) array -> string
+      val dumpScc : LSC.local_trans_data list * bool -> string
       val getCondensedNodes :
-        (Tgraph.G.vertex * (LSC.local_size_data list * bool)) array -> string
+        (Tgraph.G.vertex * (LSC.local_trans_data list * bool)) array -> string
       val getCondensedEdges :
-        Tgraph.G.t -> (Tgraph.G.vertex * (LSC.local_size_data list * bool)) array -> string
+        Tgraph.G.t -> (Tgraph.G.vertex * (LSC.local_trans_data list * bool)) array -> string
       val getCondensedPreds :
         Tgraph.G.t *
         (Tgraph.G.vertex *

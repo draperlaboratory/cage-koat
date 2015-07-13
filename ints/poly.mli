@@ -40,8 +40,7 @@ val toSMTone : Big_int.big_int * (var * int) list -> string
 val toSMTprods : string list -> string
 val expand : string * int -> string list
 val const_to_string : Big_int.big_int -> string
-val renameVars :
-  (var * var) list -> poly -> poly
+val renameVars : (var * var) list -> poly -> poly
 val renameMonomial : (var * var) list -> monomial -> monomial
 val getVars : poly -> var list
 val getVarsMonomial : monomial -> var list

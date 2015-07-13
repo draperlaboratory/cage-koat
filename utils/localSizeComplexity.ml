@@ -34,8 +34,8 @@ module Make (RuleT : AbstractRule) = struct
 
   type size_data = localcomplexity * int list
 
-  type local_size_data = RuleT.rule * ((int * int) * size_data)
-  type lsds = local_size_data list
+  type local_trans_data = RuleT.rule * ((int * int) * size_data)
+  type ltds = local_trans_data list
 
   let getE c =
     match c with
@@ -507,8 +507,8 @@ module type S =
 
       type size_data = localcomplexity * int list
 
-      type local_size_data = RuleT.rule * ((int * int) * size_data)
-      type lsds = local_size_data list
+      type local_trans_data = RuleT.rule * ((int * int) * size_data)
+      type ltds = local_trans_data list
         
       val getE : localcomplexity * 'a -> Big_int.big_int
       val getS : localcomplexity * 'a -> Big_int.big_int
@@ -550,9 +550,9 @@ module type S =
       (* This produces one 
          (rule, ((rhsIdx, argumentIdx), (local size bound, active variable idxs)))
          tuple per RV *)
-      val computeLocalSizeComplexities : RuleT.rule list -> lsds
+      val computeLocalSizeComplexities : RuleT.rule list -> ltds
 
-      val computeLocalSizeComplexitiesForRule : RuleT.rule -> lsds
+      val computeLocalSizeComplexitiesForRule : RuleT.rule -> ltds
 
       val computeLSCForTerm :
         Poly.var list ->
@@ -577,8 +577,8 @@ module type S =
       val equalLSC :
         'a * (localcomplexity * 'b list) ->
         'a * (localcomplexity * 'b list) -> bool
-      val dumpLSCs : lsds -> string
-      val dumpOneLSC : local_size_data -> string
+      val dumpLSCs : ltds -> string
+      val dumpOneLSC : local_trans_data -> string
       val dumpLSC : (int * int) * (size_data) -> string
-      val dumpLSCDot : local_size_data -> string
+      val dumpLSCDot : local_trans_data -> string
     end
