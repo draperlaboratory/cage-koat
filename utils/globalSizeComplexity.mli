@@ -63,7 +63,6 @@ module type S =
       val inScc :
         global_trans_data list ->
         global_trans_data -> bool
-      val isNone : 'a option -> bool
       val getAsPol :
         global_trans_data -> LSC.size_data
       val getGSC :

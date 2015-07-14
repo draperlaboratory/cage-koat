@@ -118,10 +118,6 @@ module Make(CTRSObl : Ctrsobl.S) = struct
   and inScc scc rv =
     (List.exists (fun rv' -> (LSC.equalLSC (snd rv) (snd rv')) && ((fst rv) == (fst rv'))) scc) ||
     (List.exists (fun rv' -> (LSC.equalLSC (snd rv) (snd rv')) && (RuleT.equal (fst rv) (fst rv'))) scc)
-  and isNone opt =
-    match opt with
-      | None -> true
-      | Some _ -> false
   and getAsPol ruleWithLSC =
     let lsc = getLSC ruleWithLSC in
       (L.P (Expexp.fromConstant (LSC.getE lsc)), [])
@@ -359,7 +355,6 @@ module type S =
       val inScc :
         global_trans_data list ->
         global_trans_data -> bool
-      val isNone : 'a option -> bool
       val getAsPol :
         global_trans_data -> LSC.size_data
       val getGSC :
