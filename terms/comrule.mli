@@ -27,7 +27,6 @@ val getNewVarName : Poly.var list -> Poly.var -> Poly.var
 val isLinear : rule -> bool
 val isRightLinear : rule -> bool
 val isConstraintLinear : rule -> bool
-val equalInternal : rule -> rule -> bool
 val satisfiesVarCond : rule -> bool
 val internalize : rule -> rule
 val getSubstitution : Poly.var list -> Pc.cond -> Poly.var list ->
