@@ -1,9 +1,12 @@
 type var = string
+type mapping = var * var
+
 module VarMap : Map.S with type key = var
 
 type monomial = (var * int) list
 
 type poly = (Big_int.big_int * monomial) list * Big_int.big_int
+
 val eq_big_int : Big_int.big_int -> Big_int.big_int -> bool
 val equal :  poly -> poly -> bool
 val equalMono : Big_int.big_int * monomial -> Big_int.big_int * monomial -> bool

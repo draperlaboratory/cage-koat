@@ -19,6 +19,7 @@
 *)
 
 type var = string
+type mapping = var * var
 module VarMap = Map.Make(String)
 
 (* A monomial, i.e., a product of powers *)

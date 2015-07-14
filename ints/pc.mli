@@ -21,8 +21,8 @@ val compare : atom list -> atom list -> int
 val toDotString : atom list -> string
 val toSMT : atom list -> string
 val atomSMT : atom -> string
-val renameVars : (Poly.var * Poly.var) list -> atom list -> atom list
-val renameAtom : (Poly.var * Poly.var) list -> atom -> atom
+val renameVars : Poly.mapping list -> atom list -> atom list
+val renameAtom : Poly.mapping list -> atom -> atom
 val getVars : atom list -> Poly.var list
 val getVarsAtom : atom -> Poly.var list
 val isTrue : atom list -> Big_int.big_int Poly.VarMap.t -> bool

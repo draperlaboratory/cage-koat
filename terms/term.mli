@@ -11,6 +11,6 @@ val getFun : term -> funSym
 val getArity : term -> int
 val getVars : term -> Poly.var list
 val instantiate : term -> (String.t * Poly.poly) list -> term
-val renameVars : (Poly.var * Poly.var) list -> term -> term
+val renameVars : Poly.mapping list -> term -> term
 val isLinear : term -> bool
 val equal : term -> term -> bool
