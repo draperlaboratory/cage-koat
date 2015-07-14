@@ -227,3 +227,29 @@ let getIndexedSubset idxsToKeep list =
         (getIndexedSubset' idxsToKeep (idx+1)) xs
   in
   getIndexedSubset' idxsToKeep 0 list
+
+
+let rec indexOfAux cmp index el list =
+  match list with
+    [] -> raise Not_found
+  | hd::tl ->
+    if cmp el hd
+    then index
+    else indexOfAux cmp (index + 1) el tl
+
+let indexOf ?(cmp = (=)) el list = indexOfAux cmp 0 el list
+
+
+let rec indexesOfAux cmp index el list =
+  match list with
+    [] -> []
+  | hd::tl ->
+    if cmp el hd
+    then index :: indexesOfAux cmp (index + 1) el tl
+    else indexesOfAux cmp (index + 1) el tl
+
+let indexesOf ?(cmp = (=)) el list = indexesOfAux cmp 0 el list
+
+(* come back and make this more efficient! [JTT 14-07-15] *)
+let inexdesOfList ?(cmp = (=)) elements list =
+  List.map (fun el -> indexesOfAux cmp 0 el list) elements

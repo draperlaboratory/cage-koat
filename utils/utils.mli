@@ -21,8 +21,7 @@ val notInP : ('a -> 'b -> bool) -> 'b list -> 'a list -> 'a list
 val iter3 : ('a -> 'b -> 'c -> 'd) -> 'a list -> 'b list -> 'c list -> unit
 val map3 : ('a -> 'b -> 'c -> 'd) -> 'a list -> 'b list -> 'c list -> 'd list
 val combine3 : 'a list -> 'b list -> 'c list -> ('a * 'b * 'c) list
-val combine4 :
-  'a list -> 'b list -> 'c list -> 'd list -> ('a * 'b * 'c * 'd) list
+val combine4 : 'a list -> 'b list -> 'c list -> 'd list -> ('a * 'b * 'c * 'd) list
 val unboxOption : 'a option -> 'a
 val iteri : (int -> 'a -> 'b) -> 'a list -> unit
 val mapi : (int -> 'a -> 'b) -> 'a list -> 'b list
@@ -33,3 +32,6 @@ val concatMapi : (int -> 'a -> 'b list) -> 'a list -> 'b list
 val tryFind : ('a -> bool) -> 'a list -> 'a option
 val powSet : 'a list -> 'a list list
 val getIndexedSubset : int list -> 'a list -> 'a list
+val indexOf : ?cmp:('a -> 'a -> bool) -> 'a -> 'a list -> int
+val indexesOf : ?cmp:('a -> 'a -> bool) -> 'a -> 'a list -> int list
+val inexdesOfList : ?cmp:('a -> 'a -> bool) -> 'a list -> 'a list -> int list list
