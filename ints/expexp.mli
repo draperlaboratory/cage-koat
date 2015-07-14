@@ -43,13 +43,6 @@ val abs : expexp -> expexp
 val instantiate : expexp -> (Poly.var * expexp) list -> expexp
 val getPolMap :
   (Poly.var * expexp) list -> (String.t * Poly.poly) list option
-val getPolMapAux :
-  (Poly.var * expexp) list ->
-  (String.t * Poly.poly) list -> (String.t * Poly.poly) list option
-val instantiateAux : expexp -> (Poly.var * expexp) list -> expexp
-val instantiateAuxPol : Poly.poly -> (Poly.var * expexp) list -> expexp
-val instantiateAuxMono :
-  (Poly.var * expexp) list -> Big_int.big_int * Poly.monomial -> expexp
 val instantiateAuxVarPower :
   (Poly.var * expexp) list -> Poly.var * int -> expexp
 val max : expexp -> expexp -> expexp
