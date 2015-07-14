@@ -14,8 +14,6 @@ val last : 'a list -> 'a
 val dropLast : 'a list -> 'a list
 val take : int -> 'a list -> 'a list
 val split : ('a -> bool) -> 'a list -> 'a list * 'a list
-val splitAux :
-  ('a -> bool) -> 'a list -> 'a list -> 'a list -> 'a list * 'a list
 val intersect : 'a list -> 'a list -> 'a list
 val notIn : 'a list -> 'a list -> 'a list
 val containsP : ('a -> 'b -> bool) -> 'b list -> 'a -> bool
@@ -29,7 +27,6 @@ val unboxOption : 'a option -> 'a
 val iteri : (int -> 'a -> 'b) -> 'a list -> unit
 val mapi : (int -> 'a -> 'b) -> 'a list -> 'b list
 val getIdx : 'a list -> 'a -> int
-val getIdxAux : 'a list -> 'a -> int -> int
 val concatMapStable : ('a -> 'b list) -> 'a list -> 'b list
 val concatMap : ('a -> 'b list) -> 'a list -> 'b list
 val concatMapi : (int -> 'a -> 'b list) -> 'a list -> 'b list
