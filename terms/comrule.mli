@@ -3,14 +3,15 @@ type rule = {
   rhss : Term.term list;
   cond : Pc.cond;
 }
-
-val create : Term.term -> Term.term list -> Pc.cond -> rule
 val createRule : Term.term -> Term.term list -> Pc.cond -> rule
+
 val toString : rule -> string
-val toStringRhss : Term.term list -> string
-val listToStringPrefix : string -> rule list -> string
-val compare : rule -> rule -> int
 val toDotString : rule -> string
+val listToStringPrefix : string -> rule list -> string
+
+val compare : rule -> rule -> int
+val equal : rule -> rule -> bool
+
 val getLeft : rule -> Term.term
 val getRights : rule -> Term.term list
 val getCond : rule -> Pc.cond
@@ -20,18 +21,17 @@ val getRightFuns : rule -> Term.funSym list
 val getRightVars : rule -> Poly.var list
 val getVars : rule -> Poly.var list
 val renameVars : Poly.var list -> rule -> rule
-val createVarMapping :
-  Poly.var list -> Poly.var list -> (Poly.var * Poly.var) list
+val createVarMapping : Poly.var list -> Poly.var list ->
+  (Poly.var * Poly.var) list
 val getNewVarName : Poly.var list -> Poly.var -> Poly.var
 val isLinear : rule -> bool
 val isRightLinear : rule -> bool
 val isConstraintLinear : rule -> bool
-val equal : rule -> rule -> bool
 val equalInternal : rule -> rule -> bool
 val satisfiesVarCond : rule -> bool
 val internalize : rule -> rule
 val getSubstitution : Poly.var list -> Pc.cond -> Poly.var list ->
-  (String.t * Poly.poly) list * Pc.cond
+  (string * Poly.poly) list * Pc.cond
 val findDefinition :
   Poly.var -> Poly.var list -> Pc.cond -> Pc.atom option -> Pc.atom option
 val isEqu : Pc.atom -> bool

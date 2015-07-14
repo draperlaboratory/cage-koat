@@ -180,7 +180,7 @@ and createrules combine (funs, vars, stmts) : Comrule.rule list =
             | IfsLoops -> toComrules (normalizeConds (combineRules !if_loop_points rules_dnf))
             | Loops -> toComrules (normalizeConds (combineRules !loop_points rules_dnf))
 and toComrules =
-  List.map (fun (l, rs, c) -> Comrule.create l rs c)
+  List.map (fun (l, rs, c) -> Comrule.createRule l rs c)
 and getRulesForFunDecl (f, in_vars, out_var, local_vars, stmts) =
   let vars = in_vars @ (getVar out_var) @ local_vars in
     getRules stmts f vars in_vars

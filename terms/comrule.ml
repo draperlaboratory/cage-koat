@@ -21,8 +21,7 @@
 type rule = { lhs : Term.term ; rhss : Term.term list ; cond : Pc.cond }
 
 (* Create a comrule. *)
-let create l rs c = { lhs = l; rhss = rs; cond = c }
-let createRule = create
+let createRule l rs c = { lhs = l; rhss = rs; cond = c }
 
 (* Create a string for a rule *)
 let rec toString r =

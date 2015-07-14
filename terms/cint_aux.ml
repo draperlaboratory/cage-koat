@@ -61,7 +61,7 @@ and getCint chan =
 and remdup cint =
   List.map remdupComrule cint
 and remdupComrule r =
-  Comrule.create (Comrule.getLeft r) (Comrule.getRights r) (Utils.remdupC Pc.equalAtom (Comrule.getCond r))
+  Comrule.createRule (Comrule.getLeft r) (Comrule.getRights r) (Utils.remdupC Pc.equalAtom (Comrule.getCond r))
 
 and check cint =
   match cint with
@@ -119,7 +119,7 @@ and createFunMapping funs used =
                  else
                    (f, f)::(createFunMapping ff used)
 and applyFunMapping mapping r =
-  Comrule.create
+  Comrule.createRule
     (applyFunMappingTerm mapping (Comrule.getLeft r))
     (List.map (applyFunMappingTerm mapping) (Comrule.getRights r))
     (Comrule.getCond r)
@@ -128,7 +128,7 @@ and applyFunMappingTerm mapping (f, args) =
 and sanitizeRule r =
   let vars = Comrule.getVars r in
     let varmapping = createVarMapping vars vars in
-      Comrule.create
+      Comrule.createRule
         (Term.renameVars varmapping (Comrule.getLeft r))
         (List.map (fun rhs -> Term.renameVars varmapping rhs) (Comrule.getRights r))
         (Pc.renameVars varmapping (Comrule.getCond r))
