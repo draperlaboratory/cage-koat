@@ -1,7 +1,7 @@
 -include user.cfg
 
-HAVE_APRON?=true
-HAVE_Z3?=true
+HAVE_APRON?=false
+HAVE_Z3?=false
 
 LIBPATH_APRON=
 LIBS_APRON=
@@ -16,8 +16,8 @@ LIBPATH_Z3=
 LIBS_Z3=
 PP_OPTS_Z3=
 ifeq (${HAVE_Z3},true)
-#  LIBPATH_Z3=-cflags "-I /usr/local/lib/ocaml/4.01.0/Z3/" -lflags "-I /usr/local/lib/ocaml/4.01.0/Z3/" -cflags -I,+z3 -lflags "-cclib -lz3"
-  LIBPATH_Z3=-cflags "-I /usr/local/lib/ocaml/3.12.1/Z3/" -lflags "-I /usr/local/lib/ocaml/3.12.1/Z3/" -cflags -I,+z3 -lflags "-cclib -lz3"
+  LIBPATH_Z3=-cflags "-I /usr/local/lib/ocaml/4.01.0/Z3/" -lflags "-I /usr/local/lib/ocaml/4.01.0/Z3/" -cflags -I,+z3 -lflags "-cclib -lz3"
+#  LIBPATH_Z3=-cflags "-I /usr/local/lib/ocaml/3.12.1/Z3/" -lflags "-I /usr/local/lib/ocaml/3.12.1/Z3/" -cflags -I,+z3 -lflags "-cclib -lz3"
   LIBS_Z3=,z3
   PP_OPTS_Z3=-DHAVE_Z3
 endif
@@ -40,6 +40,9 @@ kittel.d.byte: make_git_sha1 force_look
 
 koat: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koat.native
+
+dep: dep.ml
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} dep.native
 
 koat.d.byte: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koat.d.byte
