@@ -3,8 +3,10 @@ type mapping = var * var
 
 module VarMap : Map.S with type key = var
 
+(* x ^ int *)
 type monomial = (var * int) list
 
+(* m * [x^n + x^n-1 .... + x] + c *)
 type poly = (Big_int.big_int * monomial) list * Big_int.big_int
 
 val eq_big_int : Big_int.big_int -> Big_int.big_int -> bool
