@@ -425,9 +425,6 @@ module type S =
         array ->
         int list ->
         global_trans_data list list
-      val collectPreds :
-        ('a * (('b * 'c) * 'd)) list ->
-        'c list -> ('a * (('b * 'c) * 'd)) list list
       val getPredVarBounds :
         global_trans_data list list ->
         Poly.var list ->

@@ -8,27 +8,17 @@ module type S =
       module RVMap : Map.S with type key = (CTRSObl.CTRS.RuleT.rule * (int * int))
 
       type size_data = Rvgraph.lc * int list
-
       type rule = CTRSObl.CTRS.RuleT.rule
       type global_trans_data = rule * ((int * int) * size_data)
         
 
       val c2lsc : Complexity.complexity -> Poly.var list -> LSC.size_data
       val getPol : Complexity.complexity -> Expexp.expexp
-      val gscForNonTrivialScc :
-        CTRSObl.t ->
-        Tgraph.G.t *
-        (Tgraph.G.vertex *
-         global_trans_data)
-        array ->
-        Tgraph.G.t *
-        (Tgraph.G.vertex *
-         (global_trans_data list * 'c))
-        array ->
+      val gscForNonTrivialScc : CTRSObl.t ->
+        Tgraph.G.t * (Tgraph.G.vertex * global_trans_data) array ->
+        Tgraph.G.t * (Tgraph.G.vertex * (global_trans_data list * 'c)) array ->
         global_trans_data list ->
-        (global_trans_data list *
-         LSC.size_data)
-        list -> LSC.size_data
+        (global_trans_data list * LSC.size_data) list -> LSC.size_data
       val getVarsizeProduct :
         CTRSObl.t ->
         global_trans_data list ->
@@ -84,9 +74,7 @@ module type S =
       val getPossiblyScaledSumPlusConstantTerm :
         CTRSObl.t ->
         Tgraph.G.t *
-        (Tgraph.G.vertex *
-         global_trans_data)
-        array ->
+        (Tgraph.G.vertex * global_trans_data) array ->
         global_trans_data list ->
         Poly.var list ->
         (global_trans_data list *
@@ -133,15 +121,14 @@ module type S =
         array ->
         int list ->
         global_trans_data list list
-      val collectPreds :
-        ('a * (('b * 'c) * 'd)) list ->
-        'c list -> ('a * (('b * 'c) * 'd)) list list
       val getPredVarBounds :
         global_trans_data list list ->
         Poly.var list ->
         (global_trans_data list *
          LSC.size_data)
         list -> Complexity.complexity list list
+      
+      (** computes global size bound for one SCC in the RVG *)
       val computeGlobalSizeBound :
         CTRSObl.t ->
         Tgraph.G.t *
