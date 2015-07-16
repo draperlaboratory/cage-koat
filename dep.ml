@@ -28,6 +28,45 @@ type edge = {
   qual : qual;
 }
 
+type node = {
+  arrivedBy : edge option;
+  tip : var;
+  encounteredDelta : bool;
+}
+
+let varsToString vList =
+  List.fold_left (fun accum v ->
+    if accum = ""
+    then v
+    else Printf.sprintf "%s, %s" accum v) "" vList
+
+let argumentToString (arg : argument) =
+  Printf.sprintf "%s %i %s" arg.fName arg.position (varsToString arg.vars)
+
+
+let condToString (cond : cond) =
+  Printf.sprintf "cond %i %s" cond.position (varsToString cond.vars)
+
+let varToString = function
+  | Argument a -> argumentToString a
+  | Cond c -> condToString c
+
+let qualToString = function
+  | Equal -> "Equal"
+  | Delta -> "Delta"
+  | Unkown -> "?"
+
+let edgeToString e =
+  Printf.sprintf "%s -> %s : %s"
+    (varToString e.source)
+    (varToString e.sink)
+    (qualToString e.qual)
+
+let key (n : node) = n.tip
+let better (a : node) (b : node) =
+  a.encounteredDelta ||
+    a.encounteredDelta = b.encounteredDelta
+
 type path = edge list
 
 let varsOf = function
@@ -65,6 +104,46 @@ let expand (varTable : (string, var list) Hashtbl.t) var =
   let adjacent = List.fold_left filterConcat [] touches |> Utils.remdup in
   List.map (fun dest -> {source = var; sink = dest; qual = Unkown;}) adjacent
 
+let processClosed (closed : (var, node) Hashtbl.t) =
+  let lookup = Hashtbl.create 100 in
+  Hashtbl.iter (fun var node ->
+    let vars = varsOf var in
+    List.iter (fun v ->
+      try
+        let prev = Hashtbl.find lookup v in
+        node :: prev |> Hashtbl.replace lookup v
+      with Not_found ->
+        Hashtbl.replace lookup v [node]) vars) closed;
+  lookup
+
+let breadthFirst (openList : node list) (expand : node -> edge list) =
+  let closed = Hashtbl.create 100 in
+  let handleNode n =
+    try
+      let kv = key n in
+      let prev = Hashtbl.find closed kv in
+      if not (better prev n) (* prev isn't better than n, re-open *)
+      then
+        begin
+          Hashtbl.replace closed kv n;
+          expand n
+        end
+      else []
+    with Not_found ->
+      Hashtbl.replace closed (key n) n;
+      expand n in
+  let rec search = function
+    | [] -> processClosed closed
+    | hd::tl ->
+      let edges = handleNode hd in
+      let children = List.map
+        (fun e -> { arrivedBy = Some e;
+                    tip = e.sink;
+                    encounteredDelta = hd.encounteredDelta || e.qual = Delta;})
+        edges in
+      tl @ children |> search in
+  search openList
+
 let preProcess (lhs : Term.term) (cond : Pc.cond) =
   let varTable = Hashtbl.create 100 in (* varName -> vars *)
   let addArg a =
@@ -85,10 +164,25 @@ let preProcess (lhs : Term.term) (cond : Pc.cond) =
   let varsByCond = List.map varsByAtom cond in
   let makeCond i e =
     let cond = Cond {position = i; vars = e;} in
-    addArg cond;
-    cond in
-  let condVars = List.mapi makeCond varsByCond in
-  (fun rhs -> ())
+    addArg cond in
+  List.iteri makeCond varsByCond;
+  let startingNodes =
+    List.map (fun v -> { arrivedBy = None; tip = v; encounteredDelta = false;})
+      lhsVars in
+  let lookup = breadthFirst startingNodes (fun v -> (expand varTable v.tip)) in
+  let generateMapping rhs =
+    let (_, args) = rhs in
+    let varsByArgs = varsByArg args in
+    let nodesByArgs =
+      List.map (fun vList ->
+        List.fold_left (fun accum e ->
+          try
+            (Utils.remdup (Hashtbl.find lookup e)) @ accum
+          with Not_found -> accum)
+          [] vList)
+        varsByArgs in
+    nodesByArgs
+  in generateMapping
 
 let processRule (rule : Comrule.rule) =
   List.map (preProcess rule.Comrule.lhs rule.Comrule.cond) rule.Comrule.rhss
@@ -106,7 +200,8 @@ let main () =
       Printf.printf "Processing %s\n\n" !filename;
       let entrFun, system = Parser.parseCint !filename Simple.Stmts in
       Printf.printf "%s\n" (Cint.toString system);
-      Printf.printf "Starting at %s\n" entrFun
+      Printf.printf "Starting at %s\n" entrFun;
+      List.map processRule system
     end
 
 let _ = main()
