@@ -25,13 +25,14 @@ module Make(CTRS : Ctrs.S) = struct
   module CTRS = CTRS
   module RuleT = CTRS.RuleT
   module RuleMap = CTRS.RuleMap
+  module FMap = Annot.FMap
   open Ctrs
 
 
   type t =
     { ctrs : CTRS.t ;
       cost : Expexp.expexp RuleMap.t ;
-      complexity : Complexity.complexity RuleMap.t ;
+      complexity : Complexity.t RuleMap.t ;
       leafCost : Expexp.expexp ;
     }
 
@@ -72,37 +73,50 @@ module Make(CTRS : Ctrs.S) = struct
     RuleMap.fold (fun r c res -> if c <> Complexity.Unknown then r::res else res) obl.complexity []
 
   (* Takes a function symbol f, and creates a dummy rule with head f. *)
-  let makeDummyRule f rule =
+  let makeDummyRules fs rule =
     (* is this correct? *)
     let vs = RuleT.getVars rule in
     let args = List.map Poly.fromVar vs in
-    let lhs = (f, args) in
-    let rhs = ("__dummyRhs", args) in
-    RuleT.createRule lhs [rhs] []
+    let make_dummy f =
+      let lhs = (f, args) in
+      let rhs = ("__dummyRhs", args) in
+      RuleT.createRule lhs [rhs] []
+    in
+    List.map make_dummy fs
     
   (* Takes a rule and, if the head symbol is "f", returns
      a cubic complexity, otherwise returns Unknown *)
-  let specialComp rule =
+  let initComp specs rule start =
     let f = RuleT.getLeftFun rule in
-    let (zero, one) = (Big_int.zero_big_int, Big_int.unit_big_int) in
-    let x_cube = ([(one,["x",3])],zero) in
-    if f = "f" then Complexity.P (Expexp.Pol x_cube)
-    else Complexity.Unknown
+    if FMap.mem f specs then
+      let cs = FMap.find f specs in
+      cs.Annot.complexity.Annot.upperTime
+    else if f = start then
+      Complexity.P Expexp.one
+    else
+      Complexity.Unknown
 
-  let getInitialObl rules start =
+  let spaceOrTimeWeight rule is_space =
+    let alloc_fun = "new" in
+    if RuleT.getLeftFun rule = alloc_fun || not is_space then
+      Expexp.one
+    else
+      Expexp.zero
+
+  let getInitialObl specs rules start =
     let open Expexp in
     let open CTRS in
     let rules = match rules with
       | [] -> []
-      | r :: _ -> makeDummyRule "f" r :: rules in
+      | r :: _ -> 
+        let keys = List.map fst (FMap.bindings specs) in
+        makeDummyRules keys r @ rules
+    in
     let (rules, initCost, initCompl) =
       List.fold_left
         (fun (rules, cost, compl) rule ->
-          if Term.getFun (RuleT.getLeft rule) = start then
-            (rule::rules, RuleMap.add rule one cost, RuleMap.add rule (Complexity.P one) compl)
-          else
-            (rule::rules, RuleMap.add rule one cost, RuleMap.add rule (specialComp rule) compl))
-            (* (rule::rules, RuleMap.add rule one cost, RuleMap.add rule Complexity.Unknown compl)) *)
+          (rule::rules, RuleMap.add rule (spaceOrTimeWeight rule false) cost,
+                        RuleMap.add rule (initComp specs rule start) compl))
         ([], RuleMap.empty, RuleMap.empty) rules in
     {
       ctrs = { rules = rules ;
@@ -110,7 +124,7 @@ module Make(CTRS : Ctrs.S) = struct
              } ;
       cost = initCost ;
       complexity = initCompl ;
-      leafCost = Expexp.zero ;
+      leafCost = zero ;
     }
 
   let haveSameComplexities obl1 obl2 =
@@ -124,10 +138,10 @@ module type S =
       type t = {
         ctrs : CTRS.t;
         cost : Expexp.expexp CTRS.RuleMap.t;
-        complexity : Complexity.complexity CTRS.RuleMap.t;
+        complexity : Complexity.t CTRS.RuleMap.t;
         leafCost : Expexp.expexp;
       }
-      val getComplexity : t -> CTRS.RuleT.rule -> Complexity.complexity
+      val getComplexity : t -> CTRS.RuleT.rule -> Complexity.t
       val getCost : t -> CTRS.RuleT.rule -> Expexp.expexp
       val toStringPrefix : string -> t -> string
       val toString : t -> string
@@ -136,7 +150,7 @@ module type S =
       val hasUnknownComplexity : t -> CTRS.RuleT.rule -> bool
       val getUnknownComplexityRules : t -> CTRS.RuleT.rule list
       val getKnownComplexityRules : t -> CTRS.RuleT.rule list
-      val getInitialObl : CTRS.RuleT.rule list -> Term.funSym -> t
+      val getInitialObl : Annot.specMap -> CTRS.RuleT.rule list -> Term.funSym -> t
       val haveSameComplexities : t -> t -> bool
     end
 
