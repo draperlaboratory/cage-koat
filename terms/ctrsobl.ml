@@ -71,16 +71,38 @@ module Make(CTRS : Ctrs.S) = struct
   let getKnownComplexityRules obl =
     RuleMap.fold (fun r c res -> if c <> Complexity.Unknown then r::res else res) obl.complexity []
 
+  (* Takes a function symbol f, and creates a dummy rule with head f. *)
+  let makeDummyRule f rule =
+    (* is this correct? *)
+    let vs = RuleT.getVars rule in
+    let args = List.map Poly.fromVar vs in
+    let lhs = (f, args) in
+    let rhs = ("__dummyRhs", args) in
+    RuleT.createRule lhs [rhs] []
+    
+  (* Takes a rule and, if the head symbol is "f", returns
+     a cubic complexity, otherwise returns Unknown *)
+  let specialComp rule =
+    let f = RuleT.getLeftFun rule in
+    let (zero, one) = (Big_int.zero_big_int, Big_int.unit_big_int) in
+    let x_cube = ([(one,["x",3])],zero) in
+    if f = "f" then Complexity.P (Expexp.Pol x_cube)
+    else Complexity.Unknown
+
   let getInitialObl rules start =
     let open Expexp in
     let open CTRS in
+    let rules = match rules with
+      | [] -> []
+      | r :: _ -> makeDummyRule "f" r :: rules in
     let (rules, initCost, initCompl) =
       List.fold_left
         (fun (rules, cost, compl) rule ->
           if Term.getFun (RuleT.getLeft rule) = start then
             (rule::rules, RuleMap.add rule one cost, RuleMap.add rule (Complexity.P one) compl)
           else
-            (rule::rules, RuleMap.add rule one cost, RuleMap.add rule Complexity.Unknown compl))
+            (rule::rules, RuleMap.add rule one cost, RuleMap.add rule (specialComp rule) compl))
+            (* (rule::rules, RuleMap.add rule one cost, RuleMap.add rule Complexity.Unknown compl)) *)
         ([], RuleMap.empty, RuleMap.empty) rules in
     {
       ctrs = { rules = rules ;
