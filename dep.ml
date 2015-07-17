@@ -30,6 +30,7 @@ type edge = {
 
 type node = {
   arrivedBy : edge option;
+  parent : node option;
   tip : var;
   encounteredDelta : bool;
 }
@@ -61,6 +62,11 @@ let edgeToString e =
     (varToString e.source)
     (varToString e.sink)
     (qualToString e.qual)
+
+let pathToString (n : node) =
+  match n.arrivedBy with
+  | None -> ""
+  | Some e -> Printf.sprintf "%s" (edgeToString e)
 
 let key (n : node) = n.tip
 let better (a : node) (b : node) =
@@ -138,6 +144,7 @@ let breadthFirst (openList : node list) (expand : node -> edge list) =
       let edges = handleNode hd in
       let children = List.map
         (fun e -> { arrivedBy = Some e;
+                    parent = Some hd;
                     tip = e.sink;
                     encounteredDelta = hd.encounteredDelta || e.qual = Delta;})
         edges in
@@ -167,7 +174,7 @@ let preProcess (lhs : Term.term) (cond : Pc.cond) =
     addArg cond in
   List.iteri makeCond varsByCond;
   let startingNodes =
-    List.map (fun v -> { arrivedBy = None; tip = v; encounteredDelta = false;})
+    List.map (fun v -> { arrivedBy = None; parent = None; tip = v; encounteredDelta = false;})
       lhsVars in
   let lookup = breadthFirst startingNodes (fun v -> (expand varTable v.tip)) in
   let generateMapping rhs =
