@@ -63,12 +63,17 @@ let edgeToString e =
     (varToString e.sink)
     (qualToString e.qual)
 
-let pathToString (n : node) =
-  match n.arrivedBy with
-  | None -> ""
-  | Some e -> Printf.sprintf "%s" (edgeToString e)
+let rec pathToString (n : node) =
+    match n.arrivedBy with
+  | None -> varToString n.tip
+  | Some e -> Printf.sprintf "%s\t%s"
+    (match n.parent with
+    | None -> varToString n.tip
+    | Some p -> pathToString p) (edgeToString e)
 
+(* this is wrong, it has to encompass the tip! *)
 let key (n : node) = n.tip
+
 let better (a : node) (b : node) =
   a.encounteredDelta ||
     a.encounteredDelta = b.encounteredDelta
@@ -113,6 +118,7 @@ let expand (varTable : (string, var list) Hashtbl.t) var =
 let processClosed (closed : (var, node) Hashtbl.t) =
   let lookup = Hashtbl.create 100 in
   Hashtbl.iter (fun var node ->
+    Printf.eprintf "Processing %s\n" (pathToString node);
     let vars = varsOf var in
     List.iter (fun v ->
       try
