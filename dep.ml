@@ -35,6 +35,14 @@ type node = {
   encounteredDelta : bool;
 }
 
+type ruleTrans = {
+  lName : string;
+  lpos : int;
+  rName : string;
+  rpos : int;
+  qual : qual;
+}
+
 let varsToString vList =
   List.fold_left (fun accum v ->
     if accum = ""
@@ -43,7 +51,6 @@ let varsToString vList =
 
 let argumentToString (arg : argument) =
   Printf.sprintf "%s %i %s" arg.fName arg.position (varsToString arg.vars)
-
 
 let condToString (cond : cond) =
   Printf.sprintf "cond %i %s" cond.position (varsToString cond.vars)
@@ -56,6 +63,9 @@ let qualToString = function
   | Equal -> "Equal"
   | Delta -> "Delta"
   | Unkown -> "?"
+
+let ruleTransToString rt =
+  Printf.sprintf "%s %i %s %s %i" rt.lName rt.lpos (qualToString rt.qual) rt.rName rt.rpos
 
 let edgeToString e =
   Printf.sprintf "%s -> %s : %s"
@@ -71,14 +81,18 @@ let rec pathToString (n : node) =
     | None -> varToString n.tip
     | Some p -> pathToString p) (edgeToString e)
 
-(* this is wrong, it has to encompass the tip! *)
-let key (n : node) = n.tip
+let rec getRoot (n : node) =
+  match n.parent with
+  | None -> n
+  | Some n' -> getRoot n'
+
+(* this is wrong, it has to encompass the root! *)
+let key (n : node) =
+  n.tip
 
 let better (a : node) (b : node) =
   a.encounteredDelta ||
     a.encounteredDelta = b.encounteredDelta
-
-type path = edge list
 
 let varsOf = function
   | Argument a -> a.vars
@@ -118,7 +132,7 @@ let expand (varTable : (string, var list) Hashtbl.t) var =
 let processClosed (closed : (var, node) Hashtbl.t) =
   let lookup = Hashtbl.create 100 in
   Hashtbl.iter (fun var node ->
-    Printf.eprintf "Processing %s\n" (pathToString node);
+    Printf.eprintf "Processing var: %s\n%s\n\n" (varToString var) (pathToString node);
     let vars = varsOf var in
     List.iter (fun v ->
       try
@@ -184,20 +198,36 @@ let preProcess (lhs : Term.term) (cond : Pc.cond) =
       lhsVars in
   let lookup = breadthFirst startingNodes (fun v -> (expand varTable v.tip)) in
   let generateMapping rhs =
-    let (_, args) = rhs in
+    Printf.eprintf "RHS: %s\n" (Term.toString rhs);
+    let (rname, args) = rhs in
     let varsByArgs = varsByArg args in
-    let nodesByArgs =
-      List.map (fun vList ->
+    let relations =
+      Utils.concatMapi (fun argPos vList  ->
+        let uniqueHits =
         List.fold_left (fun accum e ->
           try
-            (Utils.remdup (Hashtbl.find lookup e)) @ accum
-          with Not_found -> accum)
-          [] vList)
+            let hits = Hashtbl.find lookup e in
+            (Utils.remdup hits) @ accum
+          with Not_found ->
+            accum)
+          [] vList in
+        List.map (fun node ->
+          let root = getRoot node in
+          match root.tip with
+          | Cond c -> failwith "Conds can't be roots!"
+          | Argument a ->
+            {rName = rname;
+             rpos = argPos;
+             qual = if node.encounteredDelta then Delta else Equal;
+             lName = a.fName;
+             lpos = a.position}) uniqueHits)
         varsByArgs in
-    nodesByArgs
+    List.iter (fun r -> Printf.eprintf "%s\n" (ruleTransToString r)) relations;
+    relations
   in generateMapping
 
 let processRule (rule : Comrule.rule) =
+  Printf.eprintf "Rule: %s\n" (Comrule.toString rule);
   List.map (preProcess rule.Comrule.lhs rule.Comrule.cond) rule.Comrule.rhss
 
 let main () =
@@ -213,7 +243,6 @@ let main () =
       Printf.printf "Processing %s\n\n" !filename;
       let entrFun, system = Parser.parseCint !filename Simple.Stmts in
       Printf.printf "%s\n" (Cint.toString system);
-      Printf.printf "Starting at %s\n" entrFun;
       List.map processRule system
     end
 
