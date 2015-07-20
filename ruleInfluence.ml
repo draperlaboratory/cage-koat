@@ -216,7 +216,7 @@ let preProcess (lhs : Term.term) (cond : Pc.cond) =
 
 let processRule (rule : Comrule.rule) =
   Printf.eprintf "Rule: %s\n" (Comrule.toString rule);
-  List.map (preProcess rule.Comrule.lhs rule.Comrule.cond) rule.Comrule.rhss
+  Utils.concatMap (preProcess rule.Comrule.lhs rule.Comrule.cond) rule.Comrule.rhss
 
 let main () =
   let filename = ref "" in
@@ -230,7 +230,5 @@ let main () =
     begin
       Printf.printf "Processing %s\n\n" !filename;
       let entrFun, system = Parser.parseCint !filename Simple.Stmts in
-      List.map processRule system
+      Utils.concatMap processRule system
     end
-
-let _ = main()
