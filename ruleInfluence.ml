@@ -49,14 +49,6 @@ let varToString = function
   | Argument a -> argumentToString a
   | Cond c -> condToString c
 
-let qualToString = function
-  | Equal -> "Equal"
-  | Delta -> "Delta"
-  | Unkown -> "?"
-
-let ruleTransToString rt =
-  Printf.sprintf "%s %i %s %s %i" rt.lName rt.lpos (qualToString rt.qual) rt.rName rt.rpos
-
 let edgeToString e =
   Printf.sprintf "%s -> %s : %s"
     (varToString e.source)
@@ -211,11 +203,11 @@ let preProcess (lhs : Term.term) (cond : Pc.cond) =
           match root.tip with
           | Cond c -> failwith "Conds can't be roots!"
           | Argument a ->
-            {rName = rname;
-             rpos = argPos;
-             qual = if not node.encounteredDelta then Equal else Delta;
-             lName = a.fName;
-             lpos = a.position}) uniqueHits)
+            {lPos = {fName = a.fName;
+                     pos = a.position;};
+             rPos = {fName = rname;
+                     pos = argPos;};
+             qual = if not node.encounteredDelta then Equal else Delta;}) uniqueHits)
         varsByArgs in
     let relations' = Utils.remdup relations in
     List.iter (fun r -> Printf.eprintf "%s\n" (ruleTransToString r)) relations';
