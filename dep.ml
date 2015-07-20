@@ -218,7 +218,7 @@ let preProcess (lhs : Term.term) (cond : Pc.cond) =
           | Argument a ->
             {rName = rname;
              rpos = argPos;
-             qual = if node.encounteredDelta then Delta else Equal;
+             qual = if not node.encounteredDelta then Equal else Delta;
              lName = a.fName;
              lpos = a.position}) uniqueHits)
         varsByArgs in
