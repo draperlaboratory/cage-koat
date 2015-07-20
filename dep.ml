@@ -88,7 +88,8 @@ let rec getRoot (n : node) =
 
 (* this is wrong, it has to encompass the root! *)
 let key (n : node) =
-  n.tip
+  let root = getRoot n in
+  (root.tip, n.tip)
 
 let better (a : node) (b : node) =
   a.encounteredDelta ||
@@ -129,11 +130,11 @@ let expand (varTable : (string, var list) Hashtbl.t) var =
   let adjacent = List.fold_left filterConcat [] touches |> Utils.remdup in
   List.map (fun dest -> {source = var; sink = dest; qual = Unkown;}) adjacent
 
-let processClosed (closed : (var, node) Hashtbl.t) =
+let processClosed (closed : ((var * var), node) Hashtbl.t) =
   let lookup = Hashtbl.create 100 in
-  Hashtbl.iter (fun var node ->
-    Printf.eprintf "Processing var: %s\n%s\n\n" (varToString var) (pathToString node);
-    let vars = varsOf var in
+  Hashtbl.iter (fun (rootVars, tipVars) node ->
+    Printf.eprintf "Processing var: %s\n%s\n\n" (varToString tipVars) (pathToString node);
+    let vars = varsOf tipVars in
     List.iter (fun v ->
       try
         let prev = Hashtbl.find lookup v in
