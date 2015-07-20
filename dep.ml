@@ -43,6 +43,8 @@ type ruleTrans = {
   qual : qual;
 }
 
+(** Debug prints **)
+
 let varsToString vList =
   List.fold_left (fun accum v ->
     if accum = ""
@@ -80,6 +82,8 @@ let rec pathToString (n : node) =
     (match n.parent with
     | None -> varToString n.tip
     | Some p -> pathToString p) (edgeToString e)
+
+(** Search Code **)
 
 let rec getRoot (n : node) =
   match n.parent with
@@ -133,7 +137,7 @@ let expand (varTable : (string, var list) Hashtbl.t) var =
 let processClosed (closed : ((var * var), node) Hashtbl.t) =
   let lookup = Hashtbl.create 100 in
   Hashtbl.iter (fun (rootVars, tipVars) node ->
-    Printf.eprintf "Processing var: %s\n%s\n\n" (varToString tipVars) (pathToString node);
+(*    Printf.eprintf "Processing var: %s\n%s\n\n" (varToString tipVars) (pathToString node);*)
     let vars = varsOf tipVars in
     List.iter (fun v ->
       try
@@ -171,6 +175,8 @@ let breadthFirst (openList : node list) (expand : node -> edge list) =
         edges in
       tl @ children |> search in
   search openList
+
+(** Find the connectivity in a rule **)
 
 let preProcess (lhs : Term.term) (cond : Pc.cond) =
   let varTable = Hashtbl.create 100 in (* varName -> vars *)
@@ -223,8 +229,9 @@ let preProcess (lhs : Term.term) (cond : Pc.cond) =
              lName = a.fName;
              lpos = a.position}) uniqueHits)
         varsByArgs in
-    List.iter (fun r -> Printf.eprintf "%s\n" (ruleTransToString r)) relations;
-    relations
+    let relations' = Utils.remdup relations in
+    List.iter (fun r -> Printf.eprintf "%s\n" (ruleTransToString r)) relations';
+    relations'
   in generateMapping
 
 let processRule (rule : Comrule.rule) =
@@ -243,7 +250,6 @@ let main () =
     begin
       Printf.printf "Processing %s\n\n" !filename;
       let entrFun, system = Parser.parseCint !filename Simple.Stmts in
-      Printf.printf "%s\n" (Cint.toString system);
       List.map processRule system
     end
 
