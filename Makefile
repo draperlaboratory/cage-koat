@@ -41,6 +41,9 @@ kittel.d.byte: make_git_sha1 force_look
 koat: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koat.native
 
+ruleInfluence: ruleInfluence.ml
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} ruleInfluence.native
+
 dep: dep.ml
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} dep.native
 
