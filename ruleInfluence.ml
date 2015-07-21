@@ -1,4 +1,3 @@
-(* Entry point for information flow module *)
 open DepStructs
 
 let usage = ""
@@ -185,7 +184,7 @@ let preProcess (lhs : Term.term) (cond : Pc.cond) =
       lhsVars in
   let lookup = breadthFirst startingNodes (fun v -> (expand varTable v.tip)) in
   let generateMapping rhs =
-    Printf.eprintf "RHS: %s\n" (Term.toString rhs);
+    (* Printf.eprintf "RHS: %s\n" (Term.toString rhs); *)
     let (rname, args) = rhs in
     let varsByArgs = varsByArg args in
     let relations =
@@ -210,13 +209,13 @@ let preProcess (lhs : Term.term) (cond : Pc.cond) =
              qual = if not node.encounteredDelta then Equal else Delta;}) uniqueHits)
         varsByArgs in
     let relations' = Utils.remdup relations in
-    List.iter (fun r -> Printf.eprintf "%s\n" (ruleTransToString r)) relations';
+    (*List.iter (fun r -> Printf.eprintf "%s\n" (ruleTransToString r)) relations';*)
     relations'
   in generateMapping
 
 let processRule (rule : Comrule.rule) =
-  Printf.eprintf "Rule: %s\n" (Comrule.toString rule);
   Utils.concatMap (preProcess rule.Comrule.lhs rule.Comrule.cond) rule.Comrule.rhss
+
 
 let main () =
   let filename = ref "" in
