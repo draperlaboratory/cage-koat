@@ -92,7 +92,6 @@ let doMerges (graph : reachableGraph) (src : argPos) =
 
 
 let processRelationships relationships =
-  ignore(doVis relationships "foo.dot");
   let graph = Hashtbl.create 100 in
   let starts =
     List.map
@@ -112,6 +111,7 @@ let rec saturate graph startingPoints =
   if recurP then
     saturate graph startingPoints
 
+
 let main () =
   let filename = ref "" in
   Arg.parse [] (fun f -> filename := f) usage;
@@ -125,7 +125,9 @@ let main () =
       Printf.printf "aoenuthoaensthu %s\n\n" !filename;
       let entrFun, system = Parser.parseCint !filename Simple.Stmts in
       let relationships = Utils.concatMap RuleInfluence.processRule system in
+      ignore(doVis relationships "foo.dot");
       processRelationships relationships
     end
+
 
 let _ = main ()

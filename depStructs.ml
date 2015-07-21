@@ -100,7 +100,14 @@ module ArgPosGraph = Graph.Imperative.Digraph.ConcreteLabeled(ArgPosNodes(Fnh))
 
 module Vis = Graph.Graphviz.Dot(struct
   include ArgPosGraph (* use the graph module from above *)
-  let edge_attributes _ = []
+  let red = `Color 0xFF0000
+  and green = `Color 0x00FF00
+  and blue = `Color 0x0000FF
+  let edge_attributes e =
+    match ArgPosGraph.E.label e with
+    | Unkown -> [`Label " Unknown "; `Style `Dotted ; red]
+    | Equal -> [`Label " = "; `Style `Solid; blue ]
+    | Delta -> [`Label " d "; `Style `Bold; green ]
   let default_edge_attributes _ = []
   let get_subgraph _ = None
   let vertex_attributes _ = [`Shape `Box]
