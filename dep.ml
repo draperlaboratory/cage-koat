@@ -90,7 +90,9 @@ let doMerges (graph : reachableGraph) (src : argPos) =
   let srcReach = Hashtbl.find graph src in
   Hashtbl.fold (fun _ rp accum -> merge graph src rp || accum) srcReach false
 
-
+(** Given the list of transition relationships found by analyzing
+    the rules one by one, builds an initial representation of the rule graph,
+    appropriate for determining information flow. *)
 let processRelationships relationships =
   let graph = Hashtbl.create 100 in
   let starts =
@@ -103,6 +105,11 @@ let processRelationships relationships =
       relationships in
   starts, graph
 
+(** convert a set of relationships into a .dot file so that we can look at them. *)
+let visualizeInformationFlow relationships inputFname =
+      doVis relationships inputFname
+
+(** compose relationships between rules until we hit a fixpoint *)
 let rec saturate graph startingPoints =
   let recurP =
     List.fold_left
