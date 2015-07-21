@@ -91,7 +91,12 @@ struct
   let compare a b = argPosCompare (F.getHash ()) a b
 end
 
-module ArgPosGraph = Graph.Imperative.Digraph.Concrete(ArgPosNodes(Fnh))
+module ArgPosGraph = Graph.Imperative.Digraph.ConcreteLabeled(ArgPosNodes(Fnh))
+  (struct
+    type t = qual
+    let compare q1 q2 = -1
+    let default = Unkown
+  end)
 
 module Vis = Graph.Graphviz.Dot(struct
   include ArgPosGraph (* use the graph module from above *)
@@ -112,9 +117,10 @@ let doVis (rts : ruleTrans list) fname =
     Printf.eprintf "Adding %s\n" (ruleTransToString rt);
     let lVert = ArgPosGraph.V.create rt.lPos
     and rVert = ArgPosGraph.V.create rt.rPos in
+    let edge = ArgPosGraph.E.create lVert rt.qual rVert in
     ArgPosGraph.add_vertex g lVert;
     ArgPosGraph.add_vertex g rVert;
-    ArgPosGraph.add_edge g lVert rVert in
+    ArgPosGraph.add_edge_e g edge in
   let fdesc = Unix.openfile fname [Unix.O_CREAT; Unix.O_WRONLY;] 0o640 in
   let fStream = Unix.out_channel_of_descr fdesc in
   List.iter addNodes rts;
