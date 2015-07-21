@@ -7,39 +7,6 @@ type reachablePosition = {
   qual : qual;
 }
 
-type fNameHash = {
-  maxFName : int;
-  mapping : (string,int) Hashtbl.t;
-}
-
-(** For visualization, use with ocamlGraph **)
-let makeFNameHash (rts : ruleTrans list) =
-  let mapping = Hashtbl.create 10
-  and v = ref 0 in
-  let add s =
-    if not (Hashtbl.mem mapping s) then
-      begin
-        Hashtbl.replace mapping s !v;
-        v := !v + 1
-      end in
-  let addRT (rt : ruleTrans) =
-    add rt.lPos.fName;
-    add rt.rPos.fName in
-  List.iter addRT rts;
-  {maxFName = !v; mapping = mapping;}
-
-let argPosHash (fnh : fNameHash) (ap : argPos) =
-  ap.pos * fnh.maxFName + (Hashtbl.find fnh.mapping ap.fName)
-
-let argPosEq (a : argPos) (b : argPos) =
-  a.pos = b.pos && a.fName = b.fName
-
-let argPosCompare (fnh : fNameHash) a b =
-  let hash = argPosHash fnh in
-  compare (hash a) (hash b)
-
-
-
 type reachablePositions = (argPos, reachablePosition) Hashtbl.t
 type reachableGraph = (argPos, reachablePositions) Hashtbl.t
 
@@ -125,6 +92,7 @@ let doMerges (graph : reachableGraph) (src : argPos) =
 
 
 let processRelationships relationships =
+  ignore(doVis relationships "foo.dot");
   let graph = Hashtbl.create 100 in
   let starts =
     List.map

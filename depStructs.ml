@@ -21,7 +21,7 @@ let qualToString = function
   | Unkown -> "?"
 
 let argPosToString ap =
-  Printf.sprintf "%s %i" ap.fName ap.pos
+  Printf.sprintf "%s_%i" ap.fName ap.pos
 
 let ruleTransToString rt =
   Printf.sprintf "%s %s %s"
@@ -68,7 +68,7 @@ end = struct
   let storedHash = ref None
   let getHash () =
     match !storedHash with
-    | None -> raise Not_found
+    | None -> (Printf.eprintf "Couldn't find Function Sym Hash!\n"; raise Not_found)
     | Some h -> h
   let setHash fnh =
     storedHash := Some fnh
@@ -86,12 +86,12 @@ module ArgPosNodes (F : Hashed) : sig
 end =
 struct
   type t = argPos
-  let equal = argPosEq
-  let hash = argPosHash (F.getHash ())
-  let compare = argPosCompare (F.getHash ())
+  let equal a b = argPosEq a b
+  let hash el = argPosHash (F.getHash ()) el
+  let compare a b = argPosCompare (F.getHash ()) a b
 end
 
-module ArgPosGraph = Graph.Imperative.Graph.Concrete(ArgPosNodes(Fnh))
+module ArgPosGraph = Graph.Imperative.Digraph.Concrete(ArgPosNodes(Fnh))
 
 module Vis = Graph.Graphviz.Dot(struct
   include ArgPosGraph (* use the graph module from above *)
@@ -105,13 +105,19 @@ module Vis = Graph.Graphviz.Dot(struct
 end)
 
 let doVis (rts : ruleTrans list) fname =
+  let fnh = makeFNameHash rts in
+  Fnh.setHash fnh;
   let g =  ArgPosGraph.create () in
   let addNodes rt =
+    Printf.eprintf "Adding %s\n" (ruleTransToString rt);
     let lVert = ArgPosGraph.V.create rt.lPos
     and rVert = ArgPosGraph.V.create rt.rPos in
     ArgPosGraph.add_vertex g lVert;
     ArgPosGraph.add_vertex g rVert;
     ArgPosGraph.add_edge g lVert rVert in
+  let fdesc = Unix.openfile fname [Unix.O_CREAT; Unix.O_WRONLY;] 0o640 in
+  let fStream = Unix.out_channel_of_descr fdesc in
   List.iter addNodes rts;
-  Vis.output_graph fname g;
+  Vis.output_graph fStream g;
+  Unix.close fdesc;
   g
