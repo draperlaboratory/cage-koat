@@ -109,8 +109,11 @@ module Vis = Graph.Graphviz.Dot(struct
     | Equal -> [`Label " = "; `Style `Solid; blue ]
     | Delta -> [`Label " d "; `Style `Bold; green ]
   let default_edge_attributes _ = []
-  let get_subgraph _ = None
-  let vertex_attributes _ = [`Shape `Box]
+  let get_subgraph vertex =
+    let sgName = vertex.fName in
+    Some { Graph.Graphviz.DotAttributes.sg_name = sgName;
+           Graph.Graphviz.DotAttributes.sg_attributes = [`Label sgName]; }
+  let vertex_attributes v = [`Shape `Box; `Label (Printf.sprintf "%i" v.pos)]
   let vertex_name v = argPosToString v
   let default_vertex_attributes _ = []
   let graph_attributes _ = []
