@@ -107,7 +107,7 @@ let processRelationships relationships =
 
 (** convert a set of relationships into a .dot file so that we can look at them. *)
 let visualizeInformationFlow relationships inputFname =
-      doVis relationships inputFname
+  ignore(doVis relationships inputFname)
 
 (** compose relationships between rules until we hit a fixpoint *)
 let rec saturate graph startingPoints =
@@ -117,6 +117,17 @@ let rec saturate graph startingPoints =
         doMerges graph updatePos || accum) false startingPoints in
   if recurP then
     saturate graph startingPoints
+
+(** Given a list of relationships mined from the rules of the transition system,
+    produce a graph, where the nodes are functions * argument positions, and the
+    edges represent influence between these argument positions for all rules. In
+    particular, we care about whether or not there is a difference between the
+    arguments.
+*)
+let computeGraph relationships =
+  let starts, graph = processRelationships relationships in
+  saturate graph starts;
+  graph
 
 
 let main () =
