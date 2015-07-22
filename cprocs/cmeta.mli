@@ -13,57 +13,30 @@ module SlicingProc :
     val process : CTRSObl.t -> (CTRSObl.t * (int -> int -> string)) option
   end
 
+type tgraph = Tgraph.G.t * (Tgraph.G.vertex * Cseparate.TGraph.r) array
+type rvgraph = (Tgraph.G.t * (Tgraph.G.vertex * GSC.global_trans_data) array) option
+
 val check : Rule.rule list -> unit
 val checkRules : int -> Poly.var list -> Rule.rule list -> unit
-val checkStartCondition :
-  Tgraph.G.t * (Tgraph.G.vertex * TGraph.r) array ->
+val checkStartCondition : Tgraph.G.t * (Tgraph.G.vertex * TGraph.r) array ->
   TGraph.r list -> Term.funSym -> unit
-val process :
-  RuleT.rule list ->
-  int -> Term.funSym -> (Complexity.complexity * (unit -> string)) option
-val processInner :
-  Cseparate.CTRSObl.t ->
-  Tgraph.G.t * (Tgraph.G.vertex * Cseparate.TGraph.r) array ->
-  (Tgraph.G.t * (Tgraph.G.vertex * GSC.global_trans_data) array) option ->
-  (Complexity.complexity *
-   Cseparate.GSC.LSC.size_data Cseparate.GSC.RVMap.t * (unit -> string))
-  option
-val getOverallCost :
-  Tgraph.G.t * (Tgraph.G.vertex * Cseparate.TGraph.r) array ->
-  Cseparate.GSC.LSC.size_data GSC.RVMap.t ->
-  CTRSObl.t * (Tgraph.G.t * (Tgraph.G.vertex * Cseparate.TGraph.r) array) *
-  (Tgraph.G.t * (Tgraph.G.vertex * GSC.global_trans_data) array) option * 
-  int -> Complexity.complexity
-val getProof :
-  CTRSObl.t * (Tgraph.G.t * (Tgraph.G.vertex * Cseparate.TGraph.r) array) *
-  (Tgraph.G.t * (Tgraph.G.vertex * GSC.global_trans_data) array) option * 
-  int ->
+val process : RuleT.rule list -> int -> Term.funSym ->
+  (Complexity.complexity * (unit -> string)) option
+val processInner : Cseparate.CTRSObl.t -> tgraph -> rvgraph ->
+  (Complexity.complexity * Cseparate.GSC.LSC.size_data Cseparate.GSC.RVMap.t * (unit -> string))
+    option
+val getOverallCost : tgraph -> Cseparate.GSC.LSC.size_data GSC.RVMap.t ->
+  CTRSObl.t * tgraph * rvgraph * int -> Complexity.complexity
+val getProof : CTRSObl.t * tgraph * rvgraph *  int ->
   int list -> int list -> (int -> int -> string) list -> unit -> string
-val attachProofs :
-  int list -> int list -> (int -> int -> string) list -> string
-val update :
-  CTRSObl.t * (Tgraph.G.t * (Tgraph.G.vertex * Cseparate.TGraph.r) array) *
-  (Tgraph.G.t * (Tgraph.G.vertex * GSC.global_trans_data) array) option ->
+val attachProofs : int list -> int list -> (int -> int -> string) list -> string
+val update : CTRSObl.t * tgraph * rvgraph ->
   (int -> int -> string) -> int -> unit
-val run :
-  (CTRSObl.t ->
-   Tgraph.G.t * (Tgraph.G.vertex * Cseparate.TGraph.r) array ->
-   (Tgraph.G.t * (Tgraph.G.vertex * GSC.global_trans_data) array) option ->
-   ((CTRSObl.t *
-     (Tgraph.G.t * (Tgraph.G.vertex * Cseparate.TGraph.r) array) *
-     (Tgraph.G.t * (Tgraph.G.vertex * GSC.global_trans_data) array) option) *
-    (int -> int -> string))
-   option) ->
+val run : (CTRSObl.t -> tgraph -> rvgraph ->
+   ((CTRSObl.t * tgraph * rvgraph) * (int -> int -> string)) option) ->
   unit
-val run_ite :
-  (CTRSObl.t ->
-   Tgraph.G.t * (Tgraph.G.vertex * Cseparate.TGraph.r) array ->
-   (Tgraph.G.t * (Tgraph.G.vertex * GSC.global_trans_data) array) option ->
-   ((CTRSObl.t *
-     (Tgraph.G.t * (Tgraph.G.vertex * Cseparate.TGraph.r) array) *
-     (Tgraph.G.t * (Tgraph.G.vertex * GSC.global_trans_data) array) option) *
-    (int -> int -> string))
-   option) ->
+val run_ite : (CTRSObl.t -> tgraph -> rvgraph ->
+               ((CTRSObl.t * tgraph * rvgraph) * (int -> int -> string)) option) ->
   (unit -> unit) -> (unit -> unit) -> unit
 val insertRVGraphIfNeeded : unit -> unit
 val doInitial : unit -> unit
