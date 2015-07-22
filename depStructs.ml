@@ -131,7 +131,15 @@ module Vis = Graph.Graphviz.Dot(struct
   let graph_attributes _ = []
 end)
 
+let convertFname (path : string) =
+  let dname = Filename.dirname path
+  and fname = Filename.basename path in
+  assert (Filename.check_suffix fname ".koat");
+  let base = Filename.chop_suffix fname ".koat" in
+  dname ^ "/" ^ base ^ ".dot"
+
 let doVis (rts : ruleTrans list) fname =
+  let fname = convertFname fname in
   let fnh = makeFNameHash rts in
   Fnh.setHash fnh;
   let g =  ArgPosGraph.create () in
