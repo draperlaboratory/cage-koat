@@ -12,9 +12,9 @@ type rulePos =
 | Cond of argument
 
 let rulePosToString = function
-  | LHS a -> Printf.sprintf "LHS %i %s" a.pos (Poly.toString a.var)
-  | RHS a -> Printf.sprintf "RHS %i %s" a.pos  (Poly.toString a.var)
-  | Cond a -> Printf.sprintf "Cond %i %s" a.pos  (Poly.toString a.var)
+  | LHS a -> Printf.sprintf "LHS %i %s %s" a.pos (Poly.toString a.var) (qualToString a.qual)
+  | RHS a -> Printf.sprintf "RHS %i %s %s" a.pos  (Poly.toString a.var) (qualToString a.qual)
+  | Cond a -> Printf.sprintf "Cond %i %s %s" a.pos  (Poly.toString a.var) (qualToString a.qual)
 
 let getPoly = function
   | LHS a
@@ -41,10 +41,16 @@ end
 
 module VarNodes (M : ArgOffset) = struct
   type t = rulePos
+  let qualOffset a = if a.qual = Equal then 0 else 1
+  let myIndex a = 2 * a.pos + (qualOffset a)
+  let lhsOffset = 0
+  let condOffset = 2 * M.lhsArgs
+  let rhsOffset = condOffset + 2 * M.condArgs
   let hash = function
-    | LHS a -> a.pos
-    | Cond a -> M.lhsArgs + a.pos
-    | RHS a -> a.pos + M.lhsArgs + M.condArgs
+  (* lhs 0 Equal -> 0, lhs 0 Delta -> 1 ... *)
+    | LHS a ->  lhsOffset  + (myIndex a)
+    | Cond a -> condOffset + (myIndex a)
+    | RHS a ->  rhsOffset  + (myIndex a)
   let compare a b = compare (hash a) (hash b)
   let equal a b = match (a,b) with
     | LHS a1, LHS a2
@@ -106,46 +112,63 @@ let processRule (rule : Comrule.rule) =
     RuleGraph.add_edge_e graph edge1;
     RuleGraph.add_edge_e graph edge2;
     (a1,a2) in
-  let addEdge rp1 rp2 =
+  let addEdge ?(graph = graph) rp1 rp2 =
     Printf.eprintf "looking for connection between %s %s\n" (rulePosToString rp1) (rulePosToString rp2);
     if shareVars rp1 rp2 then
       begin
         let qual = if Poly.compare (getPoly rp1) (getPoly rp2) = 0 then
             Equal else
             Delta in
+        let rp1' = if qual = (getQual rp1) then rp1
+          else withQual qual rp1 in
         let rp2' =
           if qual = (getQual rp2) then rp2
           else withQual qual rp2 in
         Printf.eprintf "Found connection %s\n" (qualToString qual);
-        let edge = RuleGraph.E.create rp1 qual rp2' in
-          RuleGraph.add_edge_e graph edge
+        let edge = RuleGraph.E.create rp1 qual rp2'
+        and edge2 = RuleGraph.E.create rp2' qual rp1
+        and edge3 = RuleGraph.E.create rp1' qual rp2
+        and edge4 = RuleGraph.E.create rp2 qual rp1' in
+        Printf.eprintf "adding %s\n" (rulePosToString rp2');
+        RuleGraph.add_edge_e graph edge;
+        RuleGraph.add_edge_e graph edge2;
+        RuleGraph.add_edge_e graph edge3;
+        RuleGraph.add_edge_e graph edge4
       end in
-  let joinToCond (lhsNode : rulePos) ((c1 : rulePos), (c2 : rulePos)) =
+  let joinToCond ?(graph = graph) (lhsNode : rulePos) ((c1 : rulePos), (c2 : rulePos)) =
     addEdge lhsNode c1;
-    addEdge lhsNode c2 in
+    addEdge lhsNode c2  in
   let (lhsNodes : rulePos list) = List.mapi lhsAdd lhsArgs
   and (condNodes : (rulePos * rulePos) list) = List.mapi condAdd cond in
   List.iter (fun lhsN -> List.iter (joinToCond lhsN) condNodes) lhsNodes;
-  let reachable =
-    List.map (fun lhsN -> Reachability.analyze (Node.equal lhsN) graph)
-      lhsNodes in
   let dealWithRHS (rFName, rArgs) =
-    Utils.concatMapi
-      (fun leftIndex reachable ->
-        let lpos = { fName = lfName; pos = leftIndex; } in
-        List.fold_left
-        (fun (accum, rightIndex) rightPoly ->
-          let withDelta = RHS { var = rightPoly; pos = rightIndex; qual = Delta; }
-          and ri' = rightIndex + 1
-          and rpos = {fName = rFName; pos = rightIndex; } in
-          if reachable withDelta
-          then ({lPos = lpos; rPos = rpos; qual = Delta }::accum, ri')
-          else if reachable (withQual Equal withDelta)
-          then ({lPos = lpos; rPos = rpos; qual = Equal }::accum, ri')
-          else (accum, ri')) ([],0) rArgs |> fst)
-      reachable in
+    let graph' = RuleGraph.copy(graph) in
+    let rhsNodes = List.mapi (fun i poly -> 
+      let toAdd = RHS { var = poly; pos = i; qual = Equal } in
+      Printf.eprintf "Adding %s\n" (rulePosToString toAdd);
+      RuleGraph.add_vertex graph' toAdd;
+      toAdd) rArgs in
+    (* Stitch the right hand side nodes together *)
+    List.iter (fun rn ->
+      List.iter (addEdge ~graph:graph' rn) lhsNodes;
+      List.iter (joinToCond ~graph:graph' rn) condNodes) rhsNodes;
+    (* graph is ready for reachability analysis.  Now look at each argument position *)
+    Utils.concatMapi (fun li lhsN ->
+      let reachable = Reachability.analyze (Node.equal lhsN) graph' in
+      let rtest n = try reachable n with Not_found -> false in
+      let lpos = { fName = lfName; pos = li; } in
+      List.fold_left (fun (accum, ri) rn ->
+        let ri' = ri + 1 in
+        let delta = withQual Delta rn in
+        let rpos = { fName = rFName; pos = ri; } in
+        Printf.eprintf "is %s reachable?\n" (rulePosToString delta);
+        if rtest delta
+        then ({lPos = lpos; rPos = rpos; qual = Delta;} :: accum, ri')
+        else if rtest rn
+        then ({lPos = lpos; rPos = rpos; qual = Equal;} :: accum, ri')
+        else (accum, ri')) ([], 0) rhsNodes |> fst) lhsNodes in
+  Printf.eprintf "\n\n%s\n" (Comrule.toString rule);
   Utils.concatMap dealWithRHS rule.Comrule.rhss
-
 
 let main () =
   let usage = ""
