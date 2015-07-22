@@ -86,7 +86,6 @@ let processRule (rule : Comrule.rule) =
     let toAdd = LHS { var = poly;
                       pos = i;
                       qual = Equal } in
-    Printf.eprintf "Adding %s\n" (rulePosToString toAdd);
     RuleGraph.add_vertex graph toAdd;
     toAdd in
   let condAdd left atom =
@@ -108,12 +107,10 @@ let processRule (rule : Comrule.rule) =
     (** Information really flows both ways across the inequality *)
     let edge1 = RuleGraph.E.create a1 qual a2'
     and edge2 = RuleGraph.E.create a2 qual a1' in
-    List.iter (fun a -> Printf.eprintf "Adding %s\n" (rulePosToString a)) [a1; a2; a1'; a2';];
     RuleGraph.add_edge_e graph edge1;
     RuleGraph.add_edge_e graph edge2;
     (a1,a2) in
   let addEdge ?(graph = graph) rp1 rp2 =
-    Printf.eprintf "looking for connection between %s %s\n" (rulePosToString rp1) (rulePosToString rp2);
     if shareVars rp1 rp2 then
       begin
         let qual = if Poly.compare (getPoly rp1) (getPoly rp2) = 0 then
@@ -124,12 +121,10 @@ let processRule (rule : Comrule.rule) =
         let rp2' =
           if qual = (getQual rp2) then rp2
           else withQual qual rp2 in
-        Printf.eprintf "Found connection %s\n" (qualToString qual);
         let edge = RuleGraph.E.create rp1 qual rp2'
         and edge2 = RuleGraph.E.create rp2' qual rp1
         and edge3 = RuleGraph.E.create rp1' qual rp2
         and edge4 = RuleGraph.E.create rp2 qual rp1' in
-        Printf.eprintf "adding %s\n" (rulePosToString rp2');
         RuleGraph.add_edge_e graph edge;
         RuleGraph.add_edge_e graph edge2;
         RuleGraph.add_edge_e graph edge3;
@@ -145,7 +140,6 @@ let processRule (rule : Comrule.rule) =
     let graph' = RuleGraph.copy(graph) in
     let rhsNodes = List.mapi (fun i poly -> 
       let toAdd = RHS { var = poly; pos = i; qual = Equal } in
-      Printf.eprintf "Adding %s\n" (rulePosToString toAdd);
       RuleGraph.add_vertex graph' toAdd;
       toAdd) rArgs in
     (* Stitch the right hand side nodes together *)
@@ -161,13 +155,11 @@ let processRule (rule : Comrule.rule) =
         let ri' = ri + 1 in
         let delta = withQual Delta rn in
         let rpos = { fName = rFName; pos = ri; } in
-        Printf.eprintf "is %s reachable?\n" (rulePosToString delta);
         if rtest delta
         then ({lPos = lpos; rPos = rpos; qual = Delta;} :: accum, ri')
         else if rtest rn
         then ({lPos = lpos; rPos = rpos; qual = Equal;} :: accum, ri')
         else (accum, ri')) ([], 0) rhsNodes |> fst) lhsNodes in
-  Printf.eprintf "\n\n%s\n" (Comrule.toString rule);
   Utils.concatMap dealWithRHS rule.Comrule.rhss
 
 let main () =
