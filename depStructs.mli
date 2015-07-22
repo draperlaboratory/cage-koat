@@ -14,13 +14,19 @@ type ruleTrans = {
   qual : qual;
 }
 
-val qualToString : qual -> string
-val argPosToString : argPos -> string
-val ruleTransToString : ruleTrans -> string
-val doVis : ruleTrans list -> string -> unit
-
 module QualEdge : sig
   type t = qual
   val compare : t -> t -> int
   val default : t
 end
+
+(** For debug printing, etc. **)
+val qualToString : qual -> string
+val argPosToString : argPos -> string
+val ruleTransToString : ruleTrans -> string
+
+(** Produces a dot file representing information flow described by a ruletrans
+    list *)
+val doVis : ruleTrans list -> string -> unit
+
+
