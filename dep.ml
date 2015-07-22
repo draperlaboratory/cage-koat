@@ -39,8 +39,8 @@ let updateReachable (rpt : reachablePositions) (pos : reachablePosition) =
     let prev = Hashtbl.find rpt pos.argPos in
     match (prev.qual, pos.qual) with
     | (Equal, Delta)
-    | (Unkown, Delta)
-    | (Unkown, Equal) ->
+    | (Unknown, Delta)
+    | (Unknown, Equal) ->
       begin
         Hashtbl.replace rpt pos.argPos pos;
         true

@@ -6,7 +6,7 @@ type argPos = {
 type qual =
 | Equal
 | Delta
-| Unkown
+| Unknown
 
 type ruleTrans = {
   lPos : argPos;
@@ -14,11 +14,18 @@ type ruleTrans = {
   qual : qual;
 }
 
+let join q1 q2 =
+  match (q1,q2) with
+  | Equal, Equal -> Equal
+  | _, Unknown
+  | Unknown, _ -> Unknown
+  | _, _ -> Delta
+
 
 let qualToString = function
   | Equal -> "Equal"
   | Delta -> "Delta"
-  | Unkown -> "?"
+  | Unknown -> "?"
 
 let argPosToString ap =
   Printf.sprintf "%s_%i" ap.fName ap.pos
@@ -91,12 +98,17 @@ struct
   let compare a b = argPosCompare (F.getHash ()) a b
 end
 
-module ArgPosGraph = Graph.Imperative.Digraph.ConcreteLabeled(ArgPosNodes(Fnh))
-  (struct
-    type t = qual
-    let compare q1 q2 = -1
-    let default = Unkown
-  end)
+module QualEdge : sig
+  type t = qual
+  val compare : t -> t -> int
+  val default : t
+end = struct
+  type t = qual
+  let compare q1 q2 = -1
+  let default = Unknown
+end
+
+module ArgPosGraph = Graph.Imperative.Digraph.ConcreteLabeled(ArgPosNodes(Fnh))(QualEdge)
 
 module Vis = Graph.Graphviz.Dot(struct
   include ArgPosGraph (* use the graph module from above *)
@@ -105,7 +117,7 @@ module Vis = Graph.Graphviz.Dot(struct
   and blue = `Color 0x0000FF
   let edge_attributes e =
     match ArgPosGraph.E.label e with
-    | Unkown -> [`Label " Unknown "; `Style `Dotted ; red]
+    | Unknown -> [`Label " Unknown "; `Style `Dotted ; red]
     | Equal -> [`Label " = "; `Style `Solid; blue ]
     | Delta -> [`Label " d "; `Style `Bold; green ]
   let default_edge_attributes _ = []
