@@ -1,224 +1,155 @@
 open DepStructs
 
-let usage = ""
-
 type argument = {
-  position : int;
-  vars : string list;
-  fName : string;
-}
-
-type cond = {
-  position : int;
-  vars : string list;
-}
-
-type var =
-| Argument of argument
-| Cond of cond
-
-type edge = {
-  source : var;
-  sink : var;
+  var : Poly.poly;
+  pos : int;
   qual : qual;
 }
 
-type node = {
-  arrivedBy : edge option;
-  parent : node option;
-  tip : var;
-  encounteredDelta : bool;
-}
+type rulePos =
+| LHS of argument
+| RHS of argument
+| Cond of argument
 
-(** Debug prints **)
+let rulePosToString = function
+  | LHS a -> Printf.sprintf "LHS %i %s" a.pos (Poly.toString a.var)
+  | RHS a -> Printf.sprintf "RHS %i %s" a.pos  (Poly.toString a.var)
+  | Cond a -> Printf.sprintf "Cond %i %s" a.pos  (Poly.toString a.var)
 
-let varsToString vList =
-  List.fold_left (fun accum v ->
-    if accum = ""
-    then v
-    else Printf.sprintf "%s, %s" accum v) "" vList
+let getPoly = function
+  | LHS a
+  | RHS a
+  | Cond a -> a.var
 
-let argumentToString (arg : argument) =
-  Printf.sprintf "%s %i %s" arg.fName arg.position (varsToString arg.vars)
+let getQual = function
+  | LHS a
+  | RHS a
+  | Cond a -> a.qual
 
-let condToString (cond : cond) =
-  Printf.sprintf "cond %i %s" cond.position (varsToString cond.vars)
+let withQual qual = function
+  | LHS a -> LHS { a with qual = qual }
+  | RHS a -> RHS { a with qual = qual }
+  | Cond a -> Cond { a with qual = qual }
 
-let varToString = function
-  | Argument a -> argumentToString a
-  | Cond c -> condToString c
+let shareVars rp1 rp2 =
+  Poly.shareVars (getPoly rp1) (getPoly rp2)
 
-let edgeToString e =
-  Printf.sprintf "%s -> %s : %s"
-    (varToString e.source)
-    (varToString e.sink)
-    (qualToString e.qual)
+module type ArgOffset = sig
+  val lhsArgs : int
+  val condArgs : int
+end
 
-let rec pathToString (n : node) =
-    match n.arrivedBy with
-  | None -> varToString n.tip
-  | Some e -> Printf.sprintf "%s\t%s"
-    (match n.parent with
-    | None -> varToString n.tip
-    | Some p -> pathToString p) (edgeToString e)
+module VarNodes (M : ArgOffset) = struct
+  type t = rulePos
+  let hash = function
+    | LHS a -> a.pos
+    | Cond a -> M.lhsArgs + a.pos
+    | RHS a -> a.pos + M.lhsArgs + M.condArgs
+  let compare a b = compare (hash a) (hash b)
+  let equal a b = match (a,b) with
+    | LHS a1, LHS a2
+    | RHS a1, RHS a2
+    | Cond a1, Cond a2 -> a1.pos = a2.pos
+    | _,_ -> false
+end
 
-(** Search Code **)
-
-let rec getRoot (n : node) =
-  match n.parent with
-  | None -> n
-  | Some n' -> getRoot n'
-
-(* this is wrong, it has to encompass the root! *)
-let key (n : node) =
-  let root = getRoot n in
-  (root.tip, n.tip)
-
-let better (a : node) (b : node) =
-  a.encounteredDelta ||
-    a.encounteredDelta = b.encounteredDelta
-
-let varsOf = function
-  | Argument a -> a.vars
-  | Cond c -> c.vars
-
-let varsByArg (pList : Poly.poly list) =
-  List.map Poly.getVars pList
-
-let varsByAtom = function
-  | Pc.Equ (p1, p2)
-  | Pc.Neq (p1, p2)
-  | Pc.Geq (p1, p2)
-  | Pc.Gtr (p1, p2)
-  | Pc.Leq (p1, p2)
-  | Pc.Lss (p1, p2) -> (Poly.getVars p1) @ (Poly.getVars p2) |> Utils.remdup
-
-
-let argFilter fName = function
-  | Cond _ -> true
-  | Argument b -> b.fName != fName
-
-let condFilter c c' =
-  c != c'
-
-let makeFilter = function
-  | Argument a -> argFilter a.fName
-  | Cond _ as cnd -> condFilter cnd
-
-let expand (varTable : (string, var list) Hashtbl.t) var =
-  let touches = varsOf var
-  and filter = makeFilter var in
-  let filterConcat accum var =
-    List.filter filter (Hashtbl.find varTable var) @ accum in
-  let adjacent = List.fold_left filterConcat [] touches |> Utils.remdup in
-  List.map (fun dest -> {source = var; sink = dest; qual = Unkown;}) adjacent
-
-let processClosed (closed : ((var * var), node) Hashtbl.t) =
-  let lookup = Hashtbl.create 100 in
-  Hashtbl.iter (fun (rootVars, tipVars) node ->
-(*    Printf.eprintf "Processing var: %s\n%s\n\n" (varToString tipVars) (pathToString node);*)
-    let vars = varsOf tipVars in
-    List.iter (fun v ->
-      try
-        let prev = Hashtbl.find lookup v in
-        node :: prev |> Hashtbl.replace lookup v
-      with Not_found ->
-        Hashtbl.replace lookup v [node]) vars) closed;
-  lookup
-
-let breadthFirst (openList : node list) (expand : node -> edge list) =
-  let closed = Hashtbl.create 100 in
-  let handleNode n =
-    try
-      let kv = key n in
-      let prev = Hashtbl.find closed kv in
-      if not (better prev n) (* prev isn't better than n, re-open *)
-      then
-        begin
-          Hashtbl.replace closed kv n;
-          expand n
-        end
-      else []
-    with Not_found ->
-      Hashtbl.replace closed (key n) n;
-      expand n in
-  let rec search = function
-    | [] -> processClosed closed
-    | hd::tl ->
-      let edges = handleNode hd in
-      let children = List.map
-        (fun e -> { arrivedBy = Some e;
-                    parent = Some hd;
-                    tip = e.sink;
-                    encounteredDelta = hd.encounteredDelta || e.qual = Delta;})
-        edges in
-      tl @ children |> search in
-  search openList
-
-(** Find the connectivity in a rule **)
-
-let preProcess (lhs : Term.term) (cond : Pc.cond) =
-  let varTable = Hashtbl.create 100 in (* varName -> vars *)
-  let addArg a =
-    varsOf a |>
-        List.iter
-      (fun v ->
-        try
-          let prev = Hashtbl.find varTable v in
-          a::prev |> Hashtbl.replace varTable v
-        with Not_found -> Hashtbl.replace varTable v [a]) in
-  let (fname, args) = lhs in
-  let varsByArgs = varsByArg args
-  and makeArg i e =
-    let arg = Argument {position = i; vars = e; fName = fname} in
-    addArg arg;
-    arg in
-  let lhsVars =  List.mapi makeArg varsByArgs in
-  let varsByCond = List.map varsByAtom cond in
-  let makeCond i e =
-    let cond = Cond {position = i; vars = e;} in
-    addArg cond in
-  List.iteri makeCond varsByCond;
-  let startingNodes =
-    List.map (fun v -> { arrivedBy = None; parent = None; tip = v; encounteredDelta = false;})
-      lhsVars in
-  let lookup = breadthFirst startingNodes (fun v -> (expand varTable v.tip)) in
-  let generateMapping rhs =
-    (* Printf.eprintf "RHS: %s\n" (Term.toString rhs); *)
-    let (rname, args) = rhs in
-    let varsByArgs = varsByArg args in
-    let relations =
-      Utils.concatMapi (fun argPos vList  ->
-        let uniqueHits =
-        List.fold_left (fun accum e ->
-          try
-            let hits = Hashtbl.find lookup e in
-            (Utils.remdup hits) @ accum
-          with Not_found ->
-            accum)
-          [] vList in
-        List.map (fun node ->
-          let root = getRoot node in
-          match root.tip with
-          | Cond c -> failwith "Conds can't be roots!"
-          | Argument a ->
-            {lPos = {fName = a.fName;
-                     pos = a.position;};
-             rPos = {fName = rname;
-                     pos = argPos;};
-             qual = if not node.encounteredDelta then Equal else Delta;}) uniqueHits)
-        varsByArgs in
-    let relations' = Utils.remdup relations in
-    (*List.iter (fun r -> Printf.eprintf "%s\n" (ruleTransToString r)) relations';*)
-    relations'
-  in generateMapping
 
 let processRule (rule : Comrule.rule) =
-  Utils.concatMap (preProcess rule.Comrule.lhs rule.Comrule.cond) rule.Comrule.rhss
+  let (lfName, lhsArgs) = rule.Comrule.lhs
+  and cond = rule.Comrule.cond in
+  let module AO = struct
+    let lhsArgs = List.length lhsArgs
+    let condArgs = 2 * (List.length cond)
+  end in
+  let module Node = VarNodes(AO) in
+  let module RuleGraph =
+        Graph.Imperative.Digraph.ConcreteLabeled(Node)(QualEdge) in
+  let module Reachability = Graph.Fixpoint.Make(RuleGraph)
+        (struct
+          type vertex = RuleGraph.E.vertex
+          type edge = RuleGraph.E.t
+          type g = RuleGraph.t
+          type data = bool
+          let direction = Graph.Fixpoint.Forward
+          let equal = (=)
+          let join = (||)
+          let analyze _ = (fun x -> x)
+         end)  in
+  let graph = RuleGraph.create () in
+  let lhsAdd i poly =
+    let toAdd = LHS { var = poly;
+                      pos = i;
+                      qual = Equal } in
+    Printf.eprintf "Adding %s\n" (rulePosToString toAdd);
+    RuleGraph.add_vertex graph toAdd;
+    toAdd in
+  let condAdd left atom =
+    let right = left + 1
+    and (qual, p1, p2) = match atom with
+      | Pc.Equ (p1, p2) -> (Equal, p1, p2)
+      | Pc.Neq (p1, p2)
+      | Pc.Geq (p1, p2)
+      | Pc.Gtr (p1, p2)
+      | Pc.Leq (p1, p2)
+      | Pc.Lss (p1, p2) -> (Delta, p1, p2) in
+    (** We need both the identity nodes for each element of the inequality.
+        Then, we need the nodes that capture the nature of the delta.
+     **)
+    let a1 = Cond { var = p1; pos = left; qual = Equal; }
+    and a2 = Cond { var = p2; pos = right; qual = Equal; }
+    and a1' = Cond { var = p1; pos = left; qual = qual; }
+    and a2' = Cond { var = p2; pos = right; qual = qual; } in
+    (** Information really flows both ways across the inequality *)
+    let edge1 = RuleGraph.E.create a1 qual a2'
+    and edge2 = RuleGraph.E.create a2 qual a1' in
+    List.iter (fun a -> Printf.eprintf "Adding %s\n" (rulePosToString a)) [a1; a2; a1'; a2';];
+    RuleGraph.add_edge_e graph edge1;
+    RuleGraph.add_edge_e graph edge2;
+    (a1,a2) in
+  let addEdge rp1 rp2 =
+    Printf.eprintf "looking for connection between %s %s\n" (rulePosToString rp1) (rulePosToString rp2);
+    if shareVars rp1 rp2 then
+      begin
+        let qual = if Poly.compare (getPoly rp1) (getPoly rp2) = 0 then
+            Equal else
+            Delta in
+        let rp2' =
+          if qual = (getQual rp2) then rp2
+          else withQual qual rp2 in
+        Printf.eprintf "Found connection %s\n" (qualToString qual);
+        let edge = RuleGraph.E.create rp1 qual rp2' in
+          RuleGraph.add_edge_e graph edge
+      end in
+  let joinToCond (lhsNode : rulePos) ((c1 : rulePos), (c2 : rulePos)) =
+    addEdge lhsNode c1;
+    addEdge lhsNode c2 in
+  let (lhsNodes : rulePos list) = List.mapi lhsAdd lhsArgs
+  and (condNodes : (rulePos * rulePos) list) = List.mapi condAdd cond in
+  List.iter (fun lhsN -> List.iter (joinToCond lhsN) condNodes) lhsNodes;
+  let reachable =
+    List.map (fun lhsN -> Reachability.analyze (Node.equal lhsN) graph)
+      lhsNodes in
+  let dealWithRHS (rFName, rArgs) =
+    Utils.concatMapi
+      (fun leftIndex reachable ->
+        let lpos = { fName = lfName; pos = leftIndex; } in
+        List.fold_left
+        (fun (accum, rightIndex) rightPoly ->
+          let withDelta = RHS { var = rightPoly; pos = rightIndex; qual = Delta; }
+          and ri' = rightIndex + 1
+          and rpos = {fName = rFName; pos = rightIndex; } in
+          if reachable withDelta
+          then ({lPos = lpos; rPos = rpos; qual = Delta }::accum, ri')
+          else if reachable (withQual Equal withDelta)
+          then ({lPos = lpos; rPos = rpos; qual = Equal }::accum, ri')
+          else (accum, ri')) ([],0) rArgs |> fst)
+      reachable in
+  Utils.concatMap dealWithRHS rule.Comrule.rhss
 
 
 let main () =
-  let filename = ref "" in
+  let usage = ""
+  and filename = ref "" in
   Arg.parse [] (fun f -> filename := f) usage;
   if !filename = "" then
     begin
