@@ -14,14 +14,6 @@ type ruleTrans = {
   qual : qual;
 }
 
-let join q1 q2 =
-  match (q1,q2) with
-  | Equal, Equal -> Equal
-  | _, Unknown
-  | Unknown, _ -> Unknown
-  | _, _ -> Delta
-
-
 let qualToString = function
   | Equal -> "Equal"
   | Delta -> "Delta"
@@ -155,5 +147,4 @@ let doVis (rts : ruleTrans list) fname =
   let fStream = Unix.out_channel_of_descr fdesc in
   List.iter addNodes rts;
   Vis.output_graph fStream g;
-  Unix.close fdesc;
-  g
+  Unix.close fdesc

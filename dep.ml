@@ -143,7 +143,7 @@ let main () =
       Printf.printf "aoenuthoaensthu %s\n\n" !filename;
       let entrFun, system = Parser.parseCint !filename Simple.Stmts in
       let relationships = Utils.concatMap RuleInfluence.processRule system in
-      ignore(doVis relationships !filename);
+      doVis relationships !filename;
       processRelationships relationships
     end
 
