@@ -309,6 +309,16 @@ let rec getVars (poly, _) =
 and getVarsMonomial mon =
   List.map (fun (x, _) -> x) mon
 
+let shareVars p1 p2 =
+  let v1 = getVars p1
+  and v2 = getVars p2 in
+  let rec solve l = function
+    | [] -> false
+    | hd::tl -> List.mem hd l || solve l tl in
+  if List.length v2 > List.length v1 then
+    solve v2 v1 else
+    solve v1 v2
+
 (* Multiply a polynomial by a constant *)
 let constmult (poly, c) d =
   if eq_big_int d Big_int.zero_big_int then
