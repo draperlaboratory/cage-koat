@@ -79,7 +79,7 @@ and checkStartCondition tgraph trs startfun =
     if (TGraph.getPreds tgraph startRules) <> [] then
       raise (Cint_aux.ParseException (0, 0, "Error: Start nodes have incoming edges!"))
 
-let rec process trs maxchaining startfun =
+let rec process trs maxchaining startfun iface =
   check trs;
   i := 1;
   proofs := [];
@@ -87,7 +87,7 @@ let rec process trs maxchaining startfun =
   output_nums := [];
   ChainProc.max_chaining := maxchaining;
   ChainProc.done_chaining := 0;
-  let initObl = CTRSObl.getInitialObl FMap.empty trs startfun in
+  let initObl = CTRSObl.getInitialObl iface.Annot.functions trs startfun in
   let maybeSlicedObl =
     match (SlicingProc.process initObl) with
     | None -> initObl

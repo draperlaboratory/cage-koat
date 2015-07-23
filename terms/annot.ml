@@ -16,11 +16,11 @@ type argument = {
 type argList = argument list
 
 type complexitySpec = {
-  space : Complexity.t;
+  size : Complexity.t;
   upperTime : Complexity.t;
   lowerTime : Complexity.t;
-  upperMemory : Complexity.t;
-  lowerMemory : Complexity.t;
+  upperSpace : Complexity.t;
+  lowerSpace : Complexity.t;
 }
 
 type functionSpec = {
@@ -37,5 +37,7 @@ type specMap = functionSpec FMap.t
 type package = {
   pname : string;
   created : string;
-  functions : functionSpec list;
+  functions : specMap;
 }
+
+let emptyPackage = { pname = ""; created = ""; functions = FMap.empty }

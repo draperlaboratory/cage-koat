@@ -49,3 +49,7 @@ let parseCint filename combine =
               in
       close_in inchan;
       res
+
+let parseIface filename =
+  let inchan = open_in filename in
+  Annot_parser.parsePackage (Yojson.Basic.from_channel inchan)

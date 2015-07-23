@@ -20,7 +20,7 @@ val check : Rule.rule list -> unit
 val checkRules : int -> Poly.var list -> Rule.rule list -> unit
 val checkStartCondition : Tgraph.G.t * (Tgraph.G.vertex * TGraph.r) array ->
   TGraph.r list -> Term.funSym -> unit
-val process : RuleT.rule list -> int -> Term.funSym ->
+val process : RuleT.rule list -> int -> Term.funSym -> Annot.package ->
   (Complexity.t * (unit -> string)) option
 val processInner : Cseparate.CTRSObl.t -> tgraph -> rvgraph ->
   (Complexity.t * Cseparate.GSC.LSC.size_data Cseparate.GSC.RVMap.t * (unit -> string))

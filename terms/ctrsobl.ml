@@ -96,12 +96,40 @@ module Make(CTRS : Ctrs.S) = struct
     else
       Complexity.Unknown
 
-  let spaceOrTimeWeight rule is_space =
-    let alloc_fun = "new" in
-    if RuleT.getLeftFun rule = alloc_fun || not is_space then
-      Expexp.one
+  let has_space specs f =
+    let open Annot in
+    let open Complexity in
+    if FMap.mem f specs then
+      let c = FMap.find f specs in
+      match c.complexity.upperSpace with
+      | P _     -> true
+      | Unknown -> false
     else
-      Expexp.zero
+      false
+
+  let get_space specs f =
+    let open Annot in
+    let open Complexity in
+    let c = FMap.find f specs in
+    match c.complexity.upperSpace with
+    | P p     -> p
+    | Unknown -> assert false
+
+
+  let spaceOrTimeWeight specs rule is_space =
+    let alloc_fun = "new" in
+    if is_space then begin
+      let f = RuleT.getLeftFun rule in
+      if f = alloc_fun then
+        Expexp.one
+      else if has_space specs f then
+        get_space specs f
+      else
+        Expexp.zero
+    end
+    else
+      Expexp.one
+
 
   let getInitialObl specs rules start =
     let open Expexp in
@@ -115,7 +143,7 @@ module Make(CTRS : Ctrs.S) = struct
     let (rules, initCost, initCompl) =
       List.fold_left
         (fun (rules, cost, compl) rule ->
-          (rule::rules, RuleMap.add rule (spaceOrTimeWeight rule false) cost,
+          (rule::rules, RuleMap.add rule (spaceOrTimeWeight specs rule false) cost,
                         RuleMap.add rule (initComp specs rule start) compl))
         ([], RuleMap.empty, RuleMap.empty) rules in
     {

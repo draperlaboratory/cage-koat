@@ -28,7 +28,7 @@ exception Timeout
 let handle_sigalrm signo =
   raise Timeout
 
-let timed_run f arg1 arg2 arg3 tsecs defaultval =
+let timed_run3 tsecs defaultval f arg1 arg2 arg3 =
   let oldsig = Sys.signal Sys.sigalrm (Sys.Signal_handle handle_sigalrm) in
     try
       set_timer tsecs;
@@ -43,10 +43,26 @@ let timed_run f arg1 arg2 arg3 tsecs defaultval =
           defaultval
         )
 
+let timed_run4 tsecs defaultval f arg1 arg2 arg3 arg4 =
+  let oldsig = Sys.signal Sys.sigalrm (Sys.Signal_handle handle_sigalrm) in
+    try
+      set_timer tsecs;
+      let res = f arg1 arg2 arg3 arg4 in
+        set_timer 0.0;
+        Sys.set_signal Sys.sigalrm oldsig;
+        res
+    with
+      | Timeout ->
+        (
+          Sys.set_signal Sys.sigalrm oldsig;
+          defaultval
+        )
+
 (* command line stuff *)
 
 let combine = ref Simple.Ctrls
 let filename = ref ""
+let ifacename = ref ""
 let timeout = ref 0.0
 let maxchaining = ref 15
 
@@ -100,7 +116,8 @@ s print_usage)), "  - Set the SMT solver (" ^ (String.concat "/" supportedSmtSol
     ("-log", Arg.Int (fun i -> Log.logging_level := i), Printf.sprintf "         - Print live log (level 1) or debug (level 5) output during proof [default %i]" !Log.logging_level);
     ("--log", Arg.Int (fun i -> Log.logging_level := i), "");
     ("-version", Arg.Unit (fun () -> Printf.printf "KoAT\nCopyright 2010-2014 Stephan Falke\nVersion %s\n" Git_sha1.git_sha1; exit 1), "     - Display the version of this program");
-    ("--version", Arg.Unit (fun () -> Printf.printf "KoAT\nCopyright 2010-2014 Stephan Falke\nVersion %s\n" Git_sha1.git_sha1; exit 1), "")
+    ("--version", Arg.Unit (fun () -> Printf.printf "KoAT\nCopyright 2010-2014 Stephan Falke\nVersion %s\n" Git_sha1.git_sha1; exit 1), "");
+    ("--iface-file", Arg.Set_string ifacename, "- Set the .annot interface file for specifying complexity")
   ]
 and print_usage () =
   Arg.usage speclist usage
@@ -118,11 +135,17 @@ let main () =
   else
     Log.init_timer ();
     let (startFun, cint) = Parser.parseCint !filename !combine in
+    let iface = Parser.parseIface !ifacename in
       if Cint.isUnary cint then
         let tt = Cint.toTrs cint in
           Smt.smt_time := 0.0;
           let start = Unix.gettimeofday () in
-            match if !timeout = 0.0 then (Cmeta.process tt !maxchaining startFun) else (timed_run Cmeta.process tt !maxchaining startFun !timeout None) with
+            match if !timeout = 0.0
+              then
+                Cmeta.process tt !maxchaining startFun iface
+              else
+                timed_run4 !timeout None Cmeta.process tt !maxchaining startFun iface
+            with
               | None -> Printf.printf "MAYBE\n"
               | Some (c, proof) ->
                 (
@@ -136,7 +159,12 @@ let main () =
       (
         Smt.smt_time := 0.0;
         let start = Unix.gettimeofday () in
-          match if !timeout = 0.0 then (Cintmeta.process cint !maxchaining startFun) else (timed_run Cintmeta.process cint !maxchaining startFun !timeout None) with
+          match if !timeout = 0.0
+            then
+              Cintmeta.process cint !maxchaining startFun
+            else
+              timed_run3 !timeout None Cintmeta.process cint !maxchaining startFun
+          with
             | None -> Printf.printf "MAYBE\n"
             | Some (c, proof) ->
               (
