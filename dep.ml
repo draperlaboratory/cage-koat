@@ -1,7 +1,5 @@
 open DepStructs
 
-let usage = ""
-
 type reachablePosition = {
   argPos : argPos;
   qual : qual;
@@ -131,6 +129,7 @@ let computeGraph relationships =
 
 
 let main () =
+  let usage = "" in
   let filename = ref "" in
   Arg.parse [] (fun f -> filename := f) usage;
   if !filename = "" then
@@ -143,8 +142,9 @@ let main () =
       Printf.printf "aoenuthoaensthu %s\n\n" !filename;
       let entrFun, system = Parser.parseCint !filename Simple.Stmts in
       let relationships = Utils.concatMap RuleInfluence.processRule system in
-      doVis relationships !filename;
-      processRelationships relationships
+      let graph = computeGraph relationships in
+      let _ (*isCritical*) = criticalArgument graph in
+      doVis relationships !filename
     end
 
 
