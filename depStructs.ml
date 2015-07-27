@@ -123,7 +123,6 @@ let buildFlowGraph (rts : ruleTrans list) =
   Fnh.setHash fnh;
   let g =  ArgPosGraph.create () in
   let addNodes rt =
-    Printf.eprintf "Adding %s\n" (ruleTransToString rt);
     let lVert = ArgPosGraph.V.create rt.lPos
     and rVert = ArgPosGraph.V.create rt.rPos in
     let edge = ArgPosGraph.E.create lVert rt.qual rVert in
