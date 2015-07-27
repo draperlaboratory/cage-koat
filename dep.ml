@@ -105,7 +105,7 @@ let processRelationships relationships =
 
 (** convert a set of relationships into a .dot file so that we can look at them. *)
 let visualizeInformationFlow relationships inputFname =
-  ignore(doVis relationships inputFname)
+  doVis relationships inputFname
 
 (** compose relationships between rules until we hit a fixpoint *)
 let rec saturate graph startingPoints =
@@ -127,6 +127,21 @@ let computeGraph relationships =
   saturate graph starts;
   graph
 
+let flowsToCritical relationships starts =
+  let graph = computeGraph relationships in
+  let isCritical = criticalArgument graph in
+  (* this is inefficient.  We sholud strive to construct the set of critical
+     args [JTT 27-07-15] *)
+  let criticalArguments =
+    List.fold_left (fun accum el ->
+      let accum' = if isCritical el.lPos then el.lPos :: accum else accum in
+      let accum'' = if isCritical el.rPos then el.rPos :: accum' else accum' in
+      accum'') [] relationships in
+  let canReach = reachable starts (buildFlowGraph relationships) in
+  let rec ans = function
+    | [] -> false
+    | hd::tl -> canReach hd || ans tl in
+  ans criticalArguments
 
 let main () =
   let usage = "" in
