@@ -141,7 +141,7 @@ let reachable (starts : argPos list)  (graph : ArgPosGraph.t) =
     with Not_found -> false in
   canReach
 
-let draw g fname =
+let draw ?(augmentVertex = (fun v -> []) ) g fname =
   let module Vis = Graph.Graphviz.Dot(struct
   include ArgPosGraph (* use the graph module from above *)
   let red = `Color 0xFF0000
@@ -157,7 +157,10 @@ let draw g fname =
     let sgName = vertex.fName in
     Some { Graph.Graphviz.DotAttributes.sg_name = sgName;
            Graph.Graphviz.DotAttributes.sg_attributes = [`Label sgName]; }
-  let vertex_attributes v = [`Shape `Box; `Label (Printf.sprintf "%i" v.pos)]
+  let vertex_attributes v =
+    let base = [`Shape `Box; `Label (Printf.sprintf "%i" v.pos)]
+    and addition = augmentVertex v in
+    base @ addition
   let vertex_name v = argPosToString v
   let default_vertex_attributes _ = []
   let graph_attributes _ = []
