@@ -130,8 +130,7 @@ let convertFname (path : string) =
   let base = Filename.chop_suffix fname ".koat" in
   dname ^ "/" ^ base ^ ".dot"
 
-let doVis (rts : ruleTrans list) fname =
-  let fname = convertFname fname in
+let buildFlowGraph (rts : ruleTrans list) =
   let fnh = makeFNameHash rts in
   Fnh.setHash fnh;
   let g =  ArgPosGraph.create () in
@@ -143,8 +142,16 @@ let doVis (rts : ruleTrans list) fname =
     ArgPosGraph.add_vertex g lVert;
     ArgPosGraph.add_vertex g rVert;
     ArgPosGraph.add_edge_e g edge in
+  List.iter addNodes rts;
+  g
+
+let draw g fname =
+  let fname = convertFname fname in
   let fdesc = Unix.openfile fname [Unix.O_CREAT; Unix.O_WRONLY;] 0o640 in
   let fStream = Unix.out_channel_of_descr fdesc in
-  List.iter addNodes rts;
   Vis.output_graph fStream g;
   Unix.close fdesc
+
+let doVis (rts : ruleTrans list) fname =
+  let g = buildFlowGraph rts in
+  draw g fname
