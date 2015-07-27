@@ -103,10 +103,6 @@ let processRelationships relationships =
       relationships in
   starts, graph
 
-(** convert a set of relationships into a .dot file so that we can look at them. *)
-let visualizeInformationFlow relationships inputFname =
-  doVis relationships inputFname
-
 (** compose relationships between rules until we hit a fixpoint *)
 let rec saturate graph startingPoints =
   let recurP =
@@ -127,8 +123,8 @@ let computeGraph relationships =
   saturate graph starts;
   graph
 
-let flowsToCritical relationships starts =
-  let graph = computeGraph relationships in
+let flowsToCritical ?(graph = None) relationships starts =
+  let graph = match graph with None -> computeGraph relationships | Some g -> g in
   let isCritical = criticalArgument graph in
   (* this is inefficient.  We sholud strive to construct the set of critical
      args [JTT 27-07-15] *)
@@ -142,6 +138,19 @@ let flowsToCritical relationships starts =
     | [] -> false
     | hd::tl -> canReach hd || ans tl in
   ans criticalArguments
+
+(** convert a set of relationships into a .dot file so that we can look at them. *)
+let visualizeInformationFlow relationships inputFname =
+  let graph = computeGraph relationships in
+  let isCritical = criticalArgument graph in
+  let visGraph = buildFlowGraph relationships in
+  let highlight v =
+    if isCritical v
+    then [`Color 0x00FF00]
+    else if flowsToCritical ~graph:(Some graph) relationships [v]
+    then [`Color 0x00FFFF]
+    else [] in
+  draw ~augmentVertex:highlight visGraph inputFname
 
 let main () =
   let usage = "" in
@@ -159,7 +168,7 @@ let main () =
       let relationships = Utils.concatMap RuleInfluence.processRule system in
       let graph = computeGraph relationships in
       let _ (*isCritical*) = criticalArgument graph in
-      doVis relationships !filename
+      visualizeInformationFlow relationships !filename
     end
 
 
