@@ -14,6 +14,11 @@ type ruleTrans = {
   qual : qual;
 }
 
+type fNameHash = {
+  maxFName : int;
+  mapping : (string,int) Hashtbl.t;
+}
+
 let qualToString = function
   | Equal -> "Equal"
   | Delta -> "Delta"
@@ -27,12 +32,6 @@ let ruleTransToString rt =
     (argPosToString rt.lPos)
     (qualToString rt.qual)
     (argPosToString rt.rPos)
-
-
-type fNameHash = {
-  maxFName : int;
-  mapping : (string,int) Hashtbl.t;
-}
 
 (** For visualization, use with ocamlGraph **)
 let makeFNameHash (rts : ruleTrans list) =
@@ -101,6 +100,16 @@ end = struct
 end
 
 module ArgPosGraph = Graph.Imperative.Digraph.ConcreteLabeled(ArgPosNodes(Fnh))(QualEdge)
+module Reachability = Graph.Fixpoint.Make (ArgPosGraph)(struct
+    type vertex = ArgPosGraph.V.t
+    type edge = ArgPosGraph.E.t
+    type g = ArgPosGraph.t
+    type data = bool
+    let direction = Graph.Fixpoint.Forward
+    let equal = (=)
+    let join = (||)
+    let analyze _ = (fun x -> x)
+end)
 
 module Vis = Graph.Graphviz.Dot(struct
   include ArgPosGraph (* use the graph module from above *)
@@ -144,6 +153,14 @@ let buildFlowGraph (rts : ruleTrans list) =
     ArgPosGraph.add_edge_e g edge in
   List.iter addNodes rts;
   g
+
+let reachable (starts : argPos list)  (graph : ArgPosGraph.t) =
+  let reachable = Reachability.analyze (fun a -> List.mem a starts) graph in
+  let canReach (ap : argPos) =
+    try
+      ArgPosGraph.V.create ap |> reachable
+    with Not_found -> false in
+  canReach
 
 let draw g fname =
   let fname = convertFname fname in

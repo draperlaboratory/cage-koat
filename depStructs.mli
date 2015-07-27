@@ -122,5 +122,6 @@ val ruleTransToString : ruleTrans -> string
 (** Produces a dot file representing information flow described by a ruletrans
     list *)
 val doVis : ruleTrans list -> string -> unit
-
-
+val buildFlowGraph : ruleTrans list -> ArgPosGraph.t
+val draw : ArgPosGraph.t -> string -> unit
+val reachable : argPos list -> ArgPosGraph.t -> (argPos -> bool)
