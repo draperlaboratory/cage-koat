@@ -144,13 +144,13 @@ let draw ?(augmentVertex = (fun v -> []) ) g fname =
   let module Vis = Graph.Graphviz.Dot(struct
   include ArgPosGraph (* use the graph module from above *)
   let red = `Color 0xFF0000
-  and green = `Color 0x00FF00
+  and green = `Color 0x33CC33
   and blue = `Color 0x0000FF
   let edge_attributes e =
     match ArgPosGraph.E.label e with
     | Unknown -> [`Label " Unknown "; `Style `Dotted ; red]
-    | Equal -> [`Label " = "; `Style `Solid; blue ]
-    | Delta -> [`Label " d "; `Style `Bold; green ]
+    | Equal -> [`Style `Solid; blue ]
+    | Delta -> [`Style `Bold; green ]
   let default_edge_attributes _ = []
   let get_subgraph vertex =
     let sgName = vertex.fName in

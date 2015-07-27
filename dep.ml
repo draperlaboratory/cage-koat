@@ -146,9 +146,9 @@ let visualizeInformationFlow relationships inputFname =
   let visGraph = buildFlowGraph relationships in
   let highlight v =
     if isCritical v
-    then [`Color 0x00FF00]
+    then [`Color 0x33CC33; `Style `Bold]
     else if flowsToCritical ~graph:(Some graph) relationships [v]
-    then [`Color 0x00FFFF]
+    then [`Color 0x336600; `Style `Bold]
     else [] in
   draw ~augmentVertex:highlight visGraph inputFname
 
