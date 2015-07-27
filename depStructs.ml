@@ -111,27 +111,6 @@ module Reachability = Graph.Fixpoint.Make (ArgPosGraph)(struct
     let analyze _ = (fun x -> x)
 end)
 
-module Vis = Graph.Graphviz.Dot(struct
-  include ArgPosGraph (* use the graph module from above *)
-  let red = `Color 0xFF0000
-  and green = `Color 0x00FF00
-  and blue = `Color 0x0000FF
-  let edge_attributes e =
-    match ArgPosGraph.E.label e with
-    | Unknown -> [`Label " Unknown "; `Style `Dotted ; red]
-    | Equal -> [`Label " = "; `Style `Solid; blue ]
-    | Delta -> [`Label " d "; `Style `Bold; green ]
-  let default_edge_attributes _ = []
-  let get_subgraph vertex =
-    let sgName = vertex.fName in
-    Some { Graph.Graphviz.DotAttributes.sg_name = sgName;
-           Graph.Graphviz.DotAttributes.sg_attributes = [`Label sgName]; }
-  let vertex_attributes v = [`Shape `Box; `Label (Printf.sprintf "%i" v.pos)]
-  let vertex_name v = argPosToString v
-  let default_vertex_attributes _ = []
-  let graph_attributes _ = []
-end)
-
 let convertFname (path : string) =
   let dname = Filename.dirname path
   and fname = Filename.basename path in
@@ -163,6 +142,26 @@ let reachable (starts : argPos list)  (graph : ArgPosGraph.t) =
   canReach
 
 let draw g fname =
+  let module Vis = Graph.Graphviz.Dot(struct
+  include ArgPosGraph (* use the graph module from above *)
+  let red = `Color 0xFF0000
+  and green = `Color 0x00FF00
+  and blue = `Color 0x0000FF
+  let edge_attributes e =
+    match ArgPosGraph.E.label e with
+    | Unknown -> [`Label " Unknown "; `Style `Dotted ; red]
+    | Equal -> [`Label " = "; `Style `Solid; blue ]
+    | Delta -> [`Label " d "; `Style `Bold; green ]
+  let default_edge_attributes _ = []
+  let get_subgraph vertex =
+    let sgName = vertex.fName in
+    Some { Graph.Graphviz.DotAttributes.sg_name = sgName;
+           Graph.Graphviz.DotAttributes.sg_attributes = [`Label sgName]; }
+  let vertex_attributes v = [`Shape `Box; `Label (Printf.sprintf "%i" v.pos)]
+  let vertex_name v = argPosToString v
+  let default_vertex_attributes _ = []
+  let graph_attributes _ = []
+  end) in
   let fname = convertFname fname in
   let fdesc = Unix.openfile fname [Unix.O_CREAT; Unix.O_WRONLY;] 0o640 in
   let fStream = Unix.out_channel_of_descr fdesc in
