@@ -31,15 +31,16 @@ let displayMap key element = tailToString element |> Printf.eprintf "%s%s\n" key
 
 
 let addBottom (t : tail) =
-  let bottomGuard = List.fold_left (fun accum e ->
-    (* I need to negate the guard for this to really be right *)
-    e.guard @ accum) [] t
-  in
+  (* we now have a conjunct of disjuncts [x0 /\ x1 /\ ... xn] *)
+  let disjuncts = List.map (fun e -> Pc.negateCond e.guard) t in
+  let conjuncts = Pc.andOverOr disjuncts in
   let left = (List.hd t).left in (* t is guaranteed to have at least on element. *)
-  let possible = List.length bottomGuard > 0 && true in
-  if possible then
-    {left = left; right = bottom; guard = bottomGuard; } :: t else
-    t
+  let bottoms accum bottomGuard =
+    let possible = List.length bottomGuard > 0 && true in
+    if possible then
+      {left = left; right = bottom; guard = bottomGuard; } :: accum else
+     accum in
+  List.fold_left bottoms t conjuncts
 
 
 let rec processRelationships map = function

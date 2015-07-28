@@ -230,3 +230,22 @@ let negateAtom a =
   | Lss (l, r) -> Geq (l, r)
   | Gtr (l, r) -> Leq (l, r)
   | Leq (l, r) -> Gtr (l, r)
+
+let distribute (a : cond list) (b : cond list) =
+  (* (P \/ Q) /\ (R \/ S) -> (P /\ R) \/ (P /\ S) \/ (Q /\ R) \/ (Q /\ S) *)
+  Utils.concatMap (fun aCond -> List.map (fun bCond -> aCond @ bCond) b) a
+
+let rec andOverOr = function
+(* we have a set of disjuncts anded together.  I want to get a set of
+   conjuncts or-ed together *)
+  | [] -> []
+  | [(singleton : cond list)] -> singleton
+  | (fst : cond list) :: (snd : cond list) :: tl ->
+    let (combined : cond list) = distribute fst snd in
+    andOverOr (combined :: tl)
+
+let negateCond = function
+  | [] -> [[]]
+  | [singleton] -> [[negateAtom singleton]]
+    (* Here we get a list of disjuncts.  There's no support for this. *)
+  | lst -> List.map (fun el -> [negateAtom el]) lst

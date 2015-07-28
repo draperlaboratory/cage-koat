@@ -34,3 +34,6 @@ val equalAtom : atom -> atom -> bool
 val equalInternal : atom -> atom -> bool
 val getLeqZeroTerms : atom -> Poly.poly list
 val negateAtom : atom -> atom
+(* cond list represents the disjuncts. *)
+val negateCond : cond -> cond list
+val andOverOr : cond list list -> cond list
