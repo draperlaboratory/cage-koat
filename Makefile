@@ -47,6 +47,9 @@ ruleInfluence: ruleInfluence.ml
 dep: dep.ml
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} dep.native
 
+branch: detectBranch.ml
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} detectBranch.native
+
 koat.d.byte: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koat.d.byte
 
