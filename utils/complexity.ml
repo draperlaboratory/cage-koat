@@ -18,7 +18,7 @@
   limitations under the License.
 *)
 
-type complexity = P of Expexp.expexp | Unknown
+type t = P of Expexp.expexp | Unknown
 
 let toStringCompetitionStyle c =
   match c with

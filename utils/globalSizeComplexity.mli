@@ -12,8 +12,8 @@ module type S =
       type global_trans_data = rule * ((int * int) * size_data)
         
 
-      val c2lsc : Complexity.complexity -> Poly.var list -> LSC.size_data
-      val getPol : Complexity.complexity -> Expexp.expexp
+      val c2lsc : Complexity.t -> Poly.var list -> LSC.size_data
+      val getPol : Complexity.t -> Expexp.expexp
       val gscForNonTrivialScc : CTRSObl.t ->
         Tgraph.G.t * (Tgraph.G.vertex * global_trans_data) array ->
         Tgraph.G.t * (Tgraph.G.vertex * (global_trans_data list * 'c)) array ->
@@ -22,19 +22,19 @@ module type S =
       val getVarsizeProduct :
         CTRSObl.t ->
         global_trans_data list ->
-        int list list -> Complexity.complexity
+        int list list -> Complexity.t
       val getVarsizeFactor :
         CTRSObl.t ->
         global_trans_data ->
-        int list -> Complexity.complexity
+        int list -> Complexity.t
       val getScaleProduct :
         CTRSObl.t ->
         global_trans_data list ->
-        int list list -> Complexity.complexity
+        int list list -> Complexity.t
       val getScaleFactor :
         CTRSObl.t ->
         global_trans_data ->
-        int list -> Complexity.complexity
+        int list -> Complexity.t
       val isTooBig : global_trans_data -> bool
       val isPossiblyScaledSumPlusConstant :
         global_trans_data -> bool
@@ -70,7 +70,7 @@ module type S =
         CTRSObl.t ->
         Poly.var list ->
         global_trans_data ->
-        Complexity.complexity
+        Complexity.t
       val getPossiblyScaledSumPlusConstantTerm :
         CTRSObl.t ->
         Tgraph.G.t *
@@ -81,13 +81,13 @@ module type S =
          LSC.size_data)
         list ->
         global_trans_data ->
-        int list -> Complexity.complexity
+        int list -> Complexity.t
       val getTermForSum :
         global_trans_data list ->
         Poly.var list ->
         (global_trans_data list *
          LSC.size_data)
-        list -> int -> Complexity.complexity
+        list -> int -> Complexity.t
       val takeout :
         global_trans_data list ->
         global_trans_data list ->
@@ -126,7 +126,7 @@ module type S =
         Poly.var list ->
         (global_trans_data list *
          LSC.size_data)
-        list -> Complexity.complexity list list
+        list -> Complexity.t list list
       
       (** computes global size bound for one SCC in the RVG *)
       val computeGlobalSizeBound :
@@ -152,21 +152,21 @@ module type S =
       val empty : 'a RVMap.t
       val findEntry :
         LSC.size_data RVMap.t ->
-        rule -> int -> int -> Poly.var list -> Complexity.complexity
+        rule -> int -> int -> Poly.var list -> Complexity.t
       val extractSizeMapForRule :
         LSC.size_data RVMap.t ->
         rule ->
-        int -> Poly.var list -> (string * Complexity.complexity) list
+        int -> Poly.var list -> (string * Complexity.t) list
       val extractSizeMapForRuleForVars :
         LSC.size_data RVMap.t ->
         rule ->
-        int -> Poly.var list -> (Poly.var * Complexity.complexity) list
+        int -> Poly.var list -> (Poly.var * Complexity.t) list
       val dumpGSCs :
         (rule * ((int * int) * LSC.size_data)) list -> string
       val getSizeComplexitiesForRule :
         rule ->
         LSC.size_data RVMap.t ->
-        (Poly.var list -> Complexity.complexity) list
+        (Poly.var list -> Complexity.t) list
       val printSizeComplexities :
         CTRSObl.t -> LSC.size_data RVMap.t -> string
     end

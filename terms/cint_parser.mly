@@ -14,8 +14,9 @@
 %left POWER
 %nonassoc IDENT
 
-%start cint_eol
+%start cint_eol poly
 %type <string * Cint.cint> cint_eol
+%type <(Big_int.big_int * Poly.monomial) list> poly
 
 %%
 

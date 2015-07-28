@@ -26,7 +26,7 @@ LIBPATH=-cflags -I,+ocamlgraph -lflags -I,+ocamlgraph $(LIBPATH_APRON) $(LIBPATH
 LIBS=-libs graph,unix,nums,str$(LIBS_APRON)$(LIBS_Z3)
 PP_OPTS=-pp "camlp4o pa_macro.cmo $(PP_OPTS_APRON) $(PP_OPTS_Z3)"
 
-OPTS=${PP_OPTS} -cflags -warn-error,+a
+OPTS=${PP_OPTS} -cflags -warn-error,+a -pkg yojson
 
 default: kittel koat
 

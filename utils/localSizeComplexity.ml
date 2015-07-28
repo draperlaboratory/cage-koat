@@ -520,10 +520,10 @@ module type S =
       val equalVar : 'a list -> 'a list -> bool
       val isConstant : localcomplexity * 'a list -> bool
       val complexity2localcomplexity :
-        Complexity.complexity -> Poly.var list -> size_data
+        Complexity.t -> Poly.var list -> size_data
       val getVarNumList : Poly.var list -> Poly.var list -> int -> int list
       val toSmallestComplexity :
-        size_data -> Poly.var list -> Complexity.complexity
+        size_data -> Poly.var list -> Complexity.t
       val getSum : int list -> Poly.var list -> Expexp.expexp
       val add : size_data -> size_data ->  Poly.var list -> size_data
       val addMax : Big_int.big_int -> int list -> size_data -> Poly.var list -> size_data
@@ -537,7 +537,7 @@ module type S =
       val addAsSmallestComplexities : size_data -> size_data -> Poly.var list -> size_data
       val addList : size_data list -> Poly.var list -> size_data
       val getMax : size_data -> size_data -> Poly.var list -> size_data
-      val getExpexp : Complexity.complexity -> Expexp.expexp
+      val getExpexp : Complexity.t -> Expexp.expexp
       val listMax : size_data list -> Poly.var list -> size_data
       val toStringLocalComplexity : size_data -> string
       val varString : int list -> string
