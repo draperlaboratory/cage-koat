@@ -29,6 +29,7 @@ module TGraph = Tgraph.Make(Rule)
 open CTRSObl
 open CTRS
 
+module FMap = Annot.FMap
 module KnowledgeProc = KnowledgePropagationProc.Make(CTRSObl)
 module UnreachableProc = DeleteUnreachableProc.Make(CTRSObl)
 module UnsatProc = DeleteUnsatProc.Make(CTRSObl)
@@ -51,7 +52,7 @@ let proofs = ref []
 let output_nums = ref []
 let input_nums = ref []
 let did_ai = ref false
-let todo = ref (CTRSObl.getInitialObl [] "", (Tgraph.G.empty, Array.of_list []), None, 0)
+let todo = ref (CTRSObl.getInitialObl FMap.empty [] "", (Tgraph.G.empty, Array.of_list []), None, 0)
 
 let rec check trs =
   if trs = [] then
@@ -78,7 +79,7 @@ and checkStartCondition tgraph trs startfun =
     if (TGraph.getPreds tgraph startRules) <> [] then
       raise (Cint_aux.ParseException (0, 0, "Error: Start nodes have incoming edges!"))
 
-let rec process trs maxchaining startfun =
+let rec process trs maxchaining startfun iface =
   check trs;
   i := 1;
   proofs := [];
@@ -86,7 +87,7 @@ let rec process trs maxchaining startfun =
   output_nums := [];
   ChainProc.max_chaining := maxchaining;
   ChainProc.done_chaining := 0;
-  let initObl = CTRSObl.getInitialObl trs startfun in
+  let initObl = CTRSObl.getInitialObl iface.Annot.functions trs startfun in
   let maybeSlicedObl =
     match (SlicingProc.process initObl) with
     | None -> initObl

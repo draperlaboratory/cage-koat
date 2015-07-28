@@ -4,10 +4,10 @@ module type S =
       type t = {
         ctrs : CTRS.t;
         cost : Expexp.expexp CTRS.RuleMap.t;
-        complexity : Complexity.complexity CTRS.RuleMap.t;
+        complexity : Complexity.t CTRS.RuleMap.t;
         leafCost : Expexp.expexp;
       }
-      val getComplexity : t -> CTRS.RuleT.rule -> Complexity.complexity
+      val getComplexity : t -> CTRS.RuleT.rule -> Complexity.t
       val getCost : t -> CTRS.RuleT.rule -> Expexp.expexp
       val toStringPrefix : string -> t -> string
       val toString : t -> string
@@ -16,7 +16,7 @@ module type S =
       val hasUnknownComplexity : t -> CTRS.RuleT.rule -> bool
       val getUnknownComplexityRules : t -> CTRS.RuleT.rule list
       val getKnownComplexityRules : t -> CTRS.RuleT.rule list
-      val getInitialObl : CTRS.RuleT.rule list -> Term.funSym -> t
+      val getInitialObl : Annot.specMap -> CTRS.RuleT.rule list -> Term.funSym -> t
       val haveSameComplexities : t -> t -> bool
     end
 

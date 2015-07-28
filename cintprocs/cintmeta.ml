@@ -27,6 +27,7 @@ module TGraph  = Cintfarkaspolo.TGraph
 
 open CTRSObl
 open CTRS
+open Annot
 
 module KnowledgeProc = KnowledgePropagationProc.Make(CTRSObl)
 module UnreachableProc = DeleteUnreachableProc.Make(CTRSObl)
@@ -43,7 +44,7 @@ let proofs = ref []
 let output_nums = ref []
 let input_nums = ref []
 let did_ai = ref false
-let todo = ref (CTRSObl.getInitialObl [] "", (Tgraph.G.empty, Array.of_list []), None, 0)
+let todo = ref (CTRSObl.getInitialObl FMap.empty [] "", (Tgraph.G.empty, Array.of_list []), None, 0)
 
 let rec check trs =
   if trs = [] then
@@ -77,7 +78,7 @@ let rec process cint maxchaining startfun =
   output_nums := [];
   ChainProc.max_chaining := maxchaining;
   ChainProc.done_chaining := 0;
-  let initObl = CTRSObl.getInitialObl cint startfun in
+  let initObl = CTRSObl.getInitialObl FMap.empty cint startfun in
   let maybeSlicedObl =
     match (SlicingProc.process initObl) with
     | None -> initObl

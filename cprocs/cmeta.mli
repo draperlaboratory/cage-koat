@@ -20,13 +20,13 @@ val check : Rule.rule list -> unit
 val checkRules : int -> Poly.var list -> Rule.rule list -> unit
 val checkStartCondition : Tgraph.G.t * (Tgraph.G.vertex * TGraph.r) array ->
   TGraph.r list -> Term.funSym -> unit
-val process : RuleT.rule list -> int -> Term.funSym ->
-  (Complexity.complexity * (unit -> string)) option
+val process : RuleT.rule list -> int -> Term.funSym -> Annot.package ->
+  (Complexity.t * (unit -> string)) option
 val processInner : Cseparate.CTRSObl.t -> tgraph -> rvgraph ->
-  (Complexity.complexity * Cseparate.GSC.LSC.size_data Cseparate.GSC.RVMap.t * (unit -> string))
+  (Complexity.t * Cseparate.GSC.LSC.size_data Cseparate.GSC.RVMap.t * (unit -> string))
     option
 val getOverallCost : tgraph -> Cseparate.GSC.LSC.size_data GSC.RVMap.t ->
-  CTRSObl.t * tgraph * rvgraph * int -> Complexity.complexity
+  CTRSObl.t * tgraph * rvgraph * int -> Complexity.t
 val getProof : CTRSObl.t * tgraph * rvgraph *  int ->
   int list -> int list -> (int -> int -> string) list -> unit -> string
 val attachProofs : int list -> int list -> (int -> int -> string) list -> string
