@@ -33,6 +33,8 @@ let displayMap key element = tailToString element |> Printf.eprintf "%s%s\n" key
 let addBottom (t : tail) =
   (* we now have a conjunct of disjuncts [x0 /\ x1 /\ ... xn] *)
   let disjuncts = List.map (fun e -> Pc.negateCond e.guard) t in
+  (* now we've got [x0 \/ x1 \/ ... xn, we need to make that many branches to
+     bottom!*)
   let conjuncts = Pc.andOverOr disjuncts in
   let left = (List.hd t).left in (* t is guaranteed to have at least on element. *)
   let bottoms accum bottomGuard =
