@@ -42,7 +42,18 @@ let addBottom (t : tail) =
     if possible then
       {left = left; right = bottom; guard = bottomGuard; } :: accum else
      accum in
+  (* we may want to reduce, combine branches eventually, but not now. *)
   List.fold_left bottoms t conjuncts
+
+let branches _ = function
+  | []
+  | [_] -> false
+  | _ -> true
+
+let hasBranches map = Branches.exists branches map
+let branchingOnly map = Branches.filter branches map
+let branchingKeys map =
+  Branches.fold (fun k el ac -> if branches k el then k::ac else ac) map []
 
 
 let rec processRelationships map = function
@@ -73,7 +84,10 @@ let main () =
     begin
       Printf.printf "Detect Branch %s\n\n" !filename;
       let _, system = Parser.parseCint !filename Simple.Stmts in
-      processRelationships Branches.empty system |> Branches.iter displayMap
+      let branchMap = processRelationships Branches.empty system in
+      let leadToBranch = branchingKeys branchMap in
+      Branches.iter displayMap branchMap;
+      List.iter (Printf.eprintf "%s leads to a branch\n") leadToBranch
     end
 
 let _ = main ()
