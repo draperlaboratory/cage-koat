@@ -50,6 +50,9 @@ dep: dep.ml
 branch: detectBranch.ml
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} detectBranch.native
 
+rule: ruleLoop.ml
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} ruleLoop.native
+
 koat.d.byte: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koat.d.byte
 
