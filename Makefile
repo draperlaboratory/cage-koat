@@ -32,6 +32,8 @@ default: kittel koat
 
 all: kittel koat convert
 
+unitTests: dep branch rule ruleInfluence
+
 kittel: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} kittel.native
 
