@@ -32,7 +32,7 @@ default: kittel koat
 
 all: kittel koat convert
 
-unitTests: dep branch rule ruleInfluence
+unitTests: dep branch rule ruleInfluence detectLeak
 
 kittel: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} kittel.native
