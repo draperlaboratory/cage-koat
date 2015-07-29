@@ -54,15 +54,17 @@ let infoMap map =
     then Acyclic
     else ReachesCycle) map
 
-
-let processRules map = function
+let rec processRulesInt map = function
   | [] -> map
   | hd::tl ->
     let (hFun, _) = hd.CR.lhs
     and tail = List.map fst hd.CR.rhss |> ofList in
     let prev = try Connectivity.find hFun map with Not_found -> Reaches.empty in
     let toAdd = Reaches.union prev tail in
-    Connectivity.add hFun toAdd map
+    processRulesInt (Connectivity.add hFun toAdd map) tl
+
+let processRules lst =
+  processRulesInt Connectivity.empty lst
 
 let main () =
   let usage = "" in
@@ -77,7 +79,7 @@ let main () =
     begin
       Printf.printf "Rule Connectivity %s\n\n" !filename;
       let entrFun, system = Parser.parseCint !filename Simple.Stmts in
-      let conMap = processRules Connectivity.empty system |> saturateConnectivity in
+      let conMap = processRules system |> saturateConnectivity in
       conMap
     end
 
