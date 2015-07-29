@@ -1,4 +1,10 @@
-type reachableGraph
+type reachablePosition = {
+  argPos : DepStructs.argPos;
+  qual : DepStructs.qual;
+}
+
+type reachablePositions = (DepStructs.argPos, reachablePosition) Hashtbl.t
+type reachableGraph = (DepStructs.argPos, reachablePositions) Hashtbl.t
 
 (** Given a list of relationships mined from the rules of the transition system,
     produce a graph, where the nodes are functions * argument positions, and the

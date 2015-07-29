@@ -56,7 +56,7 @@ let branchingKeys map =
   Branches.fold (fun k el ac -> if branches k el then k::ac else ac) map []
 
 
-let rec processRelationships map = function
+let rec processRelationshipsInt map = function
   | [] -> Branches.map addBottom map
   | hd::tl ->
     let (funSym, _) = hd.CR.lhs
@@ -68,7 +68,9 @@ let rec processRelationships map = function
       with Not_found -> [] in
     let toAdd = tailEls @ prev in
     assert(toAdd <> []);
-    processRelationships (Branches.add funSym toAdd map) tl
+    processRelationshipsInt (Branches.add funSym toAdd map) tl
+
+let processRelationships lst = processRelationshipsInt Branches.empty lst
 
 
 let main () =
@@ -84,7 +86,7 @@ let main () =
     begin
       Printf.printf "Detect Branch %s\n\n" !filename;
       let _, system = Parser.parseCint !filename Simple.Stmts in
-      let branchMap = processRelationships Branches.empty system in
+      let branchMap = processRelationships system in
       let leadToBranch = branchingKeys branchMap in
       Branches.iter displayMap branchMap;
       List.iter (Printf.eprintf "%s leads to a branch\n") leadToBranch

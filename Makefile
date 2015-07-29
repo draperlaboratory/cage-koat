@@ -49,6 +49,9 @@ ruleInfluence: ruleInfluence.ml
 dep: dep.ml
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} dep.native
 
+detectLeak: detectLeak.ml
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} detectLeak.native
+
 branch: detectBranch.ml
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} detectBranch.native
 
