@@ -1,5 +1,6 @@
 
 module CR = Comrule
+open DepStructs
 
 module Branches = Map.Make(String)
 
@@ -14,6 +15,19 @@ type tailElement = {
 type tail = tailElement list
 
 let (bottom : Term.term) = ("Bottom", [])
+
+let argPosInfluencesBranch argPos te =
+  let inLeft = (fst te.left) = argPos.fName
+  and inRight = (fst te.right) = argPos.fName in
+  let argument =
+    if inLeft then
+      Some (List.nth (snd te.left) argPos.pos )
+    else if inRight then
+      Some (List.nth (snd te.right) argPos.pos )
+    else None in
+  match argument with
+  | None -> false
+  | Some plist -> Pc.shareVars plist te.guard
 
 let tailElementToString (te : tailElement) =
   Printf.sprintf "%s -> %s :|: %s"

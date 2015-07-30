@@ -38,15 +38,19 @@ let secretBranches (system : CR.rule list) (secrets : argPos list) =
     let reachablefrom =
       try
         let rp = Hashtbl.find flowGraph secret in
-        Hashtbl.fold (fun key el accum -> key::accum) rp []
+        Hashtbl.fold (fun key el accum -> el.Dep.argPos::accum) rp secrets
       with Not_found -> [] in
     let dangerousBranches =
-    List.fold_left (fun accum rp ->
+    List.fold_left (fun accum apos ->
       try
-        (* if the symbol isn't part of a branch, it's a safe branch. *)
-        if try DB.Branches.find rp.fName safeBranches with Not_found -> true
-        then accum
-        else rp.fName::accum
+        let fName = apos.fName in
+        let branch = DB.Branches.find fName branchMap
+        and safe = DB.Branches.find fName safeBranches
+        and influence = DB.argPosInfluencesBranch apos in
+        if (not safe) &&
+          List.fold_left (fun accum b -> accum || influence b) false branch
+        then fName :: accum
+        else accum
       with Not_found -> accum) [] reachablefrom in
     dangerousBranches
   ) secrets

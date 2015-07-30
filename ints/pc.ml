@@ -249,3 +249,15 @@ let negateCond = function
   | [singleton] -> [[negateAtom singleton]]
     (* Here we get a list of disjuncts.  There's no support for this. *)
   | lst -> List.map (fun el -> [negateAtom el]) lst
+
+let atomShareVars poly = function
+    | Equ (l, r)
+    | Neq (l, r)
+    | Geq (l, r)
+    | Gtr (l, r)
+    | Leq (l, r)
+    | Lss (l, r) -> Poly.shareVars poly l || Poly.shareVars poly r
+
+let rec shareVars poly = function
+  | [] -> false
+  | hd :: tl -> atomShareVars poly hd || shareVars poly tl

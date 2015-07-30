@@ -37,3 +37,4 @@ val negateAtom : atom -> atom
 (* cond list represents the disjuncts. *)
 val negateCond : cond -> cond list
 val andOverOr : cond list list -> cond list
+val shareVars : Poly.poly -> cond -> bool
