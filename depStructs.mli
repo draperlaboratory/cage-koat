@@ -1,6 +1,7 @@
 type argPos = {
   fName : string;
   pos : int;
+  p : Poly.poly;
 }
 
 type qual =

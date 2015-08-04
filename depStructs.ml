@@ -1,6 +1,7 @@
 type argPos = {
   fName : string;
   pos : int;
+  p : Poly.poly;
 }
 
 type qual =
@@ -87,6 +88,9 @@ struct
   let equal a b = argPosEq a b
   let hash el = argPosHash (F.getHash ()) el
   let compare a b = argPosCompare (F.getHash ()) a b
+  let (=) = equal
+  let (>) a b = (hash a) > (hash b)
+  let (>=) a b = (hash a) >= (hash b)
 end
 
 module QualEdge : sig
@@ -157,7 +161,7 @@ let draw ?(augmentVertex = (fun v -> []) ) g fname =
     Some { Graph.Graphviz.DotAttributes.sg_name = sgName;
            Graph.Graphviz.DotAttributes.sg_attributes = [`Label sgName]; }
   let vertex_attributes v =
-    let base = [`Shape `Box; `Label (Printf.sprintf "%i" v.pos)]
+    let base = [`Shape `Box; `Label (Printf.sprintf "%s" (Poly.toString v.p))]
     and addition = augmentVertex v in
     base @ addition
   let vertex_name v = argPosToString v

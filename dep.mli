@@ -3,8 +3,19 @@ type reachablePosition = {
   qual : DepStructs.qual;
 }
 
-type reachablePositions = (DepStructs.argPos, reachablePosition) Hashtbl.t
-type reachableGraph = (DepStructs.argPos, reachablePositions) Hashtbl.t
+module ArgPosHash : sig
+  type t = DepStructs.argPos
+end
+
+module ArgPosTable : sig
+  type key = ArgPosHash.t
+  type 'a t
+  val find : 'a t -> key -> 'a
+  val mem : 'a t -> key -> bool
+end
+
+type reachablePositions = reachablePosition ArgPosTable.t
+type reachableGraph = reachablePositions ArgPosTable.t
 
 (** Given a list of relationships mined from the rules of the transition system,
     produce a graph, where the nodes are functions * argument positions, and the

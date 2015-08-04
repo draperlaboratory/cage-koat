@@ -5,18 +5,25 @@ type reachablePosition = {
   qual : qual;
 }
 
-type reachablePositions = (argPos, reachablePosition) Hashtbl.t
-type reachableGraph = (argPos, reachablePositions) Hashtbl.t
+module ArgPosHash = struct
+  type t = argPos
+  let equal a b = a.pos = b.pos && a.fName = b.fName
+  let hash i = Hashtbl.hash (i.pos, i.fName)
+end
 
+module ArgPosTable = Hashtbl.Make(ArgPosHash)
+
+type reachablePositions = reachablePosition ArgPosTable.t
+type reachableGraph = reachablePositions ArgPosTable.t
 
 (** Is a given argument position critical to its function in a reachableGraph
 
     That is, after the graph has saturated, is there a delta path between this
     argument and itself.  **)
-let criticalArgument (graph : reachableGraph) (pos : argPos) =
-  let reachableFrom = Hashtbl.find graph pos in
+let criticalArgument graph (pos : argPos) =
+  let reachableFrom = ArgPosTable.find graph pos in
   try
-    let rp = Hashtbl.find reachableFrom pos in
+    let rp = ArgPosTable.find reachableFrom pos in
     match rp.qual with
     | Delta -> true
     | _ -> false
@@ -32,20 +39,20 @@ let criticalArgument (graph : reachableGraph) (pos : argPos) =
      The passed position is Equal and the previous was Unknown
      The passed position is Delta, and the previous was not Delta
 **)
-let updateReachable (rpt : reachablePositions) (pos : reachablePosition) =
+let updateReachable rpt (pos : reachablePosition) =
   try
-    let prev = Hashtbl.find rpt pos.argPos in
+    let prev = ArgPosTable.find rpt pos.argPos in
     match (prev.qual, pos.qual) with
     | (Equal, Delta)
     | (Unknown, Delta)
     | (Unknown, Equal) ->
       begin
-        Hashtbl.replace rpt pos.argPos pos;
+        ArgPosTable.replace rpt pos.argPos pos;
         true
       end
     | _ -> false
   with Not_found ->
-    Hashtbl.replace rpt pos.argPos pos;
+    ArgPosTable.replace rpt pos.argPos pos;
     true
 
 (**
@@ -53,13 +60,13 @@ let updateReachable (rpt : reachablePositions) (pos : reachablePosition) =
    just reachablePositions
 **)
 
-let addEdge (graph : reachableGraph) (src : argPos) (dest : reachablePosition) =
+let addEdge graph (src : argPos) (dest : reachablePosition) =
   try
-    let reachable = Hashtbl.find graph src in
+    let reachable = ArgPosTable.find graph src in
     updateReachable reachable dest
   with Not_found ->
-    let toAdd = Hashtbl.create 10 in
-    Hashtbl.replace graph src toAdd;
+    let toAdd = ArgPosTable.create 10 in
+    ArgPosTable.replace graph src toAdd;
     updateReachable toAdd dest
 
 (**
@@ -69,9 +76,9 @@ let addEdge (graph : reachableGraph) (src : argPos) (dest : reachablePosition) =
 
    Returns true if something was updated in the merge
 **)
-let merge (graph : reachableGraph) (src : argPos) (dest : reachablePosition) =
-  let srcReach = Hashtbl.find graph src in
-  let destReach = Hashtbl.find graph dest.argPos in
+let merge graph (src : argPos) (dest : reachablePosition) =
+  let srcReach = ArgPosTable.find graph src in
+  let destReach = ArgPosTable.find graph dest.argPos in
   let toFold =
   match dest.qual with
   | Delta ->
@@ -82,17 +89,17 @@ let merge (graph : reachableGraph) (src : argPos) (dest : reachablePosition) =
   | _ ->
       (fun destPos destEdge accum ->
         updateReachable srcReach destEdge || accum) in
-  Hashtbl.fold toFold destReach false
+  ArgPosTable.fold toFold destReach false
 
-let doMerges (graph : reachableGraph) (src : argPos) =
-  let srcReach = Hashtbl.find graph src in
-  Hashtbl.fold (fun _ rp accum -> merge graph src rp || accum) srcReach false
+let doMerges graph (src : argPos) =
+  let srcReach = ArgPosTable.find graph src in
+  ArgPosTable.fold (fun _ rp accum -> merge graph src rp || accum) srcReach false
 
 (** Given the list of transition relationships found by analyzing
     the rules one by one, builds an initial representation of the rule graph,
     appropriate for determining information flow. *)
 let processRelationships relationships =
-  let graph = Hashtbl.create 100 in
+  let graph = ArgPosTable.create 100 in
   let starts =
     List.map
       (fun rt ->
