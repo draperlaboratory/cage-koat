@@ -12,6 +12,7 @@ module ArgPosTable : sig
   type 'a t
   val find : 'a t -> key -> 'a
   val mem : 'a t -> key -> bool
+  val fold : (key -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 end
 
 type reachablePositions = reachablePosition ArgPosTable.t
