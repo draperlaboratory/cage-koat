@@ -28,21 +28,6 @@ exception Timeout
 let handle_sigalrm signo =
   raise Timeout
 
-let timed_run3 tsecs defaultval f arg1 arg2 arg3 =
-  let oldsig = Sys.signal Sys.sigalrm (Sys.Signal_handle handle_sigalrm) in
-    try
-      set_timer tsecs;
-      let res = f arg1 arg2 arg3 in
-        set_timer 0.0;
-        Sys.set_signal Sys.sigalrm oldsig;
-        res
-    with
-      | Timeout ->
-        (
-          Sys.set_signal Sys.sigalrm oldsig;
-          defaultval
-        )
-
 let timed_run4 tsecs defaultval f arg1 arg2 arg3 arg4 =
   let oldsig = Sys.signal Sys.sigalrm (Sys.Signal_handle handle_sigalrm) in
     try
@@ -58,6 +43,7 @@ let timed_run4 tsecs defaultval f arg1 arg2 arg3 arg4 =
           defaultval
         )
 
+
 (* command line stuff *)
 
 let combine = ref Simple.Ctrls
@@ -65,6 +51,7 @@ let filename = ref ""
 let ifacename = ref ""
 let timeout = ref 0.0
 let maxchaining = ref 15
+let is_space = ref false
 
 let usage = "usage: " ^ Sys.argv.(0) ^ " <filename>"
 
@@ -102,22 +89,32 @@ let checkSmtSolver s printer =
 
 let rec speclist =
   [
-    ("-combine", Arg.String (fun s -> combine := stringToCombine s print_usage), "     - Set the combination method for Simple programs (statements/controlpoints/ifs-loops/loops)");
+    ("-combine", Arg.String (fun s -> combine := stringToCombine s print_usage),
+     "         - Set the combination method for Simple programs (statements/controlpoints/ifs-loops/loops)");
     ("--combine", Arg.String (fun s -> combine := stringToCombine s print_usage), "");
-    ("-timeout", Arg.Set_float timeout, Printf.sprintf "     - Set the timeout (seconds, 0 = no timeout) [default %.2f]" !timeout);
+    ("-timeout", Arg.Set_float timeout,
+     Printf.sprintf "         - Set the timeout (seconds, 0 = no timeout) [default %.2f]" !timeout);
     ("--timeout", Arg.Set_float timeout, "");
     ("-smt-solver", Arg.String (fun s -> Smt.setSolver (checkSmtSolver
-s print_usage)), "  - Set the SMT solver (" ^ (String.concat "/" supportedSmtSolvers) ^ ")");
+s print_usage)),
+     "      - Set the SMT solver (" ^ (String.concat "/" supportedSmtSolvers) ^ ")");
     ("--smt-solver", Arg.String (fun s -> Smt.setSolver (checkSmtSolver s print_usage)), "");
-    ("-max-chaining", Arg.Set_int maxchaining, Printf.sprintf "- Set the maximum number of chaining processor applications [default %i]" !maxchaining);
+    ("-max-chaining", Arg.Set_int maxchaining,
+     Printf.sprintf "    - Set the maximum number of chaining processor applications [default %i]" !maxchaining);
     ("--max-chaining", Arg.Set_int maxchaining, "");
-    ("-help", Arg.Unit (fun () -> print_usage (); exit 1), "        - Display this list of options");
+    ("-help", Arg.Unit (fun () -> print_usage (); exit 1),
+     "            - Display this list of options");
     ("--help", Arg.Unit (fun () -> print_usage (); exit 1), "");
-    ("-log", Arg.Int (fun i -> Log.logging_level := i), Printf.sprintf "         - Print live log (level 1) or debug (level 5) output during proof [default %i]" !Log.logging_level);
+    ("-log", Arg.Int (fun i -> Log.logging_level := i),
+     Printf.sprintf "             - Print live log (level 1) or debug (level 5) output during proof [default %i]" !Log.logging_level);
     ("--log", Arg.Int (fun i -> Log.logging_level := i), "");
-    ("-version", Arg.Unit (fun () -> Printf.printf "KoAT\nCopyright 2010-2014 Stephan Falke\nVersion %s\n" Git_sha1.git_sha1; exit 1), "     - Display the version of this program");
+    ("-version", Arg.Unit (fun () -> Printf.printf "KoAT\nCopyright 2010-2014 Stephan Falke\nVersion %s\n" Git_sha1.git_sha1; exit 1),
+     "         - Display the version of this program");
     ("--version", Arg.Unit (fun () -> Printf.printf "KoAT\nCopyright 2010-2014 Stephan Falke\nVersion %s\n" Git_sha1.git_sha1; exit 1), "");
-    ("--iface-file", Arg.Set_string ifacename, "- Set the .annot interface file for specifying complexity")
+    ("-iface-file", Arg.Set_string ifacename,
+     "      - Set the .json interface file for specifying complexity");
+    ("-space-complexity", Arg.Set is_space,
+     "- Compute the space complexity instead of time")
   ]
 and print_usage () =
   Arg.usage speclist usage
@@ -135,16 +132,18 @@ let main () =
   else
     Log.init_timer ();
     let (startFun, cint) = Parser.parseCint !filename !combine in
-    let iface = Parser.parseIface !ifacename in
+    (* TODO: this is a horrible hack: make this cleaner! *)
+    let iface = if !ifacename = "" then Annot.emptyPackage else Parser.parseIface !ifacename in
+    let ctype = if !is_space then Complexity.Space else Complexity.Time in
       if Cint.isUnary cint then
         let tt = Cint.toTrs cint in
           Smt.smt_time := 0.0;
           let start = Unix.gettimeofday () in
             match if !timeout = 0.0
               then
-                Cmeta.process tt !maxchaining startFun iface
+                Cmeta.process tt !maxchaining startFun ctype
               else
-                timed_run4 !timeout None Cmeta.process tt !maxchaining startFun iface
+                timed_run4 !timeout None Cmeta.process tt !maxchaining startFun ctype
             with
               | None -> Printf.printf "MAYBE\n"
               | Some (c, proof) ->
@@ -161,9 +160,9 @@ let main () =
         let start = Unix.gettimeofday () in
           match if !timeout = 0.0
             then
-              Cintmeta.process cint !maxchaining startFun
+              Cintmeta.process cint !maxchaining startFun ctype
             else
-              timed_run3 !timeout None Cintmeta.process cint !maxchaining startFun
+              timed_run4 !timeout None Cintmeta.process cint !maxchaining startFun ctype
           with
             | None -> Printf.printf "MAYBE\n"
             | Some (c, proof) ->

@@ -20,6 +20,8 @@
 
 type t = P of Expexp.expexp | Unknown
 
+type ctype = Time | Space
+
 let toStringCompetitionStyle c =
   match c with
     | Unknown -> "MAYBE"

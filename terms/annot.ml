@@ -41,3 +41,21 @@ type package = {
 }
 
 let emptyPackage = { pname = ""; created = ""; functions = FMap.empty }
+
+
+let has_space specs f =
+  let open Complexity in
+  if FMap.mem f specs then
+    let c = FMap.find f specs in
+    match c.complexity.upperSpace with
+    | P _     -> true
+    | Unknown -> false
+  else
+    false
+
+let get_space specs f =
+  let open Complexity in
+  let c = FMap.find f specs in
+  match c.complexity.upperSpace with
+  | P p     -> p
+  | Unknown -> assert false
