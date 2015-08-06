@@ -22,11 +22,11 @@ ifeq (${HAVE_Z3},true)
   PP_OPTS_Z3=-DHAVE_Z3
 endif
 
-LIBPATH=-cflags -I,+ocamlgraph -lflags -I,+ocamlgraph $(LIBPATH_APRON) $(LIBPATH_Z3)
-LIBS=-libs graph,unix,nums,str$(LIBS_APRON)$(LIBS_Z3)
+LIBPATH=$(LIBPATH_APRON) $(LIBPATH_Z3)
+LIBS=-libs unix,nums,str$(LIBS_APRON)$(LIBS_Z3)
 PP_OPTS=-pp "camlp4o pa_macro.cmo $(PP_OPTS_APRON) $(PP_OPTS_Z3)"
 
-OPTS=${PP_OPTS} -cflags -warn-error,+a -pkg yojson
+OPTS=${PP_OPTS} -use-ocamlfind -cflags -warn-error,+a -pkg yojson -pkg ocamlgraph
 
 default: kittel koat
 
@@ -76,8 +76,8 @@ koatCESConv: force_look
 clean: force_look
 	ocamlbuild -clean
 	rm -f git_sha1.ml
-	-rm *\~
-	-rm */*\~
+	-rm -f *\~
+	-rm -f */*\~
 
 make_git_sha1: force_look
 	./make_git_sha1.sh git_sha1.ml
