@@ -84,14 +84,10 @@ module Make(CTRS : Ctrs.S) = struct
     in
     List.map make_dummy fs
     
-  (* Takes a rule and, if the head symbol is "f", returns
-     a cubic complexity, otherwise returns Unknown *)
-  let initComp specs rule start =
+  (* Takes a rule and returns the appropriate initial complexity *)
+  let initComp rule start =
     let f = RuleT.getLeftFun rule in
-    if FMap.mem f specs then
-      let cs = FMap.find f specs in
-      cs.Annot.complexity.Annot.upperTime
-    else if f = start then
+    if f = start then
       Complexity.P Expexp.one
     else
       Complexity.Unknown
@@ -115,18 +111,29 @@ module Make(CTRS : Ctrs.S) = struct
     | P p     -> p
     | Unknown -> assert false
 
+  let get_time specs f =
+    let open Annot in
+    let open Complexity in
+    let c = FMap.find f specs in
+    match c.complexity.upperTime with
+    | P p     -> p
+    | Unknown -> assert false
+
 
   let spaceOrTimeWeight specs rule is_space =
     let alloc_fun = "new" in
-    if is_space then begin
-      let f = RuleT.getLeftFun rule in
-      if f = alloc_fun then
-        Expexp.one
-      else if has_space specs f then
-        get_space specs f
-      else
-        Expexp.zero
-    end
+    let f = RuleT.getLeftFun rule in
+    if is_space then
+      begin
+        if f = alloc_fun then
+          Expexp.one
+        else if has_space specs f then
+          get_space specs f
+        else
+          Expexp.zero
+      end
+    else if FMap.mem f specs then
+      get_time specs f
     else
       Expexp.one
 
@@ -144,7 +151,7 @@ module Make(CTRS : Ctrs.S) = struct
       List.fold_left
         (fun (rules, cost, compl) rule ->
           (rule::rules, RuleMap.add rule (spaceOrTimeWeight specs rule false) cost,
-                        RuleMap.add rule (initComp specs rule start) compl))
+                        RuleMap.add rule (initComp rule start) compl))
         ([], RuleMap.empty, RuleMap.empty) rules in
     {
       ctrs = { rules = rules ;
