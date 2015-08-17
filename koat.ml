@@ -133,46 +133,46 @@ let main () =
     Log.init_timer ();
     let (startFun, cint) = Parser.parseCint !filename !combine in
     (* TODO: this is a horrible hack: make this cleaner! *)
-    let iface = if !ifacename = "" then Annot.emptyPackage else Parser.parseIface !ifacename in
+    let _ (* iface *) = if !ifacename = "" then Annot.emptyPackage else Parser.parseIface !ifacename in
     let ctype = if !is_space then Complexity.Space else Complexity.Time in
-      if Cint.isUnary cint then
-        let tt = Cint.toTrs cint in
-          Smt.smt_time := 0.0;
-          let start = Unix.gettimeofday () in
-            match if !timeout = 0.0
-              then
-                Cmeta.process tt !maxchaining startFun ctype
-              else
-                timed_run4 !timeout None Cmeta.process tt !maxchaining startFun ctype
-            with
-              | None -> Printf.printf "MAYBE\n"
-              | Some (c, proof) ->
-                (
-                  let stop = Unix.gettimeofday () in
-                    Printf.printf "%s\n\n" (Complexity.toStringCompetitionStyle c);
-                    Printf.printf "%s" (proof ());
-                    Printf.printf "\n\n%s\n\n" ("Complexity upper bound " ^ (Complexity.toString c));
-                    Printf.printf "Time: %.3f sec (SMT: %.3f sec)\n" (stop -. start) (!Smt.smt_time)
-                )
-      else
+    if Cint.isUnary cint then
+      let tt = Cint.toTrs cint in
+      Smt.smt_time := 0.0;
+      let start = Unix.gettimeofday () in
+      match if !timeout = 0.0
+        then
+          Cmeta.process tt !maxchaining startFun ctype
+        else
+          timed_run4 !timeout None Cmeta.process tt !maxchaining startFun ctype
+      with
+      | None -> Printf.printf "MAYBE\n"
+      | Some (c, proof) ->
+        (
+          let stop = Unix.gettimeofday () in
+          Printf.printf "%s\n\n" (Complexity.toStringCompetitionStyle c);
+          Printf.printf "%s" (proof ());
+          Printf.printf "\n\n%s\n\n" ("Complexity upper bound " ^ (Complexity.toString c));
+          Printf.printf "Time: %.3f sec (SMT: %.3f sec)\n" (stop -. start) (!Smt.smt_time)
+        )
+    else
       (
         Smt.smt_time := 0.0;
         let start = Unix.gettimeofday () in
-          match if !timeout = 0.0
-            then
-              Cintmeta.process cint !maxchaining startFun ctype
-            else
-              timed_run4 !timeout None Cintmeta.process cint !maxchaining startFun ctype
-          with
-            | None -> Printf.printf "MAYBE\n"
-            | Some (c, proof) ->
-              (
-                let stop = Unix.gettimeofday () in
-                  Printf.printf "%s\n\n" (Complexity.toStringCompetitionStyle c);
-                  Printf.printf "%s" (proof ());
-                  Printf.printf "%s\n\n" ("Complexity upper bound " ^ (Complexity.toString c));
-                  Printf.printf "Time: %.3f sec (SMT: %.3f sec)\n" (stop -. start) (!Smt.smt_time)
-              )
+        match if !timeout = 0.0
+          then
+            Cintmeta.process cint !maxchaining startFun ctype
+          else
+            timed_run4 !timeout None Cintmeta.process cint !maxchaining startFun ctype
+        with
+        | None -> Printf.printf "MAYBE\n"
+        | Some (c, proof) ->
+          (
+            let stop = Unix.gettimeofday () in
+            Printf.printf "%s\n\n" (Complexity.toStringCompetitionStyle c);
+            Printf.printf "%s" (proof ());
+            Printf.printf "%s\n\n" ("Complexity upper bound " ^ (Complexity.toString c));
+            Printf.printf "Time: %.3f sec (SMT: %.3f sec)\n" (stop -. start) (!Smt.smt_time)
+          )
       )
-
+        
 let _ = main ()
