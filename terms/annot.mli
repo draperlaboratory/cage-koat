@@ -1,8 +1,4 @@
-type fname = string
-
-module FMap : Map.S with type key = fname
-
-type pos = int
+module FMap : Map.S with type key = Term.funSym
 
 type jtype =
 | Int
@@ -24,9 +20,9 @@ type complexitySpec = {
 }
 
 type functionSpec = {
-  fname : fname;
+  fname : Term.funSym;
   args : argList;
-  secretArgs : pos list; (* argument positions *)
+  secretArgs : Term.pos list; (* argument positions *)
   complexity : complexitySpec;
   pure : bool;
 }

@@ -1,5 +1,9 @@
 type funSym = string
+
+type pos = int
+
 type term = funSym * Poly.poly list
+
 val create :
   string ->
   (Big_int.big_int * (String.t * int) list) list list ->

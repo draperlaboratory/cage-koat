@@ -19,8 +19,10 @@
 *)
 
 type funSym = string
-type term = funSym * (Poly.poly list)
 
+type pos = int
+
+type term = funSym * (Poly.poly list)
 (* Create term from what the parser gives *)
 let create f arglist =
   let args = List.map Poly.construct_poly arglist in
