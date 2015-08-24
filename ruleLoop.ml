@@ -64,8 +64,10 @@ let rec processRulesInt map = function
     processRulesInt (Connectivity.add hFun toAdd map) tl
 
 let processRules lst =
-  processRulesInt Connectivity.empty lst
+  let base = Connectivity.add "Bottom" Reaches.empty Connectivity.empty in
+  processRulesInt base lst
 
+(*
 let main () =
   let usage = "" in
   let filename = ref "" in
@@ -85,3 +87,4 @@ let main () =
 
 
 let _ = main ()
+*)

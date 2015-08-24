@@ -15,7 +15,12 @@ let rec safe = function
 
 let marryBranchInfo imap bmapEl =
   let getSym e = fst e.DB.right in
-  let getCon e = RL.Connectivity.find (getSym e) imap in
+  let getCon e =
+    let sym = getSym e in
+    try RL.Connectivity.find sym imap
+    with _ ->
+      (* If this isn't Bottom, we've got an issue. *)
+      failwith (Printf.sprintf "Couldn't find %s in imap.\n" sym) in
   let rec reduce seen = function
     | [] -> seen
     | hd::tl ->
@@ -33,23 +38,34 @@ let secretBranches (system : CR.rule list) (secrets : argPos list) =
   and branchMap = DB.processRelationships system
   (* map from function symbol to connectivity of that symbol *)
   and infoMap = RL.processRules system |> RL.infoMap in
+  Printf.eprintf "Defining safe branches...\n";
   let safeBranches = DB.Branches.map (marryBranchInfo infoMap) branchMap in
+  Printf.eprintf "Mapping over secrets...\n";
   List.map (fun secret ->
     let reachablefrom =
       try
-        let rp = Dep.ArgPosTable.find flowGraph secret in
+        let rp =
+          try
+            Dep.ArgPosTable.find flowGraph secret
+          with _ -> failwith (Printf.sprintf "Can't find %s %i in flowGraph"
+          secret.fName secret.pos)
+        in
         Dep.ArgPosTable.fold (fun key el accum -> el.Dep.argPos::accum) rp secrets
       with Not_found -> [] in
     let dangerousBranches =
     List.fold_left (fun accum apos ->
       try
         let fName = apos.fName in
-        let branch = DB.Branches.find fName branchMap
-        and safe = DB.Branches.find fName safeBranches
+        let branch =
+          try DB.Branches.find fName branchMap
+          with _ -> failwith (Printf.sprintf "Can't find %s in branchmap" fName)
+        and safe =
+          try DB.Branches.find fName safeBranches
+          with _ -> failwith (Printf.sprintf "Can't find %s in safeBranches" fName)
         and influence = DB.argPosInfluencesBranch apos in
         if (not safe) &&
           List.fold_left (fun accum b -> accum || influence b) false branch
-        then fName :: accum
+        then Utils.remdup (fName :: accum)
         else accum
       with Not_found -> accum) [] reachablefrom in
     dangerousBranches
@@ -66,9 +82,11 @@ let main () =
     end
   else
     begin
-      Printf.printf "aoenuthoaensthu %s\n\n" !filename;
+      Printf.printf "DetectLeak %s\n\n" !filename;
       let entrFun, system = Parser.parseCint !filename Simple.Stmts in
-      secretBranches system
+      let unsafe = secretBranches system in
+      let pos = { fName = "f"; pos = 0; p = [], Big_int.zero_big_int} in
+      List.iter (fun l -> List.iter (Printf.eprintf "%s ") l; Printf.eprintf "\n") (unsafe [pos])
     end
 
 
