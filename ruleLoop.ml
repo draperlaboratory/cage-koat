@@ -64,7 +64,7 @@ let rec processRulesInt map = function
     processRulesInt (Connectivity.add hFun toAdd map) tl
 
 let processRules lst =
-  let base = Connectivity.add "Bottom" Reaches.empty Connectivity.empty in
+  let base = Connectivity.add DetectBranch.bottomKey Reaches.empty Connectivity.empty in
   processRulesInt base lst
 
 (*

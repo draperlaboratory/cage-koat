@@ -14,7 +14,8 @@ type tailElement = {
 
 type tail = tailElement list
 
-let (bottom : Term.term) = ("Bottom", [])
+let bottomKey = "Bottom"
+let (bottom : Term.term) = (bottomKey, [])
 
 let argPosInfluencesBranch argPos te =
   let inLeft = (fst te.left) = argPos.fName
