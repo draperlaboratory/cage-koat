@@ -1,7 +1,7 @@
 
 open AbstractRule
 
-module L = LocalSizeComplexity
+module LC = LocalSizeComplexity
 
 
 
@@ -11,7 +11,7 @@ module Make(CTRSObl : Ctrsobl.S) = struct
   module CTRS = CTRSObl.CTRS
   module RuleT = CTRS.RuleT
   module RVG = Rvgraph.Make(RuleT)
-  module LSC = LocalSizeComplexity.Make(RuleT)
+  module LSC = LC.Make(RuleT)
   module G = Tgraph.G
 
   open CTRSObl
@@ -19,8 +19,9 @@ module Make(CTRSObl : Ctrsobl.S) = struct
 
   module RVMap =
     Map.Make(
-      struct type t = RuleT.rule * (int * int)
-      let compare (r1, (rhsIdx1, varIdx1)) (r2, (rhsIdx2, varIdx2)) =
+      struct type t = RuleT.rule * LC.index
+      let compare (r1, { LC.rhsIdx = rhsIdx1; LC.varIdx = varIdx1 })
+                  (r2, { LC.rhsIdx = rhsIdx2; LC.varIdx = varIdx2 }) =
         let rComp = compare rhsIdx1 rhsIdx2 in
         if rComp <> 0 then
           rComp
@@ -32,10 +33,11 @@ module Make(CTRSObl : Ctrsobl.S) = struct
               RuleT.compare r1 r2
     end)
 
-  type size_data = Rvgraph.lc * int list
-    
+  type size_data = LC.size_data
+
   type rule = CTRSObl.CTRS.RuleT.rule
-  type global_trans_data = CTRSObl.CTRS.RuleT.rule * ((int * int) * size_data)
+  type trans_data = LSC.trans_data
+  type tds = LSC.tds
 
   let getLSC (_, (_, lsc)) =
     lsc
@@ -49,7 +51,7 @@ module Make(CTRSObl : Ctrsobl.S) = struct
 
   and gscForNonTrivialScc ctrsobl rvgraph condensed scc accu =
     if List.exists isTooBig scc then
-      (L.Unknown, [])
+      LC.unknown_size_data
     else
       let vars = CTRS.getVars ctrsobl.ctrs in
       let possiblyScaledSumPlusConstants = List.filter isPossiblyScaledSumPlusConstant scc in
@@ -57,7 +59,8 @@ module Make(CTRSObl : Ctrsobl.S) = struct
         and sccpreds = getCondensedPreds condensed [scc]
         and maxs = List.filter isMax scc
         and maxPlusConstants = List.filter isMaxPlusConstant scc in
-          let first = LSC.listMax ((List.map (fun scc -> getGSC accu scc) sccpreds) @ (List.map getAsPol maxs)) vars
+          let first = LSC.listMax ((List.map (fun scc -> getGSC accu scc) sccpreds) @
+                                      (List.map getAsPol maxs)) vars
           and second = c2lsc (Complexity.listAdd (List.map (getMaxPlusConstantTerm ctrsobl vars) maxPlusConstants)) vars
           and third = c2lsc (Complexity.listAdd (List.map2 (getPossiblyScaledSumPlusConstantTerm ctrsobl rvgraph scc vars accu) possiblyScaledSumPlusConstants v_betas)) vars in
             let sum = LSC.addList [first;second;third] vars in
@@ -90,37 +93,37 @@ module Make(CTRSObl : Ctrsobl.S) = struct
         Complexity.P (Expexp.Exp (Expexp.fromConstant s, Complexity.getExpexp r))
   and isTooBig ruleWithLSC =
     let lsc = getLSC (ruleWithLSC) in
-      match lsc with
-        | (L.Max _, _) -> false
-        | (L.MaxPlusConstant _, _) -> false
-        | (L.SumPlusConstant _, _) -> false
-        | (L.ScaledSumPlusConstant _, _) -> false
-        | (L.P p, _) -> not (LSC.isConstant lsc)
-        | (L.Unknown, _) -> true
+      match lsc.LC.bound with
+        | (LC.Max _) -> false
+        | (LC.MaxPlusConstant _) -> false
+        | (LC.SumPlusConstant _) -> false
+        | (LC.ScaledSumPlusConstant _) -> false
+        | (LC.P p) -> not (LSC.isConstant lsc)
+        | (LC.Unknown) -> true
   and isPossiblyScaledSumPlusConstant ruleWithLSC =
-    match (getLSC ruleWithLSC) with
-      | (L.SumPlusConstant _, _) -> true
-      | (L.ScaledSumPlusConstant _, _) -> true
+    match (getLSC ruleWithLSC).LC.bound with
+      | (LC.SumPlusConstant _) -> true
+      | (LC.ScaledSumPlusConstant _) -> true
       | _ -> false
   and isMaxPlusConstant ruleWithLSC =
-    match (getLSC ruleWithLSC) with
-      | (L.MaxPlusConstant _, _) -> true
+    match (getLSC ruleWithLSC).LC.bound with
+      | (LC.MaxPlusConstant _) -> true
       | _ -> false
   and isMax ruleWithLSC =
-    match (getLSC ruleWithLSC) with
-      | (L.Max _, _) -> true
+    match (getLSC ruleWithLSC).LC.bound with
+      | (LC.Max _) -> true
       | _ -> false
   and get_v_beta rvgraph scc ruleWithLSC =
     let preds = List.filter (inScc scc) (RVG.getPreds rvgraph [ruleWithLSC]) in
       get_v_beta_nums preds
   and get_v_beta_nums preds =
-    Utils.remdup (List.map (fun pred -> snd (fst (snd pred))) preds)
+    Utils.remdup (List.map (fun pred -> (fst (snd pred)).LC.varIdx) preds)
   and inScc scc rv =
     (List.exists (fun rv' -> (LSC.equalLSC (snd rv) (snd rv')) && ((fst rv) == (fst rv'))) scc) ||
     (List.exists (fun rv' -> (LSC.equalLSC (snd rv) (snd rv')) && (RuleT.equal (fst rv) (fst rv'))) scc)
   and getAsPol ruleWithLSC =
     let lsc = getLSC ruleWithLSC in
-      (L.P (Expexp.fromConstant (LSC.getE lsc)), [])
+      LC.create_size_data (LC.P (Expexp.fromConstant (LSC.getE lsc)), [])
   and getGSC accu scc =
     match accu with
       | [] -> failwith "Not found"
@@ -143,13 +146,13 @@ module Make(CTRSObl : Ctrsobl.S) = struct
     let r = CTRSObl.getComplexity ctrsobl (fst ruleWithLSC)
     and e = LSC.toSmallestComplexity (getAsPol ruleWithLSC) vars
     and preds = takeout (RVG.getPreds rvgraph [ruleWithLSC]) scc
-    and beta_nums = (snd (snd (snd ruleWithLSC))) in
+    and beta_nums = (snd (snd ruleWithLSC)).LC.active_vars in
       let toSumFor = Utils.removeAll beta_nums v_beta in
         let sumTerm = Complexity.listAdd (List.map (getTermForSum preds vars accu) toSumFor) in
           let tmp = Complexity.add e sumTerm in
             Complexity.mult r tmp
   and getTermForSum preds vars accu i =
-    let preds_i = List.filter (fun x -> snd (fst (snd x)) = i) preds in
+    let preds_i = List.filter (fun x -> (fst (snd x)).LC.varIdx = i) preds in
       let tmp = List.map (fun pred -> getGSCForOne accu pred) preds_i in
         let tmp' = LSC.listMax tmp vars in
           LSC.toSmallestComplexity tmp' vars
@@ -185,7 +188,7 @@ module Make(CTRSObl : Ctrsobl.S) = struct
     let rec insertInRet activeVarIdxs ret p =
       match activeVarIdxs with
       | [] -> failwith "internal error in Crvgraph.insertInRet"
-      | varNum::rest -> if varNum = snd (fst (snd p)) then
+      | varNum::rest -> if varNum = (fst (snd p)).LC.varIdx then
           (p::(List.hd ret))::(List.tl ret)
         else
           (List.hd ret)::(insertInRet rest (List.tl ret) p) in
@@ -218,7 +221,7 @@ module Make(CTRSObl : Ctrsobl.S) = struct
           lsc
         else
           (* max { S_l(\alpha)(S(t', v_1'), ..., S(t', v_n')) | t' \in pre(t) } *)
-          let activeVarIdxs = snd lsc in
+          let activeVarIdxs = lsc.LC.active_vars in
           let vars = CTRS.getVars ctrsobl.ctrs in
           let activeVars = List.map (List.nth vars) activeVarIdxs in
           let allPredVarBounds = getPredVarBounds (collectPreds preds activeVarIdxs) vars accu in
@@ -238,7 +241,8 @@ module Make(CTRSObl : Ctrsobl.S) = struct
     List.fold_left
       (fun acc (scc, gsc) ->
         List.fold_left
-          (fun acc (rule, ((rhsIdx, varIdx), _)) -> RVMap.add (rule, (rhsIdx, varIdx)) gsc acc)
+          (fun acc (rule, (idx, _)) -> RVMap.add
+            (rule, idx) gsc acc)
           acc scc)
       RVMap.empty sccs_with_gsb
 
@@ -247,7 +251,8 @@ module Make(CTRSObl : Ctrsobl.S) = struct
 
   (** Find bound for the i-th variable in the j-th rhs of rule r *)
   let findEntry globalSizeComplexities rule rhsIdx varIdx vars =
-    LSC.toSmallestComplexity (RVMap.find (rule, (rhsIdx, varIdx)) globalSizeComplexities) vars
+    LSC.toSmallestComplexity
+      (RVMap.find (rule, { LC.rhsIdx = rhsIdx; LC.varIdx = varIdx }) globalSizeComplexities) vars
 
   (** Extract mapping for variables X_1 .. X_{length vars} to their
       global size complexity after using the j-th rhs of rule r *)
@@ -262,7 +267,7 @@ module Make(CTRSObl : Ctrsobl.S) = struct
   (** Pretty-print list of (rule, rhs-num, arg-num, size complexity) tuples, where complexities are represented by their classes *)
   let rec dumpGSCs ruleWithGSCs =
     let dumpOneGSC (rule, gsb) =
-      let dumpGSC ((i, j), c) =
+      let dumpGSC ({ LC.rhsIdx = i; LC.varIdx = j}, c) =
         (string_of_int i) ^ "." ^ (string_of_int j) ^ ": " ^ (LSC.toStringLocalComplexity c)
       in
       (RuleT.toString rule) ^ ":: " ^ (dumpGSC gsb)
@@ -272,8 +277,8 @@ module Make(CTRSObl : Ctrsobl.S) = struct
   (** Get list of entries (each a list for each argument) for each right hand side *)
   let getSizeComplexitiesForRule rule sizeComplexities =
     (** Get list of entries, one for each argument on the right hand side *)
-    let getSizeComplexitiesForRule' rule sizeComplexities rhsIdx (_, rhsArgs) =
-      Utils.mapi (fun varIdx _ -> findEntry sizeComplexities rule rhsIdx varIdx) rhsArgs
+    let getSizeComplexitiesForRule' rule sizeComplexities rhsIdx rhs =
+      Utils.mapi (fun varIdx _ -> findEntry sizeComplexities rule rhsIdx varIdx) rhs.Term.args
     in
     Utils.concatMapi (getSizeComplexitiesForRule' rule sizeComplexities) (RuleT.getRights rule)
 
@@ -295,180 +300,111 @@ module type S =
     sig
       module CTRSObl : Ctrsobl.S
       
-      module LSC : LocalSizeComplexity.S with module RuleT = CTRSObl.CTRS.RuleT
+      module LSC : LC.S with module RuleT = CTRSObl.CTRS.RuleT
 
-      module RVMap : Map.S with type key = (CTRSObl.CTRS.RuleT.rule * (int * int))
+      module RVMap : Map.S with type key = (CTRSObl.CTRS.RuleT.rule * LC.index)
 
-      type size_data = Rvgraph.lc * int list
-
+      type size_data = LC.size_data
       type rule = CTRSObl.CTRS.RuleT.rule
-      type global_trans_data = rule * ((int * int) * size_data)
-        
+      type trans_data = LSC.trans_data
+      type tds = LSC.tds
 
-      val c2lsc : Complexity.t -> Poly.var list -> LSC.size_data
+      val c2lsc : Complexity.t -> Poly.var list -> LC.size_data
       val getPol : Complexity.t -> Expexp.expexp
-      val gscForNonTrivialScc :
-        CTRSObl.t ->
-        Tgraph.G.t *
-        (Tgraph.G.vertex *
-         global_trans_data)
-        array ->
-        Tgraph.G.t *
-        (Tgraph.G.vertex *
-         (global_trans_data list * 'c))
-        array ->
-        global_trans_data list ->
-        (global_trans_data list *
-         LSC.size_data)
-        list -> LSC.size_data
-      val getVarsizeProduct :
-        CTRSObl.t ->
-        global_trans_data list ->
-        int list list -> Complexity.t
-      val getVarsizeFactor :
-        CTRSObl.t ->
-        global_trans_data ->
-        int list -> Complexity.t
-      val getScaleProduct :
-        CTRSObl.t ->
-        global_trans_data list ->
-        int list list -> Complexity.t
-      val getScaleFactor :
-        CTRSObl.t ->
-        global_trans_data ->
-        int list -> Complexity.t
-      val isTooBig : global_trans_data -> bool
-      val isPossiblyScaledSumPlusConstant :
-        global_trans_data -> bool
-      val isMaxPlusConstant :
-        global_trans_data -> bool
-      val isMax : global_trans_data -> bool
-      val get_v_beta :
-        Tgraph.G.t *
-        (Tgraph.G.vertex *
-         global_trans_data)
-        array ->
-        global_trans_data list ->
-        global_trans_data -> int list
-      val get_v_beta_nums :
-        global_trans_data list -> int list
-      val inScc :
-        global_trans_data list ->
-        global_trans_data -> bool
-      val getAsPol :
-        global_trans_data -> LSC.size_data
-      val getGSC :
-        (global_trans_data list *
-         LSC.size_data)
-        list ->
-        global_trans_data list ->
-        LSC.size_data
-      val getGSCForOne :
-        (global_trans_data list *
-         LSC.size_data)
-        list ->
-        global_trans_data -> LSC.size_data
-      val getMaxPlusConstantTerm :
-        CTRSObl.t ->
-        Poly.var list ->
-        global_trans_data ->
-        Complexity.t
+      val gscForNonTrivialScc : CTRSObl.t ->
+        Tgraph.G.t * (Tgraph.G.vertex * trans_data) array ->
+        Tgraph.G.t * (Tgraph.G.vertex * (tds * 'c)) array ->
+        tds ->
+        (tds * LC.size_data) list -> LC.size_data
+      val getVarsizeProduct : CTRSObl.t -> tds -> int list list -> Complexity.t
+      val getVarsizeFactor : CTRSObl.t -> trans_data -> int list -> Complexity.t
+      val getScaleProduct : CTRSObl.t -> tds -> int list list -> Complexity.t
+      val getScaleFactor : CTRSObl.t -> trans_data -> int list -> Complexity.t
+      val isTooBig : trans_data -> bool
+      val isPossiblyScaledSumPlusConstant : trans_data -> bool
+      val isMaxPlusConstant : trans_data -> bool
+      val isMax : trans_data -> bool
+      val get_v_beta : Tgraph.G.t * (Tgraph.G.vertex * trans_data) array -> tds -> trans_data -> int list
+      val get_v_beta_nums : tds -> int list
+      val inScc : tds -> trans_data -> bool
+      val getAsPol : trans_data -> LC.size_data
+      val getGSC : (tds * LC.size_data) list -> tds -> LC.size_data
+      val getGSCForOne : (tds * LC.size_data) list -> trans_data -> LC.size_data
+      val getMaxPlusConstantTerm : CTRSObl.t -> Poly.var list -> trans_data -> Complexity.t
       val getPossiblyScaledSumPlusConstantTerm :
         CTRSObl.t ->
-        Tgraph.G.t *
-        (Tgraph.G.vertex *
-         global_trans_data)
-        array ->
-        global_trans_data list ->
+        Tgraph.G.t * (Tgraph.G.vertex * trans_data) array ->
+        tds ->
         Poly.var list ->
-        (global_trans_data list *
-         LSC.size_data)
+        (tds * LC.size_data)
         list ->
-        global_trans_data ->
+        trans_data ->
         int list -> Complexity.t
       val getTermForSum :
-        global_trans_data list ->
+        tds ->
         Poly.var list ->
-        (global_trans_data list *
-         LSC.size_data)
+        (tds * LC.size_data)
         list -> int -> Complexity.t
-      val takeout :
-        global_trans_data list ->
-        global_trans_data list ->
-        global_trans_data list
+      val takeout : tds -> tds -> tds
       val getCondensedPreds :
-        Tgraph.G.t *
-        (Tgraph.G.vertex *
-         (global_trans_data list * 'c))
-        array ->
-        global_trans_data list list ->
-        global_trans_data list list
+        Tgraph.G.t * (Tgraph.G.vertex * (tds * 'c))
+        array -> tds list -> tds list
       val getCondensedNums :
-        (Tgraph.G.vertex *
-         (global_trans_data list * 'c))
+        (Tgraph.G.vertex * (tds * 'c))
         array ->
-        global_trans_data list list ->
+        tds list ->
         int list
       val computeCondensedPreds :
         Tgraph.G.t ->
         (Tgraph.G.vertex *
-         (global_trans_data list * 'c))
+         (tds * 'c))
         array -> int -> int list ref -> int list ref -> unit
       val hasCondensedEdgeNums :
         Tgraph.G.t ->
-        (Tgraph.G.vertex *
-         (global_trans_data list * 'c))
+        (Tgraph.G.vertex * (tds * 'c))
         array -> int -> int -> bool
       val getSccsNums :
-        (Tgraph.G.vertex *
-         (global_trans_data list * 'c))
-        array ->
-        int list ->
-        global_trans_data list list
+        (Tgraph.G.vertex * (tds * 'c))
+        array -> int list -> tds list
       val getPredVarBounds :
-        global_trans_data list list ->
+        tds list ->
         Poly.var list ->
-        (global_trans_data list *
-         LSC.size_data)
-        list -> Complexity.t list list
+        (tds * LC.size_data) list -> Complexity.t list list
+      
+      (** computes global size bound for one SCC in the RVG *)
       val computeGlobalSizeBound :
         CTRSObl.t ->
         Tgraph.G.t *
         (Tgraph.G.vertex *
-         global_trans_data)
+         trans_data)
         array ->
         Tgraph.G.t *
         (Tgraph.G.vertex *
-         (global_trans_data list * int))
+         (tds * int))
         array ->
-        (rule * ((int * int) * LSC.size_data)) list ->
+        tds ->
         bool ->
-        ((rule * ((int * int) * LSC.size_data)) list * LSC.size_data)
-        list -> LSC.size_data
-      val compute :
-        CTRSObl.t ->
-        Tgraph.G.t *
-        (Tgraph.G.vertex *
-         global_trans_data)
-        array -> LSC.size_data RVMap.t
+        (tds * LC.size_data)
+        list -> LC.size_data
+      val compute : CTRSObl.t -> Tgraph.G.t * (Tgraph.G.vertex * trans_data) array -> LC.size_data RVMap.t
       val empty : 'a RVMap.t
       val findEntry :
-        LSC.size_data RVMap.t ->
+        LC.size_data RVMap.t ->
         rule -> int -> int -> Poly.var list -> Complexity.t
       val extractSizeMapForRule :
-        LSC.size_data RVMap.t ->
+        LC.size_data RVMap.t ->
         rule ->
         int -> Poly.var list -> (string * Complexity.t) list
       val extractSizeMapForRuleForVars :
-        LSC.size_data RVMap.t ->
+        LC.size_data RVMap.t ->
         rule ->
         int -> Poly.var list -> (Poly.var * Complexity.t) list
       val dumpGSCs :
-        (rule * ((int * int) * LSC.size_data)) list -> string
+        tds -> string
       val getSizeComplexitiesForRule :
         rule ->
-        LSC.size_data RVMap.t ->
+        LC.size_data RVMap.t ->
         (Poly.var list -> Complexity.t) list
       val printSizeComplexities :
-        CTRSObl.t -> LSC.size_data RVMap.t -> string
+        CTRSObl.t -> LC.size_data RVMap.t -> string
     end

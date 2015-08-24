@@ -79,7 +79,7 @@ and getArities cint f =
   match cint with
     | [] -> []
     | r::rr -> (getAritiesOne (Comrule.getLeft r) f) @ (Utils.concatMap (fun r -> getAritiesOne r f) (Comrule.getRights r)) @ (getArities rr f)
-and getAritiesOne (f, args) g =
+and getAritiesOne { Term.fn = f; Term.args = args } g =
   if f = g then
     [ List.length args ]
   else
@@ -123,8 +123,8 @@ and applyFunMapping mapping r =
     (applyFunMappingTerm mapping (Comrule.getLeft r))
     (List.map (applyFunMappingTerm mapping) (Comrule.getRights r))
     (Comrule.getCond r)
-and applyFunMappingTerm mapping (f, args) =
-  (List.assoc f mapping, args)
+and applyFunMappingTerm mapping { Term.fn = f; Term.args = args } =
+  Term.create' (List.assoc f mapping, args)
 and sanitizeRule r =
   let vars = Comrule.getVars r in
     let varmapping = createVarMapping vars vars in

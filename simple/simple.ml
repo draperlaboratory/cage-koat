@@ -172,8 +172,9 @@ and flatten_rule r =
 and createrules combine (funs, vars, stmts) : Comrule.rule list =
   let funsrules = List.flatten (List.map getRulesForFunDecl funs) in
     let mainrules = getRules stmts "" vars vars in
-      let rules = funsrules @ mainrules in
-        let rules_dnf : (Term.term * Term.term list * Pc.cond) list = List.flatten (List.map dnfify rules) in
+      let rules : (Term.term * Term.term list * bexpr) list = funsrules @ mainrules in
+        let rules_dnf : (Term.term * Term.term list * Pc.cond) list =
+          List.flatten (List.map dnfify rules) in
           match combine with
             | Stmts -> toComrules (normalizeConds rules_dnf)
             | Ctrls -> toComrules (normalizeConds (combineRules !control_points rules_dnf))
@@ -193,7 +194,11 @@ and getRules stmts f vars in_vars =
   if_loop_points := (if f = "" then ["eval_start"; "eval_stop"] else ["eval_" ^ f ^ "_start"; "eval_" ^ f ^ "_stop"]) @ !if_loop_points;
   loop_points := (if f = "" then ["eval_start"; "eval_stop"] else ["eval_" ^ f ^ "_start"; "eval_" ^ f ^ "_stop"]) @ !loop_points;
   lhsterms := createLhsTerms vars;
-  (((if f = "" then "eval_start" else ("eval_" ^ f ^ "_start")), createLhsTerms in_vars), [(eval 1 f, !lhsterms)], True)::(List.flatten (fst (createRulesForStmts stmts 1 true f)))
+  let t1 = Term.create' ((if f = "" then "eval_start" else ("eval_" ^ f ^ "_start")),
+    createLhsTerms in_vars) in
+  let t2 = Term.create' (eval 1 f, !lhsterms) in
+  let tail = (List.flatten (fst (createRulesForStmts stmts 1 true f))) in
+  (t1, [t2], True)::tail
 and normalizeConds rules =
   List.map (fun (l, r, c) -> (l, r, Utils.remdupC Pc.equalAtom c)) rules
 and dnfify (lhs, rhs, c) =
@@ -237,8 +242,9 @@ and createLhsTerms vars =
 and createRulesForStmts stmts i halt_for_last f =
   match stmts with
     | [] -> if halt_for_last then
-              let lhs = (eval i f, !lhsterms) in
-                let rhs = ((if f = "" then "eval_stop" else ("eval_" ^ f ^ "_stop")), !lhsterms) in
+              let lhs = Term.create' (eval i f, !lhsterms) in
+                let rhs = Term.create' ((if f = "" then "eval_stop" else ("eval_" ^ f ^ "_stop")),
+                  !lhsterms) in
                   let res = [(lhs, [rhs], True)] in
                     ([res], i + 1)
             else
@@ -248,33 +254,34 @@ and createRulesForStmts stmts i halt_for_last f =
                    (rules::rr, newesti)
 and createRulesForStmt stmt i f =
   match stmt with
-    | Skip -> let lhs = (eval i f, !lhsterms)
-              and rhs = (eval (i + 1) f, !lhsterms) in
+    | Skip -> let lhs = Term.create' (eval i f, !lhsterms)
+              and rhs = Term.create' (eval (i + 1) f, !lhsterms) in
                 ([(lhs, [rhs], True)], i + 1)
-    | Halt -> let lhs = (eval i f, !lhsterms)
-              and rhs = ("eval_stop", !lhsterms) in
+    | Halt -> let lhs = Term.create' (eval i f, !lhsterms)
+              and rhs = Term.create' ("eval_stop", !lhsterms) in
                 ([(lhs, [rhs], True)], i + 1)
     | Assume c -> control_points := (eval i f)::!control_points;
-                  let lhs = (eval i f, !lhsterms)
-                  and rhs1 = (eval (i + 1) f, !lhsterms)
-                  and rhs2 = ("eval_stop", !lhsterms) in
+                  let lhs = Term.create' (eval i f, !lhsterms)
+                  and rhs1 = Term.create' (eval (i + 1) f, !lhsterms)
+                  and rhs2 = Term.create' ("eval_stop", !lhsterms) in
                     ([(lhs, [rhs1], c); (lhs, [rhs2], Not c)], i + 1)
-    | Random x -> let lhs = (eval i f, !lhsterms)
-                  and rhs = (eval (i + 1) f, getAssignment !lhsterms x (getNextRandom ())) in
+    | Random x -> let lhs = Term.create' (eval i f, !lhsterms)
+                  and rhs = Term.create' (eval (i + 1) f,
+                                          getAssignment !lhsterms x (getNextRandom ())) in
                     ([(lhs, [rhs], True)], i + 1)
-    | Assign (x, p) -> let lhs = (eval i f, !lhsterms)
-                       and rhs = (eval (i + 1) f, getAssignment !lhsterms x p) in
+    | Assign (x, p) -> let lhs = Term.create' (eval i f, !lhsterms)
+                       and rhs = Term.create' (eval (i + 1) f, getAssignment !lhsterms x p) in
                          ([(lhs, [rhs], True)], i + 1)
     | ITE (c, t, e) -> control_points := (eval i f)::!control_points;
                        if_loop_points := (eval i f)::!if_loop_points;
-                       let lhs = (eval i f, !lhsterms)
-                       and rhs1 = (eval (i + 1) f, !lhsterms)
+                       let lhs = Term.create' (eval i f, !lhsterms)
+                       and rhs1 = Term.create' (eval (i + 1) f, !lhsterms)
                        and (rules1, newi1) = createRulesForStmts t (i + 1) false f in
-                         let rhs2 = (eval (newi1 + 1) f, !lhsterms)
+                         let rhs2 = Term.create' (eval (newi1 + 1) f, !lhsterms)
                          and (rules2, newi2) = createRulesForStmts e (newi1 + 1) false f in
-                           let merge1lhs = (eval newi1 f, !lhsterms)
-                           and merge2lhs = (eval newi2 f, !lhsterms)
-                           and mergerhs = (eval (newi2 + 1) f, !lhsterms) in
+                           let merge1lhs = Term.create' (eval newi1 f, !lhsterms)
+                           and merge2lhs = Term.create' (eval newi2 f, !lhsterms)
+                           and mergerhs = Term.create' (eval (newi2 + 1) f, !lhsterms) in
                              let split1 = (lhs, [rhs1], c)
                              and split2 = (lhs, [rhs2], Not c)
                              and merge1 = (merge1lhs, [mergerhs], True)
@@ -283,11 +290,11 @@ and createRulesForStmt stmt i f =
     | While (c, b) -> control_points := (eval i f)::!control_points;
                       if_loop_points := (eval i f)::!if_loop_points;
                       loop_points := (eval i f)::!loop_points;
-                      let lhs = (eval i f, !lhsterms)
-                      and rhs1 = (eval (i + 1) f, !lhsterms)
+                      let lhs = Term.create' (eval i f, !lhsterms)
+                      and rhs1 = Term.create' (eval (i + 1) f, !lhsterms)
                       and (rules, newi) = createRulesForStmts b (i + 1) false f in
-                        let backlhs = (eval newi f, !lhsterms)
-                        and rhs2 = (eval (newi + 1) f, !lhsterms) in
+                        let backlhs = Term.create' (eval newi f, !lhsterms)
+                        and rhs2 = Term.create' (eval (newi + 1) f, !lhsterms) in
                           let split1 = (lhs, [rhs1], c)
                           and back = (backlhs, [lhs], True)
                           and split2 = (lhs, [rhs2], Not c) in
@@ -295,11 +302,11 @@ and createRulesForStmt stmt i f =
     | Call (x, g, ys) -> control_points := (eval i f)::(eval (i + 1) f)::!control_points;
                          if_loop_points := (eval i f)::(eval (i + 1) f)::!if_loop_points;
                          loop_points := (eval i f)::(eval (i + 1) f)::!loop_points;
-                         let lhs = (eval i f, !lhsterms)
+                         let lhs = Term.create' (eval i f, !lhsterms)
                          and callargs = List.map Poly.fromVar ys
                          and zapped = getZapped !lhsterms x in
-                           let rhs1 = ("eval_" ^ g ^ "_start", callargs)
-                           and rhs2 = (eval (i + 1) f, zapped) in
+                           let rhs1 = Term.create' ("eval_" ^ g ^ "_start", callargs)
+                           and rhs2 = Term.create' (eval (i + 1) f, zapped) in
                              ([(lhs, [rhs1; rhs2], True)], i + 1)
     | Dummy1 _ | Dummy2 _ | Dummy3 _ -> failwith "Internal error in Simple.createRulesForStmt"
 and eval i f =
@@ -438,13 +445,13 @@ and get_fun t =
     else
       "<main>"
 and blast_term_left vars t =
-  (Term.getFun t, getNewArgs (Term.getArgs t) vars)
+  Term.create' (Term.getFun t, getNewArgs (Term.getArgs t) vars)
 and blast_term_right vars left_fun t =
   let right_fun = get_fun t in
     if left_fun <> right_fun then
-      (Term.getFun t, getNewArgs (Term.getArgs t) (get_call_vars right_fun))
+      Term.create' (Term.getFun t, getNewArgs (Term.getArgs t) (get_call_vars right_fun))
     else
-      (Term.getFun t, getNewArgs (Term.getArgs t) vars)
+      Term.create' (Term.getFun t, getNewArgs (Term.getArgs t) vars)
 and get_call_vars f =
   List.assoc f !start_vars
 and getNewArgs oldargs vars =

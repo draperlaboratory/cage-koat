@@ -22,13 +22,16 @@ type funSym = string
 
 type pos = int
 
-type term = funSym * (Poly.poly list)
+type term = { fn : funSym; args : Poly.poly list }
+
 (* Create term from what the parser gives *)
 let create f arglist =
   let args = List.map Poly.construct_poly arglist in
-    (f, args)
+   { fn = f; args = args }
 
-let compare (f1, as1) (f2, as2) =
+let create' (f, args) = { fn = f; args = args }
+
+let compare { fn = f1; args = as1 } { fn = f2; args = as2 } =
   let fComp = String.compare f1 f2 in
   if fComp <> 0 then
     fComp
@@ -44,38 +47,38 @@ let compare (f1, as1) (f2, as2) =
         (fun acc a1 a2 -> if acc <> 0 then acc else Poly.compare a1 a2) 0 as1 as2
 
 (* Create a string for a term *)
-let toString (f, args) =
+let toString { fn = f; args = args } =
   f ^ "(" ^ (String.concat ", " (List.map Poly.toString args)) ^ ")"
 
 (* Get the argument integer terms *)
-let getArgs (_, args) =
-  args
+let getArgs t =
+  t.args
 
 (* Get the function symbol *)
-let getFun (f, _) =
-  f
+let getFun t =
+  t.fn
 
 (* Returns the arity of a term *)
-let getArity (_, args) =
-  List.length args
+let getArity t =
+  List.length t.args
 
 (* Return the variables of a term *)
-let getVars (_, args) =
-  Utils.remdup (Utils.concatMapStable Poly.getVars args)
+let getVars t =
+  Utils.remdup (Utils.concatMapStable Poly.getVars t.args)
 
 (* Instantiate a term *)
-let instantiate (f, args) bindings =
-  (f, List.map (fun poly -> Poly.instantiate poly bindings) args)
+let instantiate { fn = f; args = args } bindings =
+  create' (f, List.map (fun poly -> Poly.instantiate poly bindings) args)
 
 (* Renames the variables in a term *)
-let renameVars varmapping (f, args) =
-  (f, List.map (Poly.renameVars varmapping) args)
+let renameVars varmapping { fn = f; args = args } =
+  { fn = f; args = List.map (Poly.renameVars varmapping) args }
 
 (* Determines whether a term is linear *)
-let isLinear (_, args) =
-  List.for_all Poly.isLinear args
+let isLinear t =
+  List.for_all Poly.isLinear t.args
 
 let rec equal t1 t2 =
   t1 == t2 || equalInternal t1 t2
-and equalInternal (f1, args1) (f2, args2) =
+and equalInternal { fn = f1; args = args1 } { fn = f2; args = args2 } =
   f1 = f2 && (List.for_all2 Poly.equal args1 args2)

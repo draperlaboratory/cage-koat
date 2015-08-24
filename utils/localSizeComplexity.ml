@@ -27,66 +27,74 @@ type localcomplexity = Max of Big_int.big_int
                        | P of Expexp.expexp
                        | Unknown
 
+type size_data = { bound : localcomplexity; active_vars : Term.pos list }
+
+let create_size_data (b, avs) = { bound = b; active_vars = avs }
+let unknown_size_data = { bound = Unknown; active_vars = [] }
+
+type index = { rhsIdx : int; varIdx : int }
+type local_size_data = index * size_data
+
 module Make (RuleT : AbstractRule) = struct
 
   module RuleT = RuleT
 
 
-  type size_data = localcomplexity * int list
-
-  type local_trans_data = RuleT.rule * ((int * int) * size_data)
-  type ltds = local_trans_data list
+  type trans_data = RuleT.rule * local_size_data
+  type tds = trans_data list
 
   let getE c =
-    match c with
-      | (Max e, _) -> e
-      | (MaxPlusConstant e, _) -> e
-      | (SumPlusConstant e, _) -> e
-      | (ScaledSumPlusConstant (e, _), _) -> e
+    match c.bound with
+      | (Max e) -> e
+      | (MaxPlusConstant e) -> e
+      | (SumPlusConstant e) -> e
+      | (ScaledSumPlusConstant (e, _)) -> e
       | _ -> failwith "Internal error in LocalSizeComplexity.getE"
 
   let getS c =
-    match c with
-      | (SumPlusConstant _ , _) -> Big_int.unit_big_int
-      | (ScaledSumPlusConstant (_, s), _) -> s
+    match c.bound with
+      | (SumPlusConstant _) -> Big_int.unit_big_int
+      | (ScaledSumPlusConstant (_, s)) -> s
       | _ -> failwith "Internal error in LocalSizeComplexity.getS"
 
   let getConstant c =
-    match c with
-      | (P p, v) -> Expexp.getConstant p
+    match c.bound with
+      | P p -> Expexp.getConstant p
       | _ -> failwith "Internal error in LocalSizeComplexity.getConstant"
 
   let rec equal c d =
     c == d || equalInternal c d
   and equalInternal c d =
-    match (c, d) with
-      | ((Max e, v), (Max e', v')) -> Poly.eq_big_int e e' && equalVar v v'
-      | ((MaxPlusConstant e, v), (MaxPlusConstant e', v')) -> Poly.eq_big_int e e' && equalVar v v'
-      | ((SumPlusConstant e, v), (SumPlusConstant e', v')) -> Poly.eq_big_int e e' && equalVar v v'
-      | ((P p, v), (P q, v')) -> (Expexp.equal p q) && equalVar v v'
-      | ((Unknown, v), (Unknown, v')) -> equalVar v v'
+    let v = c.active_vars in
+    let v' = d.active_vars in
+    match (c.bound, d.bound) with
+      | (Max e, Max e') -> Poly.eq_big_int e e' && equalVar v v'
+      | (MaxPlusConstant e, MaxPlusConstant e') -> Poly.eq_big_int e e' && equalVar v v'
+      | (SumPlusConstant e, SumPlusConstant e') -> Poly.eq_big_int e e' && equalVar v v'
+      | (P p, P q) -> (Expexp.equal p q) && equalVar v v'
+      | (Unknown, Unknown) -> equalVar v v'
       | _ -> false
   and equalVar v v' =
     (v == v') || ((List.length v = List.length v') && (List.for_all2 (fun a b -> (a == b) || (a = b)) v v'))
 
   let isConstant c =
-    match c with
-      | (Max _, _) -> false
-      | (MaxPlusConstant _, _) -> false
-      | (SumPlusConstant _, _) -> false
-      | (ScaledSumPlusConstant _, _) -> false
-      | (P p, v) -> (v = []) && (Expexp.isConst p)
-      | (Unknown, _) -> false
+    match c.bound with
+      | (Max _) -> false
+      | (MaxPlusConstant _) -> false
+      | (SumPlusConstant _) -> false
+      | (ScaledSumPlusConstant _) -> false
+      | (P p) -> (c.active_vars = []) && (Expexp.isConst p)
+      | (Unknown) -> false
 
   let rec complexity2localcomplexity c vars =
     match c with
       | Complexity.P p -> if (not (Expexp.isConst p)) && (Expexp.isSumOfVarsPlusConstant p) then
-                       (SumPlusConstant (Expexp.getConstant p), getVarNums p vars)
+                       create_size_data (SumPlusConstant (Expexp.getConstant p), getVarNums p vars)
                      else if (not (Expexp.isConst p)) && (Expexp.isScaledSumOfVarsPlusConstant p) then
-                       (ScaledSumPlusConstant (Expexp.getConstant p, Expexp.getScaleFactor p), getVarNums p vars)
+                       create_size_data (ScaledSumPlusConstant (Expexp.getConstant p, Expexp.getScaleFactor p), getVarNums p vars)
                      else
-                       (P p, getVarNums p vars)
-      | Complexity.Unknown -> (Unknown, [])
+                       create_size_data (P p, getVarNums p vars)
+      | Complexity.Unknown -> unknown_size_data
   and getVarNums p vars =
     let pv = Expexp.getVars p in
       getVarNumList pv vars 0
@@ -99,194 +107,239 @@ module Make (RuleT : AbstractRule) = struct
                      getVarNumList pv rest (i + 1)
 
   let rec toSmallestComplexity c vars =
-    match c with
-      | (Max e, v) -> Complexity.P (Expexp.add (getSum v vars) (Expexp.fromConstant e))
-      | (MaxPlusConstant e, v) -> Complexity.P (Expexp.add (getSum v vars) (Expexp.fromConstant e))
-      | (SumPlusConstant e, v) -> Complexity.P (Expexp.add (getSum v vars) (Expexp.fromConstant e))
-      | (ScaledSumPlusConstant (e, s), v) -> Complexity.P (Expexp.constmult (Expexp.add (getSum v vars) (Expexp.fromConstant e)) s)
-      | (P p, _) -> Complexity.P p
-      | (Unknown, _) -> Complexity.Unknown
+    let v = c.active_vars in
+    match c.bound with
+      | (Max e) -> Complexity.P (Expexp.add (getSum v vars) (Expexp.fromConstant e))
+      | (MaxPlusConstant e) -> Complexity.P (Expexp.add (getSum v vars) (Expexp.fromConstant e))
+      | (SumPlusConstant e) -> Complexity.P (Expexp.add (getSum v vars) (Expexp.fromConstant e))
+      | (ScaledSumPlusConstant (e, s)) -> Complexity.P (Expexp.constmult (Expexp.add (getSum v vars) (Expexp.fromConstant e)) s)
+      | (P p) -> Complexity.P p
+      | (Unknown) -> Complexity.Unknown
   and getSum v vars =
     match v with
       | [] -> Expexp.zero
       | x::rest -> Expexp.add (Expexp.fromVar (List.nth vars x)) (getSum rest vars)
 
   let rec add c d vars =
-    match c with
-      | (Max e, v) -> addMax e v d vars
-      | (MaxPlusConstant e, v) -> addMaxPlusConstant e v d vars
-      | (SumPlusConstant e, v) -> addSumPlusConstant e v d vars
-      | (ScaledSumPlusConstant (e, s), v) -> addScaledSumPlusConstant e s v d vars
-      | (P p, v) -> addP p v d vars
-      | (Unknown, v) -> (Unknown, [])
-  and addMax e v d vars =
-    match d with
-      | (Max e', v') -> if disjoint v v' then
-                          (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
-                        else
-                          addAsSmallestComplexities (Max e, v) d vars
-      | (MaxPlusConstant e', v') ->  if disjoint v v' then
-                                       (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
-                                     else
-                                       addAsSmallestComplexities (Max e, v) d vars
-      | (SumPlusConstant e', v') ->  if disjoint v v' then
-                                       (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
-                                     else
-                                       addAsSmallestComplexities (Max e, v) d vars
-      | (ScaledSumPlusConstant (e', s), v') -> (ScaledSumPlusConstant (Big_int.add_big_int e e', Big_int.add_big_int s Big_int.unit_big_int), unite v v')
-      | (P p', v') -> if isConstant d then
-                        (Max (Big_int.add_big_int e (getConstant d)), v)
-                      else
-                        addAsSmallestComplexities (Max e, v) d vars
-      | (Unknown, v') -> (Unknown, [])
+    let v = c.active_vars in
+    match c.bound with
+      | (Max e) -> addMax e v d vars
+      | (MaxPlusConstant e) -> addMaxPlusConstant e v d vars
+      | (SumPlusConstant e) -> addSumPlusConstant e v d vars
+      | (ScaledSumPlusConstant (e, s)) -> addScaledSumPlusConstant e s v d vars
+      | (P p) -> addP p v d vars
+      | (Unknown) -> unknown_size_data
+  and addMax e v d vars : size_data =
+    let v' = d.active_vars in
+    match d.bound with
+      | Max e' -> if disjoint v v' then
+          create_size_data (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
+        else
+          addAsSmallestComplexities (create_size_data (Max e, v)) d vars
+      | MaxPlusConstant e' ->  if disjoint v v' then
+          create_size_data
+            (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
+        else
+          addAsSmallestComplexities (create_size_data (Max e, v)) d vars
+      | SumPlusConstant e' ->  if disjoint v v' then
+          create_size_data
+            (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
+        else
+          addAsSmallestComplexities (create_size_data (Max e, v)) d vars
+      | ScaledSumPlusConstant (e', s) -> create_size_data
+        (ScaledSumPlusConstant (Big_int.add_big_int e e', Big_int.add_big_int s Big_int.unit_big_int), unite v v')
+      | P p' -> if isConstant d then
+          create_size_data (Max (Big_int.add_big_int e (getConstant d)), v)
+        else
+          addAsSmallestComplexities (create_size_data (Max e, v)) d vars
+      | Unknown -> unknown_size_data
   and addMaxPlusConstant e v d vars =
-    match d with
-      | (Max e', v') -> if disjoint v v' then
-                          (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
-                        else
-                          addAsSmallestComplexities (MaxPlusConstant e, v) d vars
-      | (MaxPlusConstant e', v') ->  if disjoint v v' then
-                                       (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
-                                     else
-                                       addAsSmallestComplexities (MaxPlusConstant e, v) d vars
-      | (SumPlusConstant e', v') ->  if disjoint v v' then
-                                       (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
-                                     else
-                                       addAsSmallestComplexities (MaxPlusConstant e, v) d vars
-      | (ScaledSumPlusConstant (e', s), v') -> (ScaledSumPlusConstant (Big_int.add_big_int e e', Big_int.add_big_int s Big_int.unit_big_int), unite v v')
-      | (P p', v') -> if isConstant d then
-                        (MaxPlusConstant (Big_int.add_big_int e (getConstant d)), v)
-                      else
-                        addAsSmallestComplexities (MaxPlusConstant e, v) d vars
-      | (Unknown, v') -> (Unknown, [])
+    let v' = d.active_vars in
+    match d.bound with
+      | Max e' -> if disjoint v v' then
+          create_size_data (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
+        else
+          addAsSmallestComplexities (create_size_data (MaxPlusConstant e, v)) d vars
+      | MaxPlusConstant e' ->  if disjoint v v' then
+          create_size_data
+            (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
+        else
+          addAsSmallestComplexities (create_size_data (MaxPlusConstant e, v)) d vars
+      | SumPlusConstant e' ->  if disjoint v v' then
+          create_size_data
+            (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
+        else
+          addAsSmallestComplexities (create_size_data (MaxPlusConstant e, v)) d vars
+      | ScaledSumPlusConstant (e', s) -> create_size_data
+        (ScaledSumPlusConstant (Big_int.add_big_int e e', Big_int.add_big_int s Big_int.unit_big_int), unite v v')
+      | P p' -> if isConstant d then
+          create_size_data
+            (MaxPlusConstant (Big_int.add_big_int e (getConstant d)), v)
+        else
+          addAsSmallestComplexities (create_size_data (MaxPlusConstant e, v)) d vars
+      | Unknown -> unknown_size_data
   and addSumPlusConstant e v d vars =
-    match d with
-      | (Max e', v') -> if disjoint v v' then
-                          (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
-                        else
-                          addAsSmallestComplexities (SumPlusConstant e, v) d vars
-      | (MaxPlusConstant e', v') -> if disjoint v v' then
-                                      (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
-                                    else
-                                      addAsSmallestComplexities (SumPlusConstant e, v) d vars
-      | (SumPlusConstant e', v') -> if disjoint v v' then
-                                      (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
-                                    else
-                                      addAsSmallestComplexities (SumPlusConstant e, v) d vars
-      | (ScaledSumPlusConstant (e', s), v') -> (ScaledSumPlusConstant (Big_int.add_big_int e e', Big_int.add_big_int s Big_int.unit_big_int), unite v v')
-      | (P p', v') -> if isConstant d then
-                        (SumPlusConstant (Big_int.add_big_int e (getConstant d)), v)
-                      else
-                        addAsSmallestComplexities (SumPlusConstant e, v) d vars
-      | (Unknown, v') -> (Unknown, [])
+    let v' = d.active_vars in
+    match d.bound with
+      | Max e' -> if disjoint v v' then
+          create_size_data (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
+        else
+          addAsSmallestComplexities (create_size_data (SumPlusConstant e, v)) d vars
+      | MaxPlusConstant e' -> if disjoint v v' then
+          create_size_data
+            (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
+        else
+          addAsSmallestComplexities (create_size_data (SumPlusConstant e, v)) d vars
+      | SumPlusConstant e' -> if disjoint v v' then
+          create_size_data
+            (SumPlusConstant (Big_int.add_big_int e e'), unite v v')
+        else
+          addAsSmallestComplexities (create_size_data (SumPlusConstant e, v)) d vars
+      | ScaledSumPlusConstant (e', s) -> create_size_data
+        (ScaledSumPlusConstant (Big_int.add_big_int e e', Big_int.add_big_int s Big_int.unit_big_int), unite v v')
+      | P p' -> if isConstant d then
+          create_size_data
+            (SumPlusConstant (Big_int.add_big_int e (getConstant d)), v)
+        else
+          addAsSmallestComplexities (create_size_data (SumPlusConstant e, v)) d vars
+      | Unknown -> unknown_size_data
   and addScaledSumPlusConstant e s v d vars =
-    match d with
-      | (Max e', v') -> (ScaledSumPlusConstant (Big_int.add_big_int e e', Big_int.add_big_int s Big_int.unit_big_int), unite v v')
-      | (MaxPlusConstant e', v') -> (ScaledSumPlusConstant (Big_int.add_big_int e e', Big_int.add_big_int s Big_int.unit_big_int), unite v v')
-      | (SumPlusConstant e', v') ->  (ScaledSumPlusConstant (Big_int.add_big_int e e', Big_int.add_big_int s Big_int.unit_big_int), unite v v')
-      | (ScaledSumPlusConstant (e', s'), v') -> (ScaledSumPlusConstant (Big_int.add_big_int e e', Big_int.add_big_int s s'), unite v v')
-      | (P p', v') -> if isConstant d then
-                        (ScaledSumPlusConstant (Big_int.add_big_int e (getConstant d), s), v)
+    let v' = d.active_vars in
+    match d.bound with
+      | Max e' -> create_size_data
+        (ScaledSumPlusConstant (Big_int.add_big_int e e', Big_int.add_big_int s Big_int.unit_big_int), unite v v')
+      | MaxPlusConstant e' -> create_size_data
+        (ScaledSumPlusConstant (Big_int.add_big_int e e', Big_int.add_big_int s Big_int.unit_big_int), unite v v')
+      | SumPlusConstant e' -> create_size_data
+        (ScaledSumPlusConstant (Big_int.add_big_int e e', Big_int.add_big_int s Big_int.unit_big_int), unite v v')
+      | ScaledSumPlusConstant (e', s') -> create_size_data
+        (ScaledSumPlusConstant (Big_int.add_big_int e e', Big_int.add_big_int s s'), unite v v')
+      | P p' -> if isConstant d then
+          create_size_data
+            (ScaledSumPlusConstant (Big_int.add_big_int e (getConstant d), s), v)
                       else
-                        addAsSmallestComplexities (SumPlusConstant e, v) d vars
-      | (Unknown, v') -> (Unknown, [])
+                        addAsSmallestComplexities (create_size_data (SumPlusConstant e, v)) d vars
+      | Unknown -> unknown_size_data
   and addP p v d vars =
-    match d with
-      | (P p', v') -> (P (Expexp.add p p'), unite v v')
-      | _ -> add d (P p, v) vars
+    let v' = d.active_vars in
+    match d.bound with
+      | P p' -> create_size_data (P (Expexp.add p p'), unite v v')
+      | _ -> add d (create_size_data (P p, v)) vars
   and disjoint v v' =
     (Utils.intersect v v') = []
   and unite v v' =
     List.sort compare (Utils.remdup (v @ v'))
-  and addAsSmallestComplexities c d vars =
+  and addAsSmallestComplexities c d vars : size_data =
     let cc = (Complexity.add (toSmallestComplexity c vars) (toSmallestComplexity d vars)) in
       complexity2localcomplexity cc vars
 
   let rec addList l vars =
     match l with
-      | [] -> (P Expexp.zero, [])
+      | [] -> create_size_data (P Expexp.zero, [])
       | [x] -> x
       | x::y::rest -> addList ((add x y vars)::rest) vars
 
   let rec getMax c d vars =
-    match c with
-      | (Max e, v) -> (
-                        match d with
-                          | (Max e', v') -> (Max (Big_int.max_big_int e e'), unite v v')
-                          | (MaxPlusConstant e', v') -> (MaxPlusConstant (Big_int.max_big_int e e'), unite v v')
-                          | (SumPlusConstant e', v') -> (SumPlusConstant (Big_int.max_big_int e e'), unite v v')
-                          | (ScaledSumPlusConstant (e', s), v') -> (ScaledSumPlusConstant (Big_int.max_big_int e e', s), unite v v')
-                          | (P p', v') -> if isConstant d then
-                                            (MaxPlusConstant (Big_int.add_big_int e (getConstant d)), v)
-                                          else
-                                            let m = Expexp.max (getExpexp (toSmallestComplexity c vars)) p' in
-                                              (P m, getVarNums m vars)
-                          | (Unknown, v') -> (Unknown, [])
-                      )
-      | (MaxPlusConstant e, v) -> (
-                                    match d with
-                                      | (Max e', v') -> (MaxPlusConstant (Big_int.max_big_int e e'), unite v v')
-                                      | (MaxPlusConstant e', v') -> (MaxPlusConstant (Big_int.max_big_int e e'), unite v v')
-                                      | (SumPlusConstant e', v') -> (SumPlusConstant (Big_int.max_big_int e e'), unite v v')
-                                      | (ScaledSumPlusConstant (e', s), v') -> (ScaledSumPlusConstant (Big_int.max_big_int e e', s), unite v v')
-                                      | (P p', v') -> if isConstant d then
-                                                        (MaxPlusConstant (Big_int.add_big_int e (getConstant d)), v)
-                                                      else
-                                                        let m = Expexp.max (getExpexp (toSmallestComplexity c vars)) p' in
-                                                          (P m, getVarNums m vars)
-                                      | (Unknown, v') -> (Unknown, [])
-                                  )
-      | (SumPlusConstant e, v) -> (
-                                    match d with
-                                      | (Max e', v') -> (SumPlusConstant (Big_int.max_big_int e e'), unite v v')
-                                      | (MaxPlusConstant e', v') -> (SumPlusConstant (Big_int.max_big_int e e'), unite v v')
-                                      | (SumPlusConstant e', v') -> (SumPlusConstant (Big_int.max_big_int e e'), unite v v')
-                                      | (ScaledSumPlusConstant (e', s), v') -> (ScaledSumPlusConstant (Big_int.max_big_int e e', s), unite v v')
-                                      | (P p', v') -> if isConstant d then
-                                                        (SumPlusConstant (Big_int.add_big_int e (getConstant d)), v)
-                                                      else
-                                                        let m = Expexp.max (getExpexp (toSmallestComplexity c vars)) p' in
-                                                          (P m, getVarNums m vars)
-                                      | (Unknown, v') -> (Unknown, [])
-                                  )
-      | (ScaledSumPlusConstant (e, s), v) -> (
-                                    match d with
-                                      | (Max e', v') -> (ScaledSumPlusConstant (Big_int.max_big_int e e', s), unite v v')
-                                      | (MaxPlusConstant e', v') -> (ScaledSumPlusConstant (Big_int.max_big_int e e', s), unite v v')
-                                      | (SumPlusConstant e', v') -> (ScaledSumPlusConstant (Big_int.max_big_int e e', s), unite v v')
-                                      | (ScaledSumPlusConstant (e', s'), v') -> (ScaledSumPlusConstant (Big_int.max_big_int e e', Big_int.max_big_int s s'), unite v v')
-                                      | (P p', v') -> if isConstant d then
-                                                        (ScaledSumPlusConstant (Big_int.add_big_int e (getConstant d), s), v)
-                                                      else
-                                                        let m = Expexp.max (getExpexp (toSmallestComplexity c vars)) p' in
-                                                          (P m, getVarNums m vars)
-                                      | (Unknown, v') -> (Unknown, [])
-                                  )
-      | (P p, v) -> (
-                      match d with
-                        | (P p', v') -> let m = Expexp.max p p' in
-                                          (P m, getVarNums m vars)
-                        | _ -> getMax d c vars
-                    )
-      | (Unknown, v) -> (Unknown, [])
+    let v = c.active_vars in
+    let v' = d.active_vars in
+    match c.bound with
+      | (Max e) -> (
+        match d.bound with
+        | (Max e') -> create_size_data (Max (Big_int.max_big_int e e'), unite v v')
+        | (MaxPlusConstant e') -> create_size_data
+          (MaxPlusConstant (Big_int.max_big_int e e'), unite v v')
+        | (SumPlusConstant e') -> create_size_data
+          (SumPlusConstant (Big_int.max_big_int e e'), unite v v')
+        | (ScaledSumPlusConstant (e', s)) -> create_size_data
+          (ScaledSumPlusConstant (Big_int.max_big_int e e', s), unite v v')
+        | (P p') -> if isConstant d then
+            create_size_data
+              (MaxPlusConstant (Big_int.add_big_int e (getConstant d)), v)
+          else
+            let m = Expexp.max (getExpexp (toSmallestComplexity c vars)) p' in
+            create_size_data (P m, getVarNums m vars)
+        | (Unknown) -> unknown_size_data
+      )
+      | (MaxPlusConstant e) -> (
+        match d.bound with
+        | (Max e') -> create_size_data
+          (MaxPlusConstant (Big_int.max_big_int e e'), unite v v')
+        | (MaxPlusConstant e') -> create_size_data
+          (MaxPlusConstant (Big_int.max_big_int e e'), unite v v')
+        | (SumPlusConstant e') -> create_size_data
+          (SumPlusConstant (Big_int.max_big_int e e'), unite v v')
+        | (ScaledSumPlusConstant (e', s)) -> create_size_data
+          (ScaledSumPlusConstant (Big_int.max_big_int e e', s), unite v v')
+        | (P p') -> if isConstant d then
+            create_size_data
+              (MaxPlusConstant (Big_int.add_big_int e (getConstant d)), v)
+          else
+            let m = Expexp.max (getExpexp (toSmallestComplexity c vars)) p' in
+            create_size_data (P m, getVarNums m vars)
+        | (Unknown) -> unknown_size_data
+      )
+      | (SumPlusConstant e) -> (
+        match d.bound with
+        | (Max e') -> create_size_data
+          (SumPlusConstant (Big_int.max_big_int e e'), unite v v')
+        | (MaxPlusConstant e') -> create_size_data
+          (SumPlusConstant (Big_int.max_big_int e e'), unite v v')
+        | (SumPlusConstant e') -> create_size_data
+          (SumPlusConstant (Big_int.max_big_int e e'), unite v v')
+        | (ScaledSumPlusConstant (e', s)) -> create_size_data
+          (ScaledSumPlusConstant (Big_int.max_big_int e e', s), unite v v')
+        | (P p') -> if isConstant d then
+            create_size_data
+              (SumPlusConstant (Big_int.add_big_int e (getConstant d)), v)
+          else
+            let m = Expexp.max (getExpexp (toSmallestComplexity c vars)) p' in
+            create_size_data (P m, getVarNums m vars)
+        | (Unknown) -> unknown_size_data
+      )
+      | (ScaledSumPlusConstant (e, s)) -> (
+        match d.bound with
+        | (Max e') -> create_size_data
+          (ScaledSumPlusConstant (Big_int.max_big_int e e', s), unite v v')
+        | (MaxPlusConstant e') -> create_size_data
+          (ScaledSumPlusConstant (Big_int.max_big_int e e', s), unite v v')
+        | (SumPlusConstant e') -> create_size_data
+          (ScaledSumPlusConstant (Big_int.max_big_int e e', s), unite v v')
+        | (ScaledSumPlusConstant (e', s')) -> create_size_data
+          (ScaledSumPlusConstant (Big_int.max_big_int e e', Big_int.max_big_int s s'), unite v v')
+        | (P p') -> if isConstant d then
+            create_size_data
+              (ScaledSumPlusConstant (Big_int.add_big_int e (getConstant d), s), v)
+          else
+            let m = Expexp.max (getExpexp (toSmallestComplexity c vars)) p' in
+            create_size_data (P m, getVarNums m vars)
+        | (Unknown) -> unknown_size_data
+      )
+      | (P p) -> (
+        match d.bound with
+        | (P p') -> let m = Expexp.max p p' in
+                    create_size_data (P m, getVarNums m vars)
+        | _ -> getMax d c vars
+      )
+      | (Unknown) -> unknown_size_data
   and getExpexp c =
     match c with
-      | Complexity.P p -> p
-      | _ -> failwith "Internal error in LocalSizeComplexity.getExpexp"
+    | Complexity.P p -> p
+    | _ -> failwith "Internal error in LocalSizeComplexity.getExpexp"
   and listMax list vars =
     match list with
-      | [] -> (P Expexp.zero, [])
-      | [x] -> x
-      | x::y::rest -> listMax ((getMax x y vars)::rest) vars
-
+    | [] -> create_size_data (P Expexp.zero, [])
+    | [x] -> x
+    | x::y::rest -> listMax ((getMax x y vars)::rest) vars
+      
   let rec toStringLocalComplexity c =
-    match c with
-      | (Max e, v) -> "=(" ^ (Big_int.string_of_big_int e) ^ ") " ^ (varString v)
-      | (MaxPlusConstant e, v) -> "+.(" ^ (Big_int.string_of_big_int e) ^ ") " ^ (varString v)
-      | (SumPlusConstant e, v) -> "+_(" ^ (Big_int.string_of_big_int e) ^ ") " ^ (varString v)
-      | (ScaledSumPlusConstant (e, s), v) -> "*.(" ^ (Big_int.string_of_big_int e) ^ ", " ^ (Big_int.string_of_big_int s) ^ ") " ^ (varString v)
-      | (P p, v) -> Expexp.toString p
-      | (Unknown, v) -> "?"
+    let v = c.active_vars in
+    match c.bound with
+      | (Max e) -> "=(" ^ (Big_int.string_of_big_int e) ^ ") " ^ (varString v)
+      | (MaxPlusConstant e) -> "+.(" ^ (Big_int.string_of_big_int e) ^ ") " ^ (varString v)
+      | (SumPlusConstant e) -> "+_(" ^ (Big_int.string_of_big_int e) ^ ") " ^ (varString v)
+      | (ScaledSumPlusConstant (e, s)) -> "*.(" ^ (Big_int.string_of_big_int e) ^ ", " ^ (Big_int.string_of_big_int s) ^ ") " ^ (varString v)
+      | (P p) -> Expexp.toString p
+      | (Unknown) -> "?"
   and varString v =
     "[" ^ (String.concat ";" (List.map string_of_int v)) ^ "]"
 
@@ -298,9 +351,8 @@ module Make (RuleT : AbstractRule) = struct
   let eConstant = ref Big_int.zero_big_int
   let sConstant = ref Big_int.zero_big_int
 
-  let rec computeLocalSizeComplexities trs =
-    Utils.concatMap computeLocalSizeComplexitiesForRule trs
-  and computeLocalSizeComplexitiesForRule rule =
+  let rec computeLocalSizeComplexities trs = Utils.concatMap computeLocalSizeComplexitiesForRule trs
+  and computeLocalSizeComplexitiesForRule rule : tds =
     let fullCond = RuleT.getCond rule in
     let linCond = Pc.dropNonLinearAtoms fullCond in
     let lvars = Term.getVars (RuleT.getLeft rule) in
@@ -309,7 +361,7 @@ module Make (RuleT : AbstractRule) = struct
     Utils.concatMap
       (fun (rhs, rhsIdx) ->
         Utils.mapi
-          (fun argIdx argument -> (rule, ((rhsIdx, argIdx), computeLSCForTerm lvars lvarswithnums linCond fullCond argument)))
+          (fun varIdx argument -> (rule, ({ rhsIdx = rhsIdx; varIdx = varIdx }, computeLSCForTerm lvars lvarswithnums linCond fullCond argument)))
           (Term.getArgs rhs))
       (Utils.mapi (fun idx rhs -> (rhs, idx)) (RuleT.getRights rule))
   and computeLSCForTerm lvars lvarswithnums linCond fullCond t =
@@ -317,17 +369,17 @@ module Make (RuleT : AbstractRule) = struct
       if isLinear && (Smt.isConstantBound linCond t maxC) then
         (
           if Poly.isConst t then
-            (P (Expexp.fromConstant (Big_int.abs_big_int (Poly.getConstant t))), [])
+            create_size_data (P (Expexp.fromConstant (Big_int.abs_big_int (Poly.getConstant t))), [])
           else
             let e = minimizeC (Smt.isConstantBound linCond t) Big_int.zero_big_int maxC in
-            (P (Expexp.fromConstant e), [])
+            create_size_data (P (Expexp.fromConstant e), [])
         )
       else
         let alltvars = Poly.getVars t in
           let tvars = Utils.intersect lvars alltvars
           and isRegular = Utils.containsAll lvars alltvars in
             if isLinear && isRegular && (List.length tvars = 1) && (Poly.isSumOfVarsPlusConstant t) && (Poly.eq_big_int Big_int.zero_big_int (Poly.getConstant t)) then
-              (Max Big_int.zero_big_int, getVarNums lvarswithnums tvars)
+              create_size_data (Max Big_int.zero_big_int, getVarNums lvarswithnums tvars)
             else
             (
               maxBound := "";
@@ -336,44 +388,44 @@ module Make (RuleT : AbstractRule) = struct
                 if isLinear && isMaxBound linCond t maxC deps then
                   let minimal = [!maxBound] in
                     let e = minimizeC (fun c -> Smt.isMaxBound linCond t c minimal) Big_int.zero_big_int maxC in
-                      (Max e, getVarNums lvarswithnums minimal)
+                      create_size_data (Max e, getVarNums lvarswithnums minimal)
                 else if isLinear && isRegular && (List.length tvars = 1) && (Poly.isSumOfVarsPlusConstant t) && isMaxPlusConstantBound linCond t (Big_int.abs_big_int (Poly.getConstant t)) deps then
                   (* t = v_1 + ... + v_l + k, for v a lhs variable and k some constant. Start optimizing constant from k, not from maxC.
                      This converges far faster for cases like "x + 1" or "x - 1"... *)
                   let minimal = [!maxPlusConstantBound] in
                     let e = minimizeC (fun c -> Smt.isMaxPlusConstantBound linCond t c minimal) Big_int.zero_big_int (Big_int.abs_big_int (Poly.getConstant t)) in
-                      (MaxPlusConstant e, getVarNums lvarswithnums minimal)
+                      create_size_data (MaxPlusConstant e, getVarNums lvarswithnums minimal)
                 else if isLinear && isMaxPlusConstantBound linCond t maxC deps then
                   let minimal = [!maxPlusConstantBound] in
                     let e = minimizeC (fun c -> Smt.isMaxPlusConstantBound linCond t c minimal) Big_int.zero_big_int maxC in
-                      (MaxPlusConstant e, getVarNums lvarswithnums minimal)
+                      create_size_data (MaxPlusConstant e, getVarNums lvarswithnums minimal)
                 else if isLinear && Smt.isMaxBound linCond t maxC deps then
                   let minimal = minimize (Smt.isMaxBound linCond t maxC) deps [] in
                     let e = minimizeC (fun c -> Smt.isMaxBound linCond t c minimal) Big_int.zero_big_int maxC in
-                      (Max e, getVarNums lvarswithnums minimal)
+                    create_size_data (Max e, getVarNums lvarswithnums minimal)
                 else if isLinear && Smt.isMaxPlusConstantBound linCond t maxC deps then
                   let minimal = minimize (Smt.isMaxPlusConstantBound linCond t maxC) deps [] in
                     let e = minimizeC (fun c -> Smt.isMaxPlusConstantBound linCond t c minimal) Big_int.zero_big_int maxC in
-                      (MaxPlusConstant e, getVarNums lvarswithnums minimal)
+                    create_size_data (MaxPlusConstant e, getVarNums lvarswithnums minimal)
                 else if isLinear && (Smt.isSumPlusConstantBound linCond t maxC tvars) then
                   let minimal = minimize (Smt.isSumPlusConstantBound linCond t maxC) tvars [] in
                     let e = minimizeC (fun c -> Smt.isSumPlusConstantBound linCond t c minimal) Big_int.zero_big_int maxC in
-                      (SumPlusConstant e, getVarNums lvarswithnums minimal)
+                    create_size_data (SumPlusConstant e, getVarNums lvarswithnums minimal)
                 else if isLinear && (Smt.isSumPlusConstantBound linCond t maxC deps) then
                   let minimal = minimize (Smt.isSumPlusConstantBound linCond t maxC) deps [] in
                     let e = minimizeC (fun c -> Smt.isSumPlusConstantBound linCond t c minimal) Big_int.zero_big_int maxC in
-                      (SumPlusConstant e, getVarNums lvarswithnums minimal)
+                    create_size_data (SumPlusConstant e, getVarNums lvarswithnums minimal)
                 else if isLinear && (Smt.isScaledSumPlusConstantBound linCond t maxC maxS deps) then
                   let minimal = minimize (Smt.isScaledSumPlusConstantBound linCond t maxC maxS) deps [] in
                     let e = minimizeC (fun c -> Smt.isScaledSumPlusConstantBound linCond t c maxS minimal) Big_int.zero_big_int maxC in
                       let s = minimizeC (fun s -> Smt.isScaledSumPlusConstantBound linCond t e s minimal) Big_int.zero_big_int maxS in
-                        (ScaledSumPlusConstant (e, s), getVarNums lvarswithnums minimal)
+                      create_size_data (ScaledSumPlusConstant (e, s), getVarNums lvarswithnums minimal)
                 else if isRegular then
                   (* use syntactic criteria *)
                   if (Poly.isSumOfVarsPlusConstant t) then
-                    (SumPlusConstant (Poly.getConstant t), getVarNums lvarswithnums tvars)
+                    create_size_data (SumPlusConstant (Poly.getConstant t), getVarNums lvarswithnums tvars)
                   else
-                    (P (Expexp.fromPoly (Poly.abs t)), getVarNums lvarswithnums tvars)
+                    create_size_data (P (Expexp.fromPoly (Poly.abs t)), getVarNums lvarswithnums tvars)
                 else if (Poly.isVar t) && (let (varN, suffL) = (Poly.toString t, String.length "_sep") in String.length varN > suffL && (String.sub varN ((String.length varN) - suffL) suffL) = "_sep") then
                   (* This is a variable on an edge obtained from separating out a part of the program.
                      We generate conditions of the form v_sep >= 0 && v_sep <= boundTerm (or v_sep < 0 && -v_sep <= boundTerm).
@@ -415,12 +467,13 @@ module Make (RuleT : AbstractRule) = struct
                     match (checkLowerZeroArbitraryUpper, checkUpperZeroArbitraryLower) with
                     | (Some b, _)
                     | (_, Some b) ->
-                      (P (Expexp.fromPoly (Poly.abs b)), getVarNums lvarswithnums (Poly.getVars b))
+                      create_size_data 
+                        (P (Expexp.fromPoly (Poly.abs b)), getVarNums lvarswithnums (Poly.getVars b))
                     | _ ->
-                      (Unknown, [])
+                      unknown_size_data
                   )
                 else
-                  (Unknown, [])
+                  unknown_size_data
             )
   and isMaxBound cond t c a =
     match a with
@@ -494,7 +547,7 @@ module Make (RuleT : AbstractRule) = struct
     String.concat "\n" (List.map dumpOneLSC ruleWithLSCs)
   and dumpOneLSC (rule, lsb) =
     (RuleT.toString rule) ^ " :: " ^ (dumpLSC lsb)
-  and dumpLSC ((i, j), c_vars) =
+  and dumpLSC ({ rhsIdx = i; varIdx = j }, c_vars) =
     Printf.sprintf "%i-%i: %s" i j (toStringLocalComplexity c_vars)
   and dumpLSCDot (rule, lsb) =
     (RuleT.toDotString rule) ^ ":: " ^ (dumpLSC lsb)
@@ -505,20 +558,14 @@ module type S =
 
       module RuleT : AbstractRule.AbstractRule
 
-      type size_data = localcomplexity * int list
-
-      type local_trans_data = RuleT.rule * ((int * int) * size_data)
-      type ltds = local_trans_data list
+      type trans_data = RuleT.rule * local_size_data
+      type tds = trans_data list
         
-      val getE : localcomplexity * 'a -> Big_int.big_int
-      val getS : localcomplexity * 'a -> Big_int.big_int
-      val getConstant : localcomplexity * 'a -> Big_int.big_int
-      val equal :
-        localcomplexity * 'a list -> localcomplexity * 'a list -> bool
-      val equalInternal :
-        localcomplexity * 'a list -> localcomplexity * 'a list -> bool
-      val equalVar : 'a list -> 'a list -> bool
-      val isConstant : localcomplexity * 'a list -> bool
+      val getE : size_data -> Big_int.big_int
+      val getS : size_data -> Big_int.big_int
+      val getConstant : size_data -> Big_int.big_int
+      val equal : size_data -> size_data -> bool
+      val isConstant : size_data -> bool
       val complexity2localcomplexity :
         Complexity.t -> Poly.var list -> size_data
       val getVarNumList : Poly.var list -> Poly.var list -> int -> int list
@@ -550,9 +597,9 @@ module type S =
       (* This produces one 
          (rule, ((rhsIdx, argumentIdx), (local size bound, active variable idxs)))
          tuple per RV *)
-      val computeLocalSizeComplexities : RuleT.rule list -> ltds
+      val computeLocalSizeComplexities : RuleT.rule list -> tds
 
-      val computeLocalSizeComplexitiesForRule : RuleT.rule -> ltds
+      val computeLocalSizeComplexitiesForRule : RuleT.rule -> tds
 
       val computeLSCForTerm :
         Poly.var list ->
@@ -574,11 +621,9 @@ module type S =
         Poly.var list -> Pc.atom list -> Poly.var list -> Poly.var list
       val getNew : Poly.var list -> Poly.var list -> Poly.var list
       val getVarNums : (Poly.var * int) list -> Poly.var list -> int list
-      val equalLSC :
-        'a * (localcomplexity * 'b list) ->
-        'a * (localcomplexity * 'b list) -> bool
-      val dumpLSCs : ltds -> string
-      val dumpOneLSC : local_trans_data -> string
-      val dumpLSC : (int * int) * (size_data) -> string
-      val dumpLSCDot : local_trans_data -> string
+      val equalLSC : local_size_data -> local_size_data -> bool
+      val dumpLSCs : tds -> string
+      val dumpOneLSC : trans_data -> string
+      val dumpLSC : local_size_data -> string
+      val dumpLSCDot : trans_data -> string
     end

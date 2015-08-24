@@ -225,12 +225,14 @@ let standardize rule =
     Utils.mapi
       (fun i v -> let newV = Poly.fromVar ("Y_" ^ string_of_int i) in (v, newV))
       freshVars in
-  { lhs = (Term.getFun rule.lhs, lhsArgs) ;
-    rhs = (Term.getFun rule.rhs, rhsArgs) ;
+  { lhs = Term.create' (Term.getFun rule.lhs, lhsArgs) ;
+    rhs = Term.create' (Term.getFun rule.rhs, rhsArgs) ;
     cond = Pc.instantiate (Pc.instantiate (rule.cond @ rhsCond) (lhsSubst @ rhsSubst)) condSubst ;
   }
 
 let restrictArguments indexSet rule =
-  { lhs = (Term.getFun rule.lhs, Utils.getIndexedSubset indexSet (Term.getArgs rule.lhs)) ;
-    rhs = (Term.getFun rule.rhs, Utils.getIndexedSubset indexSet (Term.getArgs rule.rhs)) ;
+  { lhs = Term.create' (Term.getFun rule.lhs,
+      Utils.getIndexedSubset indexSet (Term.getArgs rule.lhs)) ;
+    rhs = Term.create' (Term.getFun rule.rhs,
+      Utils.getIndexedSubset indexSet (Term.getArgs rule.rhs)) ;
     cond = rule.cond }

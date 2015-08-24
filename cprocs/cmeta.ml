@@ -38,7 +38,7 @@ module SlicingProc = SlicingProc.Make(CTRSObl)
 
 
 type tgraph = Tgraph.G.t * (Tgraph.G.vertex * Cseparate.TGraph.r) array
-type rvgraph = (Tgraph.G.t * (Tgraph.G.vertex * GSC.global_trans_data) array) option
+type rvgraph = (Tgraph.G.t * (Tgraph.G.vertex * GSC.trans_data) array) option
 
 (* IFDEF HAVE_APRON THEN *)
 (* module ApronInvariantsProc = ApronInvariantsProcessor.Make(Rule) *)
