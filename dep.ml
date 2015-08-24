@@ -159,6 +159,7 @@ let visualizeInformationFlow relationships inputFname =
     else [] in
   draw ~augmentVertex:highlight visGraph inputFname
 
+(*
 let main () =
   let usage = "" in
   let filename = ref "" in
@@ -180,3 +181,4 @@ let main () =
 
 
 let _ = main ()
+*)

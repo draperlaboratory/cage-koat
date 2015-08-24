@@ -86,7 +86,7 @@ let rec processRelationshipsInt map = function
 
 let processRelationships lst = processRelationshipsInt Branches.empty lst
 
-
+(*
 let main () =
   let usage = "" in
   let filename = ref "" in
@@ -107,3 +107,4 @@ let main () =
     end
 
 let _ = main ()
+*)
