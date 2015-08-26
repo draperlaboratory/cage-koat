@@ -17,7 +17,8 @@ let marryBranchInfo imap bmapEl =
   let getSym e = fst e.DB.right in
   let getCon e =
     let sym = getSym e in
-    try RL.Connectivity.find sym imap
+    try let res = RL.Connectivity.find sym imap in
+        res
     with _ ->
       (* If this isn't Bottom, we've got an issue. *)
       failwith (Printf.sprintf "Couldn't find %s in imap.\n" sym) in
@@ -85,8 +86,10 @@ let main () =
       Printf.printf "DetectLeak %s\n\n" !filename;
       let entrFun, system = Parser.parseCint !filename Simple.Stmts in
       let unsafe = secretBranches system in
-      let pos = { fName = "f"; pos = 0; p = [], Big_int.zero_big_int} in
-      List.iter (fun l -> List.iter (Printf.eprintf "%s ") l; Printf.eprintf "\n") (unsafe [pos])
+      let pos = { fName = "start"; pos = 0; p = [], Big_int.zero_big_int} in
+      List.iter
+        (fun l -> List.iter (Printf.eprintf "%s ") l; Printf.eprintf "\n")
+        (unsafe [pos])
     end
 
 
