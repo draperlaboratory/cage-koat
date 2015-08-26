@@ -52,6 +52,9 @@ dep: dep.ml
 detectLeak: detectLeak.ml
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} detectLeak.native
 
+detectLeakDebug: detectLeak.ml
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} detectLeak.d.byte
+
 branch: detectBranch.ml
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} detectBranch.native
 
