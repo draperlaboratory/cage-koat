@@ -45,13 +45,15 @@ let tailToString (t : tail) =
 let displayMap key element = tailToString element |> Printf.eprintf "%s%s\n" key
 
 
-let addBottom (t : tail) =
+let addBottom = function
+  | [] -> [{ left = bottom; right = bottom; guard = [];}]
+  | hd::tl as t ->
   (* we now have a conjunct of disjuncts [x0 /\ x1 /\ ... xn] *)
   let disjuncts = List.map (fun e -> Pc.negateCond e.guard) t in
   (* now we've got [x0 \/ x1 \/ ... xn, we need to make that many branches to
      bottom!*)
   let conjuncts = Pc.andOverOr disjuncts in
-  let left = (List.hd t).left in (* t is guaranteed to have at least on element. *)
+  let left = hd.left in (* t is guaranteed to have at least on element. *)
   let bottoms accum bottomGuard =
     let possible = List.length bottomGuard > 0 && true in
     if possible then
@@ -70,6 +72,10 @@ let branchingOnly map = Branches.filter branches map
 let branchingKeys map =
   Branches.fold (fun k el ac -> if branches k el then k::ac else ac) map []
 
+let stubRHS map funSym =
+  if Branches.mem funSym map
+  then map
+  else Branches.add funSym [] map
 
 let rec processRelationshipsInt map = function
   | [] -> Branches.map addBottom map
@@ -82,8 +88,9 @@ let rec processRelationshipsInt map = function
         Branches.find funSym map
       with Not_found -> [] in
     let toAdd = tailEls @ prev in
+    let map' = List.fold_left stubRHS map (List.map fst hd.CR.rhss) in
     assert(toAdd <> []);
-    processRelationshipsInt (Branches.add funSym toAdd map) tl
+    processRelationshipsInt (Branches.add funSym toAdd map') tl
 
 let processRelationships lst = processRelationshipsInt Branches.empty lst
 
