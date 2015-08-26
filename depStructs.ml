@@ -51,7 +51,11 @@ let makeFNameHash (rts : ruleTrans list) =
   {maxFName = !v; mapping = mapping;}
 
 let argPosHash (fnh : fNameHash) (ap : argPos) =
-  ap.pos * fnh.maxFName + (Hashtbl.find fnh.mapping ap.fName)
+  let v =
+    try Hashtbl.find fnh.mapping ap.fName
+    with _ -> failwith "Couldn't find arg pos in hash"
+  in
+  ap.pos * fnh.maxFName + v
 
 let argPosEq (a : argPos) (b : argPos) =
   a.pos = b.pos && a.fName = b.fName
