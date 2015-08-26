@@ -69,7 +69,8 @@ end
    all ends up bundled in here. *)
 
 let processRule (rule : Comrule.rule) =
-  let (lfName, lhsArgs) = rule.Comrule.lhs
+  let lfName = rule.Comrule.lhs.Term.fn
+  and lhsArgs = rule.Comrule.lhs.Term.args
   and cond = rule.Comrule.cond in
   let module AO = struct
     let lhsArgs = List.length lhsArgs
@@ -120,7 +121,9 @@ let processRule (rule : Comrule.rule) =
     addEdge lhsNode c2  in
   let (lhsNodes : rulePos list) = List.mapi lhsAdd lhsArgs
   and (condNodes : (rulePos * rulePos) list) = List.mapi condAdd cond in
-  let dealWithRHS (rFName, rArgs) =
+  let dealWithRHS r =
+    let rFName = r.Term.fn
+    and rArgs = r.Term.args in
     let graph' = G.copy(graph) in
     let rhsNodes = List.mapi (fun i poly ->
       let toAdd = RHS { var = poly; pos = i; qual = Equal } in

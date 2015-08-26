@@ -1,5 +1,6 @@
 
 module CR = Comrule
+module T = Term
 open DepStructs
 
 module Branches = Map.Make(String)
@@ -15,16 +16,16 @@ type tailElement = {
 type tail = tailElement list
 
 let bottomKey = "Bottom"
-let (bottom : Term.term) = (bottomKey, [])
+let (bottom : T.term) = {T.fn = bottomKey; T.args = [];}
 
 let argPosInfluencesBranch argPos te =
-  let inLeft = (fst te.left) = argPos.fName
-  and inRight = (fst te.right) = argPos.fName in
+  let inLeft = te.left.T.fn = argPos.fName
+  and inRight = te.right.T.fn = argPos.fName in
   let argument =
     if inLeft then
-      Some (List.nth (snd te.left) argPos.pos )
+      Some (List.nth te.left.T.args argPos.pos )
     else if inRight then
-      Some (List.nth (snd te.right) argPos.pos )
+      Some (List.nth te.right.T.args argPos.pos )
     else None in
   match argument with
   | None -> false
@@ -80,7 +81,7 @@ let stubRHS map funSym =
 let rec processRelationshipsInt map = function
   | [] -> Branches.map addBottom map
   | hd::tl ->
-    let (funSym, _) = hd.CR.lhs
+    let funSym = hd.CR.lhs.T.fn
     and tailEls = List.map (fun rhs ->
       { left = hd.CR.lhs; right = rhs; guard = hd.CR.cond; }) hd.CR.rhss in
     let prev =
@@ -88,7 +89,7 @@ let rec processRelationshipsInt map = function
         Branches.find funSym map
       with Not_found -> [] in
     let toAdd = tailEls @ prev in
-    let map' = List.fold_left stubRHS map (List.map fst hd.CR.rhss) in
+    let map' = List.fold_left stubRHS map (List.map (fun n -> n.T.fn) hd.CR.rhss) in
     assert(toAdd <> []);
     processRelationshipsInt (Branches.add funSym toAdd map') tl
 

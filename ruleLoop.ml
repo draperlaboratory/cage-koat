@@ -66,10 +66,8 @@ let stubRule map symbol =
 let rec processRulesInt map = function
   | [] -> map
   | hd::tl ->
-    Printf.eprintf "Dealing with rule %s\n" (fst hd.CR.lhs);
-    flush stderr;
-    let (hFun, _) = hd.CR.lhs
-    and rhsSyms = List.map fst hd.CR.rhss in
+    let hFun = hd.CR.lhs.Term.fn
+    and rhsSyms = List.map (fun n -> n.Term.fn) hd.CR.rhss in
     let tail = ofList rhsSyms in
     let prev = try Connectivity.find hFun map with Not_found -> Reaches.empty in
     let toAdd = Reaches.union prev tail in

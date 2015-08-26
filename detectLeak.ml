@@ -14,7 +14,7 @@ let rec safe = function
     end
 
 let marryBranchInfo imap bmapEl =
-  let getSym e = fst e.DB.right in
+  let getSym e = e.DB.right.Term.fn in
   let getCon e =
     let sym = getSym e in
     try let res = RL.Connectivity.find sym imap in
