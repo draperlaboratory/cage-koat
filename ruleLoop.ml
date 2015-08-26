@@ -17,7 +17,8 @@ type tail = Reaches.t (*ignore conditionals for now *)
 
 let merge (s1 : Reaches.t) (s2 : Reaches.t) =
   let unioned = Reaches.union s1 s2 in
-  let changed = not (Reaches.equal s1 s2) in
+  let subsets = Reaches.subset s1 s2 || Reaches.subset s2 s1 in
+  let changed = not subsets && not (Reaches.equal s1 s2) in
   unioned, changed
 
 let stepMap map =
@@ -39,7 +40,7 @@ let stepMap map =
 
 let rec saturateConnectivity map =
   let changed, map' = stepMap map in
-  if not changed
+  if not changed || Connectivity.equal (=) map map'
   then map'
   else saturateConnectivity map'
 
@@ -47,25 +48,37 @@ let inLoop key reachable = Reaches.mem key reachable
 let loopMap map = Connectivity.mapi inLoop map
 let infoMap map =
   let loops = loopMap map in
+  let childAcyclic r =
+    let childCycles = try Connectivity.find r loops with Not_found -> false in
+    not childCycles in
   Connectivity.mapi (fun key reaches ->
     if Connectivity.find key loops
     then Cyclic
-    else if Reaches.for_all (fun r -> not (Connectivity.find r loops)) reaches
+    else if Reaches.for_all childAcyclic reaches
     then Acyclic
     else ReachesCycle) map
+
+let stubRule map symbol =
+  if Connectivity.mem symbol map
+  then map
+  else Connectivity.add symbol Reaches.empty map
 
 let rec processRulesInt map = function
   | [] -> map
   | hd::tl ->
+    Printf.eprintf "Dealing with rule %s\n" (fst hd.CR.lhs);
+    flush stderr;
     let (hFun, _) = hd.CR.lhs
-    and tail = List.map fst hd.CR.rhss |> ofList in
+    and rhsSyms = List.map fst hd.CR.rhss in
+    let tail = ofList rhsSyms in
     let prev = try Connectivity.find hFun map with Not_found -> Reaches.empty in
     let toAdd = Reaches.union prev tail in
-    processRulesInt (Connectivity.add hFun toAdd map) tl
+    let map' = List.fold_left stubRule map rhsSyms in
+    processRulesInt (Connectivity.add hFun toAdd map') tl
 
 let processRules lst =
   let base = Connectivity.add DetectBranch.bottomKey Reaches.empty Connectivity.empty in
-  processRulesInt base lst
+  saturateConnectivity (processRulesInt base lst)
 
 (*
 let main () =
@@ -79,12 +92,15 @@ let main () =
     end
   else
     begin
-      Printf.printf "Rule Connectivity %s\n\n" !filename;
+      Printf.eprintf "Rule Connectivity %s\n\n" !filename;
+      flush stderr;
       let entrFun, system = Parser.parseCint !filename Simple.Stmts in
-      let conMap = processRules system |> saturateConnectivity in
+      let rules = processRules system in
+      let conMap = saturateConnectivity rules in
       conMap
     end
 
 
 let _ = main ()
+
 *)
