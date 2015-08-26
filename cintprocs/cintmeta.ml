@@ -101,7 +101,9 @@ let rec process cint maxchaining startfun ctype =
   let (ctrsobl, tgraph, rvgraph, _) = !todo in
   let rvgraph = Utils.unboxOption rvgraph in
   let globalSizeComplexities = GSC.compute ctrsobl rvgraph in
-  Some (getOverallCost tgraph globalSizeComplexities !todo, getProof (initObl, tgraph, rvgraph, 1) !input_nums !output_nums !proofs)
+  Some (getOverallCost tgraph globalSizeComplexities !todo,
+        (* Why is initObl passed to getProof and not ctrsobl? *)
+        getProof (initObl, tgraph, rvgraph, 1) !input_nums !output_nums !proofs)
 and getOverallCost tgraph globalSizeComplexities (ctrsobl, _, _, _) =
   let vars = CTRS.getVars ctrsobl.ctrs in
   let getCostForRule tgraph globalSizeComplexities vars rule =

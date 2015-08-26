@@ -1,9 +1,14 @@
 type funSym = string
-type term = funSym * Poly.poly list
+
+type pos = int
+
+type term = { fn : funSym; args : Poly.poly list }
+
 val create :
   string ->
   (Big_int.big_int * (String.t * int) list) list list ->
   term
+val create' : funSym * Poly.poly list -> term
 val compare : term -> term -> int
 val toString : term -> string
 val getArgs : term -> Poly.poly list

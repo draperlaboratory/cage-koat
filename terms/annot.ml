@@ -1,5 +1,3 @@
-type fname = string
-
 module FMap = Map.Make(String)
 
 type pos = int
@@ -24,7 +22,7 @@ type complexitySpec = {
 }
 
 type functionSpec = {
-  fname : fname;
+  fname : Term.funSym;
   args : argList;
   secretArgs : pos list; (* argument positions *)
   complexity : complexitySpec;

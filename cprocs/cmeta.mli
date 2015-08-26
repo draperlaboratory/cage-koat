@@ -14,7 +14,7 @@ module SlicingProc :
   end
 
 type tgraph = Tgraph.G.t * (Tgraph.G.vertex * Cseparate.TGraph.r) array
-type rvgraph = (Tgraph.G.t * (Tgraph.G.vertex * GSC.global_trans_data) array) option
+type rvgraph = (Tgraph.G.t * (Tgraph.G.vertex * GSC.trans_data) array) option
 
 val check : Rule.rule list -> unit
 val checkRules : int -> Poly.var list -> Rule.rule list -> unit
@@ -23,9 +23,9 @@ val checkStartCondition : Tgraph.G.t * (Tgraph.G.vertex * TGraph.r) array ->
 val process : RuleT.rule list -> int -> Term.funSym -> Complexity.ctype ->
   (Complexity.t * (unit -> string)) option
 val processInner : Cseparate.CTRSObl.t -> tgraph -> rvgraph ->
-  (Complexity.t * Cseparate.GSC.LSC.size_data Cseparate.GSC.RVMap.t * (unit -> string))
+  (Complexity.t * LocalSizeComplexity.size_data Cseparate.GSC.RVMap.t * (unit -> string))
     option
-val getOverallCost : tgraph -> Cseparate.GSC.LSC.size_data GSC.RVMap.t ->
+val getOverallCost : tgraph -> LocalSizeComplexity.size_data GSC.RVMap.t ->
   CTRSObl.t * tgraph * rvgraph * int -> Complexity.t
 val getProof : CTRSObl.t * tgraph * rvgraph *  int ->
   int list -> int list -> (int -> int -> string) list -> unit -> string

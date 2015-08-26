@@ -71,12 +71,12 @@ module Make(CTRS : Ctrs.S) = struct
   let getKnownComplexityRules obl =
     RuleMap.fold (fun r c res -> if c <> Complexity.Unknown then r::res else res) obl.complexity []
 
-  let dummyTerm args = ("__dummyRhs", args)
+  let dummyTerm args = Term.create' ("__dummyRhs", args)
         
   let alloc_fun = "new"
 
   let dummyNewRule args =
-    let lhs = (alloc_fun, args) in
+    let lhs = Term.create' (alloc_fun, args) in
     let rhs = dummyTerm args in
     RuleT.createRule lhs [rhs] []
 
@@ -86,7 +86,7 @@ module Make(CTRS : Ctrs.S) = struct
     let vs = RuleT.getVars rule in
     let args = List.map Poly.fromVar vs in
     let make_dummy f =
-      let lhs = (f, args) in
+      let lhs = Term.create' (f, args) in
       let rhs = lhs in
       RuleT.createRule lhs [rhs] []
     in

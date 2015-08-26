@@ -83,7 +83,8 @@ and getInnerObligation ctrsobl entryRules innerRules freshOblId tgraph rvgraph =
   let innerStartFun = "inner_" ^ (string_of_int freshOblId) ^ "_start_sep" in
   let innerStartRules =
     List.map
-      (fun entryRule -> Rule.create (innerStartFun, snd (Rule.getLeft entryRule)) (Rule.getRight entryRule) [])
+      (fun entryRule -> Rule.create (Term.create' (innerStartFun, (Rule.getLeft entryRule).Term.args))
+        (Rule.getRight entryRule) [])
       entryRules in
   let innerTGraph = TGraph.addNodes (TGraph.keepNodes tgraph innerRules) innerStartRules in
   let innerRVGraph =
@@ -134,15 +135,16 @@ and getOuterObligation ctrsobl tgraph rvgraph vars innerFuns outerRules entryRul
    * - costRule, which has the cost of the separated SCC
    * - summaryRules, which summarize the changes to values (several, to make the case analysis for abs(...) explicit)
    *)
-  let costRule = Rule.create (inLoopFun, varPols) (tmpFun, varPols) [] in
+  let costRule = Rule.create (Term.create' (inLoopFun, varPols)) (Term.create' (tmpFun, varPols)) [] in
   let summaryRules =
     if (not addSizeSummaries) || (exitRules = []) then
-      [Rule.create (tmpFun, varPols) (outLoopFun, maybeHavocedVarPols) []]
+      [Rule.create (Term.create' (tmpFun, varPols)) (Term.create' (outLoopFun, maybeHavocedVarPols)) []]
     else
       List.map
-        (fun summaryCond -> Rule.create (tmpFun, varPols) (outLoopFun, maybeHavocedVarPols) summaryCond)
+        (fun summaryCond -> Rule.create (Term.create' (tmpFun, varPols))
+          (Term.create' (outLoopFun, maybeHavocedVarPols)) summaryCond)
         (getSummaryConditions innerGSC exitRules vars havocedVars) in
-  let tskip = Rule.create (inLoopFun, varPols) (outLoopFun, varPols) [] in
+  let tskip = Rule.create (Term.create' (inLoopFun, varPols)) (Term.create' (outLoopFun, varPols)) [] in
 
   (* Fix up the rules we already have *)
   let allRemovedRules = entryRules @ exitRules @ innerRules in
@@ -150,14 +152,15 @@ and getOuterObligation ctrsobl tgraph rvgraph vars innerFuns outerRules entryRul
     (* Redirect exit rules *)
     List.fold_left
       (fun (newCost, newComplexity, newRules) r ->
-        let newRule = Rule.create (outLoopFun, Term.getArgs (Rule.getLeft r)) (Rule.getRight r) (Rule.getCond r) in
+        let newRule = Rule.create (Term.create' (outLoopFun, Term.getArgs (Rule.getLeft r))) (Rule.getRight r) (Rule.getCond r) in
         (RuleMap.add newRule (RuleMap.find r ctrsobl.cost) newCost,
          RuleMap.add newRule (RuleMap.find r ctrsobl.complexity) newComplexity,
          newRule::newRules))
       (* Redirect entry rules *)
       (List.fold_left
          (fun (newCost, newComplexity, newRules) r ->
-           let newRule = Rule.create (Rule.getLeft r) (inLoopFun, Term.getArgs (Rule.getRight r)) (Rule.getCond r) in
+           let newRule = Rule.create (Rule.getLeft r)
+             (Term.create' (inLoopFun, Term.getArgs (Rule.getRight r))) (Rule.getCond r) in
            (RuleMap.add newRule (RuleMap.find r ctrsobl.cost) newCost,
             RuleMap.add newRule (RuleMap.find r ctrsobl.complexity) newComplexity,
             newRule::newRules))

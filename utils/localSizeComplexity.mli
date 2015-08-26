@@ -6,25 +6,28 @@ type localcomplexity =
 | P of Expexp.expexp
 | Unknown
 
+type size_data = { bound : localcomplexity; active_vars : Term.pos list }
+
+val create_size_data : localcomplexity * Term.pos list -> size_data
+val unknown_size_data : size_data
+
+type index = { rhsIdx : int; varIdx : Term.pos }
+
+type local_size_data = index * size_data
+
 module type S =
     sig
 
       module RuleT : AbstractRule.AbstractRule
 
-      type size_data = localcomplexity * int list
-
-      type local_trans_data = RuleT.rule * ((int * int) * size_data)
-      type ltds = local_trans_data list
+      type trans_data = RuleT.rule * local_size_data
+      type tds = trans_data list
         
-      val getE : localcomplexity * 'a -> Big_int.big_int
-      val getS : localcomplexity * 'a -> Big_int.big_int
-      val getConstant : localcomplexity * 'a -> Big_int.big_int
-      val equal :
-        localcomplexity * 'a list -> localcomplexity * 'a list -> bool
-      val equalInternal :
-        localcomplexity * 'a list -> localcomplexity * 'a list -> bool
-      val equalVar : 'a list -> 'a list -> bool
-      val isConstant : localcomplexity * 'a list -> bool
+      val getE : size_data -> Big_int.big_int
+      val getS : size_data -> Big_int.big_int
+      val getConstant : size_data -> Big_int.big_int
+      val equal : size_data -> size_data -> bool
+      val isConstant : size_data -> bool
       val complexity2localcomplexity :
         Complexity.t -> Poly.var list -> size_data
       val getVarNumList : Poly.var list -> Poly.var list -> int -> int list
@@ -56,9 +59,9 @@ module type S =
       (* This produces one 
          (rule, ((rhsIdx, argumentIdx), (local size bound, active variable idxs)))
          tuple per RV *)
-      val computeLocalSizeComplexities : RuleT.rule list -> ltds
+      val computeLocalSizeComplexities : RuleT.rule list -> tds
 
-      val computeLocalSizeComplexitiesForRule : RuleT.rule -> ltds
+      val computeLocalSizeComplexitiesForRule : RuleT.rule -> tds
 
       val computeLSCForTerm :
         Poly.var list ->
@@ -80,13 +83,11 @@ module type S =
         Poly.var list -> Pc.atom list -> Poly.var list -> Poly.var list
       val getNew : Poly.var list -> Poly.var list -> Poly.var list
       val getVarNums : (Poly.var * int) list -> Poly.var list -> int list
-      val equalLSC :
-        'a * (localcomplexity * 'b list) ->
-        'a * (localcomplexity * 'b list) -> bool
-      val dumpLSCs : ltds -> string
-      val dumpOneLSC : local_trans_data -> string
-      val dumpLSC : (int * int) * (size_data) -> string
-      val dumpLSCDot : local_trans_data -> string
+      val equalLSC : local_size_data -> local_size_data -> bool
+      val dumpLSCs : tds -> string
+      val dumpOneLSC : trans_data -> string
+      val dumpLSC : local_size_data -> string
+      val dumpLSCDot : trans_data -> string
     end
 
 module Make(RuleT : AbstractRule.AbstractRule) : S with module RuleT = RuleT

@@ -20,7 +20,11 @@
 
 open AbstractRule
 
-type lc = LocalSizeComplexity.localcomplexity
+module LC = LocalSizeComplexity
+
+type lc = LC.localcomplexity
+
+type size_data = LC.size_data
 
 module RV = struct
   module Make(RuleT : AbstractRule) = struct
@@ -79,30 +83,25 @@ module Make (RuleT : AbstractRule) = struct
       String.concat "\n" !accu
 
   (* Compute rv graph *)
-  let rec compute rvs tgraph =
+  let rec compute rvs tgraph : Tgraph.G.t * (int * LSC.trans_data) array
+=
     let len = List.length rvs in
       let rva = Array.init len (fun i -> (i, List.nth rvs i))
       and edges = Array.make_matrix len len false in
         compute_edges edges rva len tgraph;
         (create_graph len edges, rva)
-  and compute_edges edges rva len tgraph =
+  and compute_edges edges (rva : (int * LSC.trans_data) array) len tgraph =
     for i = 0 to (len - 1) do
       (* rva.(i) = (i, (rule, ((rhsIdx, argumentIdx), (LSC, activeVarIdxs)))) *)
       let rule1 = fst (snd rva.(i)) in
-      let (rhsnum1, argnum1) = fst (snd (snd rva.(i))) in
+      let { LC.rhsIdx = rhsnum1; LC.varIdx = argnum1} = fst (snd (snd rva.(i))) in
       for j = 0 to (len - 1) do
         let rule2 = fst (snd rva.(j)) in
-        let activeVars2 = snd (snd (snd (snd rva.(j)))) in
+        let activeVars2 = (snd (snd (snd rva.(j)))).LC.active_vars in
         if (TGraph.hasEdge tgraph rule1 rule2) && (Utils.contains activeVars2 argnum1) then (* rule1 \in pre(rule2), argnum1 \in activeVars(S_l(rule2, var2)) *)
           edges.(i).(j) <- true;
       done
     done
-  and first (x, (_, _)) =
-    x
-  and second (_, (y, _)) =
-    y
-  and third (_, (_, z)) =
-    z
   and create_graph len edges =
     let res = ref G.empty in
       for i = 0 to (len - 1) do
@@ -194,7 +193,7 @@ module Make (RuleT : AbstractRule) = struct
       !res
 
   (* add nodes *)
-  let rec addNodes (g, rva) ruleWithLSCs tgraph =
+  let rec addNodes (g, rva) (ruleWithLSCs : LSC.tds) tgraph =
     let maxx = getMaxNum rva in
       let news = getNewPairs ruleWithLSCs (maxx + 1) in
         let (g', rva') = (addToGraph g (List.map fst news), addToArray rva news) in
@@ -216,22 +215,22 @@ module Make (RuleT : AbstractRule) = struct
     match nums with
       | [] -> g
       | i::more -> addToGraph (G.add_vertex g i) more
-  and addNeededEdges g tgraph rva news =
+  and addNeededEdges g tgraph (rva : (G.vertex * LSC.trans_data) array) news =
     match news with
       | [] -> g
       | iruleWithLSC::more -> addNeededEdges (addNeededEdgesOne g tgraph rva iruleWithLSC) tgraph rva more
   and addNeededEdgesOne g tgraph rva (i, (r1, lsc)) =
     let res = ref g
-    and argnum1 = fst (first lsc)
-    and num1 = snd (first lsc)
-    and dep1 = third lsc in
+    and argnum1 = (fst lsc).LC.rhsIdx
+    and num1 = (fst lsc).LC.varIdx
+    and dep1 = (snd lsc).LC.active_vars in
       if (TGraph.hasEdge tgraph r1 r1) && (Utils.contains dep1 num1) then
         res := G.add_edge !res i i;
       for j = 0 to (Array.length rva - 1) do
         let r2 = fst (snd rva.(j))
-        and argnum2 = fst (first (snd (snd (rva.(j)))))
-        and num2 = snd (first (snd (snd (rva.(j)))))
-        and dep2 = third (snd (snd rva.(j))) in
+        and argnum2 = (fst (snd (snd (rva.(j))))).LC.rhsIdx
+        and num2 = (fst (snd (snd (rva.(j))))).LC.varIdx
+        and dep2 = (snd (snd (snd rva.(j)))).LC.active_vars in
           let argterm1 = List.nth (RuleT.getRights r1) argnum1
           and leftterm1 = RuleT.getLeft r1
           and c1 = RuleT.getCond r1

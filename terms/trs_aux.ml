@@ -69,7 +69,7 @@ and getArities trs f =
   match trs with
     | [] -> []
     | r::rr -> (getAritiesOne (Rule.getLeft r) f) @ (getAritiesOne (Rule.getRight r) f) @ (getArities rr f)
-and getAritiesOne (f, args) g =
+and getAritiesOne { Term.fn = f; Term.args = args } g =
   if f = g then
     [ List.length args ]
   else
