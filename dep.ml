@@ -78,18 +78,23 @@ let addEdge graph (src : argPos) (dest : reachablePosition) =
 **)
 let merge graph (src : argPos) (dest : reachablePosition) =
   let srcReach = ArgPosTable.find graph src in
-  let destReach = ArgPosTable.find graph dest.argPos in
-  let toFold =
-  match dest.qual with
-  | Delta ->
-      (fun protoPos protoEdge accum ->
-        let addedEdge = { argPos = protoEdge.argPos;
-                          qual = Delta;} in
-        updateReachable srcReach addedEdge || accum)
-  | _ ->
-      (fun destPos destEdge accum ->
-        updateReachable srcReach destEdge || accum) in
-  ArgPosTable.fold toFold destReach false
+  (* if the dest has no reachable positions (it bottoms), then we won't update *)
+  (ArgPosTable.mem graph dest.argPos) &&
+  (* otherwise, dest touches things... *)
+    begin
+      let destReach = ArgPosTable.find graph dest.argPos in
+      let toFold =
+        match dest.qual with
+        | Delta ->
+          (fun protoPos protoEdge accum ->
+            let addedEdge = { argPos = protoEdge.argPos;
+                              qual = Delta;} in
+            updateReachable srcReach addedEdge || accum)
+        | _ ->
+          (fun destPos destEdge accum ->
+            updateReachable srcReach destEdge || accum) in
+      ArgPosTable.fold toFold destReach false
+    end
 
 let doMerges graph (src : argPos) =
   let srcReach = ArgPosTable.find graph src in
