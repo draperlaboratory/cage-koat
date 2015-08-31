@@ -218,7 +218,11 @@ and doInitial () =
   doMaybeSeparateLoop ();
 and doInitialCleaning () =
   run UnsatProc.process;
-  run Cleaf.process;
+  (* Removed due to bug when adding annotations:
+     substitutions by global values are not applied to the local leaf constants.
+     the leaf processing is correct only when applied to leaves of *constant* weight.
+  *)
+  (* run Cleaf.process; *)
 and doMaybeSeparateLoop () =
   (* This is split from doLoop, as the check if we can separate is rather expensive.
    * When we can successfully separate, we try again (because there might be other things
