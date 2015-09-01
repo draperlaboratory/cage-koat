@@ -102,3 +102,7 @@ let parsePackage (jsonObj : json) =
     end
     | _ -> failwith "Tried to parse package on not an association list!!"
 
+
+let parsePackageFile fname =
+  let json = Yojson.Basic.from_file ~fname fname in
+  parsePackage json
