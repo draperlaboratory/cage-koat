@@ -72,24 +72,45 @@ let secretBranches (system : CR.rule list) (secrets : argPos list) =
     dangerousBranches
   ) secrets
 
+let getAnnotationSecrets fname =
+  let annotation = Annot_parser.parsePackageFile fname in
+  let functions = annotation.Annot.functions in
+  let makeSecretArgPos fname accum secrets =
+    List.fold_left (fun a i ->
+      { fName = fname; pos = i; p = [], Big_int.zero_big_int;} :: a) accum secrets in
+  let posWithDups = Annot.FMap.fold
+    (fun _ ele accum -> makeSecretArgPos ele.Annot.fname accum ele.Annot.secretArgs)
+    functions [] in
+  Utils.remdup posWithDups
+
 let main () =
   let usage = "" in
   let filename = ref "" in
-  Arg.parse [] (fun f -> filename := f) usage;
+  let annotation = ref "" in
+  Arg.parse
+    [
+      "--its", Arg.Set_string filename, "Sets the path to the integer transition system";
+      "--annot", Arg.Set_string annotation, "Sets the path to the annotation file";
+    ] (fun _ -> ()) usage;
   if !filename = "" then
     begin
-      Printf.eprintf "Expected filename as only argument.\n";
+      Printf.eprintf "Must supply an its filename using --its.\n";
+      exit 1
+    end
+  else if !annotation = "" then
+    begin
+      Printf.eprintf "Must supply an annotation filename using --annot.\n";
       exit 1
     end
   else
     begin
       Printf.printf "DetectLeak %s\n\n" !filename;
+      let pos = getAnnotationSecrets !annotation in
       let entrFun, system = Parser.parseCint !filename Simple.Stmts in
       let unsafe = secretBranches system in
-      let pos = { fName = "start"; pos = 0; p = [], Big_int.zero_big_int} in
       List.iter
         (fun l -> List.iter (Printf.eprintf "%s ") l; Printf.eprintf "\n")
-        (unsafe [pos])
+        (unsafe pos)
     end
 
 
