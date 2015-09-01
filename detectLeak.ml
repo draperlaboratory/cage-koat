@@ -37,8 +37,8 @@ let secretBranches (system : CR.rule list) (secrets : argPos list) =
   List.map (fun secret ->
     let reachablefrom =
       try
-        let rp = Hashtbl.find flowGraph secret in
-        Hashtbl.fold (fun key el accum -> el.Dep.argPos::accum) rp secrets
+        let rp = Dep.ArgPosTable.find flowGraph secret in
+        Dep.ArgPosTable.fold (fun key el accum -> el.Dep.argPos::accum) rp secrets
       with Not_found -> [] in
     let dangerousBranches =
     List.fold_left (fun accum apos ->

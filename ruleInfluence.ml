@@ -57,6 +57,9 @@ module VarNodes (M : ArgOffset) = struct
     | RHS a1, RHS a2
     | Cond a1, Cond a2 -> a1.pos = a2.pos
     | _,_ -> false
+  let (=) = equal
+  let (>) a b = (hash a) > (hash b)
+  let (>=) a b = (hash a) >= (hash b)
 end
 
 
@@ -131,11 +134,11 @@ let processRule (rule : Comrule.rule) =
     Utils.concatMapi (fun li lhsN ->
       let reachable = Reachability.analyze (Node.equal lhsN) graph' in
       let rtest n = try reachable n with Not_found -> false in
-      let lpos = { fName = lfName; pos = li; } in
+      let lpos = { fName = lfName; pos = li; p = getPoly lhsN } in
       List.fold_left (fun (accum, ri) rn ->
         let ri' = ri + 1 in
         let delta = withQual Delta rn in
-        let rpos = { fName = rFName; pos = ri; } in
+        let rpos = { fName = rFName; pos = ri; p = getPoly rn } in
         if rtest delta
         then ({lPos = lpos; rPos = rpos; qual = Delta;} :: accum, ri')
         else if rtest rn
