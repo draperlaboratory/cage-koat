@@ -80,14 +80,14 @@ module Make(CTRS : Ctrs.S) = struct
     let rhs = dummyTerm args in
     RuleT.createRule lhs [rhs] []
 
-  (* Takes a function symbol f, and creates a cyclic rule with head f.
+  (* Takes a function symbol f, and creates a dummy rule with head f.
      Takes a rule as extra argument to get the argument list size. *)
   let makeDummyRules fsyms rule =
     let vs = RuleT.getVars rule in
     let args = List.map Poly.fromVar vs in
     let make_dummy f =
       let lhs = (f, args) in
-      let rhs = lhs in
+      let rhs = dummyTerm args in
       RuleT.createRule lhs [rhs] []
     in
     dummyNewRule args :: List.map make_dummy fsyms
@@ -152,6 +152,13 @@ module Make(CTRS : Ctrs.S) = struct
   let getInitialObl rules start specs ctype =
     let open Expexp in
     let open CTRS in
+    let open Annot in
+    let rules = match rules with
+      | [] -> []
+      | r :: _ -> 
+        let keys = List.map fst (FMap.bindings specs.functions) in
+        makeDummyRules keys r @ rules
+    in
     let (rules, initCost, initCompl) =
       List.fold_left
         (fun (rules, cost, compl) rule ->
