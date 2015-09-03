@@ -52,7 +52,7 @@ let proofs = ref []
 let output_nums = ref []
 let input_nums = ref []
 let did_ai = ref false
-let todo = ref (CTRSObl.getInitialObl [] "" Complexity.Time,
+let todo = ref (CTRSObl.getInitialObl [] "" Annot.empty Complexity.Time,
                 (Tgraph.G.empty, Array.of_list []), None, 0)
 
 let rec check trs =
@@ -80,7 +80,7 @@ and checkStartCondition tgraph trs startfun =
     if (TGraph.getPreds tgraph startRules) <> [] then
       raise (Cint_aux.ParseException (0, 0, "Error: Start nodes have incoming edges!"))
 
-let rec process trs maxchaining startfun ctype =
+let rec process trs maxchaining startfun iface ctype =
   check trs;
   i := 1;
   proofs := [];
@@ -88,7 +88,7 @@ let rec process trs maxchaining startfun ctype =
   output_nums := [];
   ChainProc.max_chaining := maxchaining;
   ChainProc.done_chaining := 0;
-  let initObl = CTRSObl.getInitialObl trs startfun ctype in
+  let initObl = CTRSObl.getInitialObl trs startfun iface ctype in
   let maybeSlicedObl =
     match (SlicingProc.process initObl) with
     | None -> initObl
@@ -219,7 +219,11 @@ and doInitial () =
   doMaybeSeparateLoop ();
 and doInitialCleaning () =
   run UnsatProc.process;
-  run Cleaf.process;
+  (* Removed due to bug when adding annotations:
+     substitutions by global values are not applied to the local leaf constants.
+     the leaf processing is correct only when applied to leaves of *constant* weight.
+  *)
+  (* run Cleaf.process; *)
 and doMaybeSeparateLoop () =
   (* This is split from doLoop, as the check if we can separate is rather expensive.
    * When we can successfully separate, we try again (because there might be other things

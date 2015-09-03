@@ -80,7 +80,7 @@ module Make(CTRS : Ctrs.S) = struct
     let rhs = dummyTerm args in
     RuleT.createRule lhs [rhs] []
 
-  (* Takes a function symbol f, and creates a cyclic rule with head f.
+  (* Takes a function symbol f, and creates a dummy rule with head f.
      Takes a rule as extra argument to get the argument list size. *)
   let makeDummyRules fsyms rule =
     let vs = RuleT.getVars rule in
@@ -102,24 +102,67 @@ module Make(CTRS : Ctrs.S) = struct
       Complexity.Unknown
 
 
-  let spaceOrTimeWeight rule ctype =
+  let get_time specs f =
+    let open Annot in
+    let open Complexity in
+    let funSpecs = specs.functions in
+    try
+      let c = FMap.find f funSpecs in
+      match c.complexity.upperTime with
+      | P p     -> Some p
+      | Unknown -> None
+    with
+      Not_found -> None
+
+
+  let get_space specs f =
+    let open Annot in
+    let open Complexity in
+    let funSpecs = specs.functions in
+    try
+      let c = FMap.find f funSpecs in
+      match c.complexity.upperSpace with
+      | P p     -> Some p
+      | Unknown -> None
+    with
+      Not_found -> None
+
+
+  let spaceOrTimeWeight specs rule ctype =
+    let open Annot in
+    let open Complexity in
+    let alloc_fun = "new" in
+    let f = RuleT.getLeftFun rule in
     match ctype with
-    | Complexity.Space ->
-      let f = RuleT.getLeftFun rule in
-      if f = alloc_fun then
-        Expexp.one
-      else
-        Expexp.zero
-    | Complexity.Time -> Expexp.one
+    | Space -> 
+      begin
+        if f = alloc_fun then
+          Expexp.one
+        else match get_space specs f with
+        | Some p -> p
+        | None -> Expexp.zero
+      end
+    | Time -> begin
+      match get_time specs f with
+      | Some p -> p
+      | None -> Expexp.one
+    end
 
 
-  let getInitialObl rules start ctype =
+  let getInitialObl rules start specs ctype =
     let open Expexp in
     let open CTRS in
+    let open Annot in
+    let rules = match rules with
+      | [] -> []
+      | r :: _ -> 
+        let keys = List.map fst (FMap.bindings specs.functions) in
+        makeDummyRules keys r @ rules
+    in
     let (rules, initCost, initCompl) =
       List.fold_left
         (fun (rules, cost, compl) rule ->
-          (rule::rules, RuleMap.add rule (spaceOrTimeWeight rule ctype) cost,
+          (rule::rules, RuleMap.add rule (spaceOrTimeWeight specs rule ctype) cost,
                         RuleMap.add rule (initComp rule start) compl))
         ([], RuleMap.empty, RuleMap.empty) rules in
     {
@@ -154,7 +197,7 @@ module type S =
       val hasUnknownComplexity : t -> CTRS.RuleT.rule -> bool
       val getUnknownComplexityRules : t -> CTRS.RuleT.rule list
       val getKnownComplexityRules : t -> CTRS.RuleT.rule list
-      val getInitialObl : CTRS.RuleT.rule list -> Term.funSym -> Complexity.ctype -> t
+      val getInitialObl : CTRS.RuleT.rule list -> Term.funSym -> Annot.t -> Complexity.ctype -> t
       val haveSameComplexities : t -> t -> bool
     end
 

@@ -29,10 +29,10 @@ type functionSpec = {
 
 type specMap = functionSpec FMap.t
 
-type package = {
+type t = {
   pname : string;
   created : string;
   functions : specMap;
 }
 
-val emptyPackage : package
+val empty : t

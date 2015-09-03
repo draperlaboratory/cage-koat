@@ -28,11 +28,11 @@ exception Timeout
 let handle_sigalrm signo =
   raise Timeout
 
-let timed_run4 tsecs defaultval f arg1 arg2 arg3 arg4 =
+let timed_run5 tsecs defaultval f arg1 arg2 arg3 arg4 arg5 =
   let oldsig = Sys.signal Sys.sigalrm (Sys.Signal_handle handle_sigalrm) in
     try
       set_timer tsecs;
-      let res = f arg1 arg2 arg3 arg4 in
+      let res = f arg1 arg2 arg3 arg4 arg5 in
         set_timer 0.0;
         Sys.set_signal Sys.sigalrm oldsig;
         res
@@ -133,7 +133,7 @@ let main () =
     Log.init_timer ();
     let (startFun, cint) = Parser.parseCint !filename !combine in
     (* TODO: this is a horrible hack: make this cleaner! *)
-    let _ (* iface *) = if !ifacename = "" then Annot.emptyPackage else Parser.parseIface !ifacename in
+    let iface = if !ifacename = "" then Annot.empty else Parser.parseIface !ifacename in
     let ctype = if !is_space then Complexity.Space else Complexity.Time in
     if Cint.isUnary cint then
       let tt = Cint.toTrs cint in
@@ -141,9 +141,9 @@ let main () =
       let start = Unix.gettimeofday () in
       match if !timeout = 0.0
         then
-          Cmeta.process tt !maxchaining startFun ctype
+          Cmeta.process tt !maxchaining startFun iface ctype
         else
-          timed_run4 !timeout None Cmeta.process tt !maxchaining startFun ctype
+          timed_run5 !timeout None Cmeta.process tt !maxchaining startFun iface ctype
       with
       | None -> Printf.printf "MAYBE\n"
       | Some (c, proof) ->
@@ -160,9 +160,9 @@ let main () =
         let start = Unix.gettimeofday () in
         match if !timeout = 0.0
           then
-            Cintmeta.process cint !maxchaining startFun ctype
+            Cintmeta.process cint !maxchaining startFun iface ctype
           else
-            timed_run4 !timeout None Cintmeta.process cint !maxchaining startFun ctype
+            timed_run5 !timeout None Cintmeta.process cint !maxchaining startFun iface ctype
         with
         | None -> Printf.printf "MAYBE\n"
         | Some (c, proof) ->

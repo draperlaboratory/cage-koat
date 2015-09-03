@@ -32,28 +32,10 @@ type functionSpec = {
 type specMap = functionSpec FMap.t
 
 
-type package = {
+type t = {
   pname : string;
   created : string;
   functions : specMap;
 }
 
-let emptyPackage = { pname = ""; created = ""; functions = FMap.empty }
-
-
-let has_space specs f =
-  let open Complexity in
-  if FMap.mem f specs then
-    let c = FMap.find f specs in
-    match c.complexity.upperSpace with
-    | P _     -> true
-    | Unknown -> false
-  else
-    false
-
-let get_space specs f =
-  let open Complexity in
-  let c = FMap.find f specs in
-  match c.complexity.upperSpace with
-  | P p     -> p
-  | Unknown -> assert false
+let empty = { pname = ""; created = ""; functions = FMap.empty }
