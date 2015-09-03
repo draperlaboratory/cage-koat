@@ -163,6 +163,7 @@ let draw ?(augmentVertex = (fun v -> []) ) g fname =
   let get_subgraph vertex =
     let sgName = vertex.fName in
     Some { Graph.Graphviz.DotAttributes.sg_name = sgName;
+           Graph.Graphviz.DotAttributes.sg_parent = None;
            Graph.Graphviz.DotAttributes.sg_attributes = [`Label sgName]; }
   let vertex_attributes v =
     let base = [`Shape `Box; `Label (Printf.sprintf "%s" (Poly.toString v.p))]
