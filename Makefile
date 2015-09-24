@@ -43,6 +43,9 @@ kittel.d.byte: make_git_sha1 force_look
 koat: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koat.native
 
+taintInference: taintInference.ml
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} taintInference.native
+
 ruleInfluence: ruleInfluence.ml
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} ruleInfluence.native
 
