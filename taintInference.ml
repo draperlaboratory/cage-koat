@@ -37,10 +37,10 @@ let debugPrintBIM (bim : branchInfluenceMap) =
 
 let debugPrintAIM (aim : argInfluenceMap) =
   let printHelp = function
-    | Equal ap
-    | Delta ap
-    | Fresh ap
-    | Branch ap -> Printf.eprintf " %s_%i" ap.fName ap.pos in
+    | Equal ap -> Printf.eprintf " Eq:%s_%i" ap.fName ap.pos
+    | Delta ap -> Printf.eprintf " Dl:%s_%i" ap.fName ap.pos
+    | Fresh ap -> Printf.eprintf " Fr:%s_%i" ap.fName ap.pos
+    | Branch ap -> Printf.eprintf " Br:%s_%i" ap.fName ap.pos in
   Hashtbl.iter (fun (fSym, int) influencers ->
     Printf.eprintf "%s_%i influences [ " fSym int;
     List.iter printHelp influencers;
@@ -222,27 +222,28 @@ let computeBaseArgumentInfluence (rm : ruleMap) (bim : branchInfluenceMap)
         Printf.eprintf "%s -> %s\n" lfsym rfsym;
         List.iteri (fun rhIndex rhArg ->
           let rhAP = { fName = rfsym; pos = rhIndex; p = rhArg;} in
-          if isFresh rhArg then
-            (* the right hand argument is fresh *)
-            List.iteri (fun lhIndex lhArg ->
-              let key = lfsym, lhIndex in
-              let toAdd = Fresh rhAP in
-              let leftAP = { fName = lfsym; pos = lhIndex; p = lhArg;} in
-              updateLeft leftAP branches;
-              updateAim key toAdd) trans.lhs.Term.args
-          else
-           List.iteri (fun lhIndex lhArg ->
-             let key = lfsym, lhIndex in
-             let leftAP = { fName = lfsym; pos = lhIndex; p = lhArg;} in
-             updateLeft leftAP branches;
-             if Poly.equal lhArg rhArg
-          (* arguments are equal. straight up passthrough *)
-             then updateAim key (Equal rhAP)
-             else if Poly.shareVars lhArg rhArg
-              (* some variables are shared -- it's a delta on the previous argument. *)
-             then updateAim key (Delta rhAP)
-             else ()
-           ) trans.lhs.Term.args
+          if not (Poly.isConst rhArg) then
+            if isFresh rhArg then
+                (* the right hand argument is fresh *)
+              List.iteri (fun lhIndex lhArg ->
+                let key = lfsym, lhIndex in
+                let toAdd = Fresh rhAP in
+                let leftAP = { fName = lfsym; pos = lhIndex; p = lhArg;} in
+                updateLeft leftAP branches;
+                updateAim key toAdd) trans.lhs.Term.args
+            else
+              List.iteri (fun lhIndex lhArg ->
+                let key = lfsym, lhIndex in
+                let leftAP = { fName = lfsym; pos = lhIndex; p = lhArg;} in
+                updateLeft leftAP branches;
+                if Poly.equal lhArg rhArg
+                  (* arguments are equal. straight up passthrough *)
+                then updateAim key (Equal rhAP)
+                else if Poly.shareVars lhArg rhArg
+                  (* some variables are shared -- it's a delta on the previous argument. *)
+                then updateAim key (Delta rhAP)
+                else ()
+              ) trans.lhs.Term.args
         ) trans.rhs.Term.args
       ) transitions
   in
@@ -254,6 +255,34 @@ let computeBaseArgumentInfluence (rm : ruleMap) (bim : branchInfluenceMap)
     incorporateRules branches ruleList;
   ) rm;
   aim
+
+
+let rec computeInfluences (aim : argInfluenceMap) =
+  let update = ref false in
+  let stripAP = function
+    | Equal ap
+    | Delta ap
+    | Fresh ap
+    | Branch ap -> ap in
+  let updateInfluences apKey influences =
+    (* merege the list of influencers for all of the children of this guy into
+       this guy. *)
+    let replacement =
+      List.fold_left (fun accum inf ->
+        let ap = stripAP inf in
+        let toAdd = try Hashtbl.find aim (key ap) with Not_found -> [] in
+        let accum' = Utils.remdupC equalInf (toAdd @ accum) in
+      (* if the update adds anything, make a note of it *)
+        if List.length accum <> List.length accum' then
+          update := true;
+        accum') influences influences in
+    Hashtbl.replace aim apKey replacement
+  in
+  (* run an iteration of the updating *)
+  Hashtbl.iter updateInfluences aim;
+  if !update then
+    (* repeat until you hit a fixed state. *)
+    computeInfluences aim
 
 
 let main () =
@@ -285,6 +314,11 @@ let main () =
       let branchInfluences = findBranchInfluence ruleMap pos in
       let argInfluence = computeBaseArgumentInfluence ruleMap branchInfluences pos in
       debugPrintBIM branchInfluences;
+      Printf.eprintf "\n";
+      debugPrintAIM argInfluence;
+      Printf.eprintf "\n";
+      computeInfluences argInfluence;
+      Printf.eprintf "After computing TC:\n";
       debugPrintAIM argInfluence;
       branchInfluences, argMap
     end
