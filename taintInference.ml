@@ -4,6 +4,7 @@ open DepStructs
 module CR = Comrule
 
 type rewrite = {
+  lhs : Term.term;
   rhs : Term.term;
   cond : Pc.cond;
 }
@@ -14,7 +15,11 @@ type branchInfo = {
   id : int;
 }
 
-type influence = int
+type influence =
+| Equal of argPos
+| Delta of argPos
+| Fresh of argPos
+| Branch of argPos
 
 type fSym = string
 type apKey = (fSym * int)
@@ -26,14 +31,53 @@ type branchInfluenceMap = (fSym, branchInfo list) Hashtbl.t
 
 let debugPrintBIM (bim : branchInfluenceMap) =
   Hashtbl.iter (fun key influencers ->
-    Printf.eprintf "%s is influenced by branches [" key;
+    Printf.eprintf "%s is influenced by branches [ " key;
     List.iter (fun bi -> Printf.eprintf "%s_%i " bi.fName bi.id) influencers;
     Printf.eprintf "]\n") bim
+
+let debugPrintAIM (aim : argInfluenceMap) =
+  let printHelp = function
+    | Equal ap
+    | Delta ap
+    | Fresh ap
+    | Branch ap -> Printf.eprintf " %s_%i" ap.fName ap.pos in
+  Hashtbl.iter (fun (fSym, int) influencers ->
+    Printf.eprintf "%s_%i influences [ " fSym int;
+    List.iter printHelp influencers;
+    Printf.eprintf " ]\n") aim
 
 let equal (a : branchInfo) (b : branchInfo) =
   a.id = b.id && a.fName = b.fName
 
 let key (ap : argPos) = ap.fName, ap.pos
+
+let equalAP a b = a.pos = b.pos && a.fName = b.fName
+
+let equalInf a = function
+  | Equal b ->
+    begin
+      match a with
+      | Equal a' -> equalAP a' b
+      | _ -> false
+    end
+  | Delta b ->
+    begin
+      match a with
+      | Delta a' -> equalAP a' b
+      | _ -> false
+    end
+  | Fresh b ->
+    begin
+      match a with
+      | Fresh a' -> equalAP a' b
+      | _ -> false
+    end
+  | Branch b ->
+    begin
+      match a with
+      | Branch a' -> equalAP a' b
+      | _ -> false
+    end
 
 
 let rec makeRuleMapHelp accum = function
@@ -44,7 +88,9 @@ let rec makeRuleMapHelp accum = function
     let prev = try Hashtbl.find accum lhsSym with Not_found -> [] in
     let toAdd =
       List.fold_left
-        (fun accum el -> { rhs = el; cond = cond;} :: accum) prev rule.CR.rhss
+        (fun accum el -> { lhs = rule.CR.lhs;
+                           rhs = el;
+                           cond = cond;} :: accum) prev rule.CR.rhss
     in
     Hashtbl.replace accum lhsSym toAdd;
     makeRuleMapHelp accum tl
@@ -142,17 +188,73 @@ let findBranchInfluence (ruleMap : ruleMap) (startingPositions : argPos list) =
         accum @ (branchInfluenceSearch branchInfluences ruleMap [] [] el.fName))
         [] startingPositions)
   in
-  debugPrintBIM branchInfluences;
   (* Initializing pass is done, now go again and propogate all information from
      cycles through *)
   List.iter (fun fSym ->
-    Printf.eprintf "Updating from top of cycle %s\n" fSym;
     ignore(branchInfluenceSearch branchInfluences ruleMap [] [] fSym))
     cycleStarts;
-  debugPrintBIM branchInfluences;
   (* now we need to condense the influencers s.t. we notice branches behind the
      post-dominator and remove their influence. *)
   condenseBranchInfluences ruleMap branchInfluences
+
+
+let computeBaseArgumentInfluence (rm : ruleMap) (bim : branchInfluenceMap)
+    (startingPositions :argPos list) =
+  (* Start by seeding the table with the branch influences. *)
+  let aim = Hashtbl.create 1000 in
+  let updateAim key toAdd =
+    let prev = try Hashtbl.find aim key with Not_found -> [] in
+    if not (List.exists (equalInf toAdd) prev) then
+      Hashtbl.replace aim key (toAdd::prev)
+  in
+  let updateLeft leftAP branches =
+    let toAdd = Branch leftAP in
+    List.iter (fun bi ->
+      let key = bi.fName, bi.id in
+      updateAim key toAdd) branches in
+  let incorporateRules branches transitions =
+    List.iter
+      (fun trans ->
+        let lfsym = trans.lhs.Term.fn
+        and rfsym = trans.rhs.Term.fn
+        and isFresh rhArg =
+          not (List.exists (Poly.shareVars rhArg) trans.lhs.Term.args) in
+        Printf.eprintf "%s -> %s\n" lfsym rfsym;
+        List.iteri (fun rhIndex rhArg ->
+          let rhAP = { fName = rfsym; pos = rhIndex; p = rhArg;} in
+          if isFresh rhArg then
+            (* the right hand argument is fresh *)
+            List.iteri (fun lhIndex lhArg ->
+              let key = lfsym, lhIndex in
+              let toAdd = Fresh rhAP in
+              let leftAP = { fName = lfsym; pos = lhIndex; p = lhArg;} in
+              updateLeft leftAP branches;
+              updateAim key toAdd) trans.lhs.Term.args
+          else
+           List.iteri (fun lhIndex lhArg ->
+             let key = lfsym, lhIndex in
+             let leftAP = { fName = lfsym; pos = lhIndex; p = lhArg;} in
+             updateLeft leftAP branches;
+             if Poly.equal lhArg rhArg
+          (* arguments are equal. straight up passthrough *)
+             then updateAim key (Equal rhAP)
+             else if Poly.shareVars lhArg rhArg
+              (* some variables are shared -- it's a delta on the previous argument. *)
+             then updateAim key (Delta rhAP)
+             else ()
+           ) trans.lhs.Term.args
+        ) trans.rhs.Term.args
+      ) transitions
+  in
+  Hashtbl.iter (fun fSym ruleList ->
+    let branches =
+      try
+        Hashtbl.find bim fSym
+      with Not_found -> [] in
+    incorporateRules branches ruleList;
+  ) rm;
+  aim
+
 
 let main () =
   let usage = "" in
@@ -181,7 +283,9 @@ let main () =
       let ruleMap = makeRuleMap system in
       let argMap = makeVarMap system in
       let branchInfluences = findBranchInfluence ruleMap pos in
+      let argInfluence = computeBaseArgumentInfluence ruleMap branchInfluences pos in
       debugPrintBIM branchInfluences;
+      debugPrintAIM argInfluence;
       branchInfluences, argMap
     end
 
