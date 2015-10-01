@@ -16,6 +16,7 @@ type branchInfo = {
 }
 
 type influence =
+| PassThrough of argPos
 | Equal of argPos
 | Delta of argPos
 | Fresh of argPos
@@ -37,12 +38,13 @@ let debugPrintBIM (bim : branchInfluenceMap) =
 
 let debugPrintAIM (aim : argInfluenceMap) =
   let printHelp = function
+    | PassThrough ap -> Printf.eprintf " PT:%s_%i" ap.fName ap.pos
     | Equal ap -> Printf.eprintf " Eq:%s_%i" ap.fName ap.pos
     | Delta ap -> Printf.eprintf " Dl:%s_%i" ap.fName ap.pos
     | Fresh ap -> Printf.eprintf " Fr:%s_%i" ap.fName ap.pos
     | Branch ap -> Printf.eprintf " Br:%s_%i" ap.fName ap.pos in
   Hashtbl.iter (fun (fSym, int) influencers ->
-    Printf.eprintf "%s_%i influences [ " fSym int;
+    Printf.eprintf "%s_%i influences [" fSym int;
     List.iter printHelp influencers;
     Printf.eprintf " ]\n") aim
 
@@ -54,6 +56,12 @@ let key (ap : argPos) = ap.fName, ap.pos
 let equalAP a b = a.pos = b.pos && a.fName = b.fName
 
 let equalInf a = function
+  | PassThrough b ->
+    begin
+      match a with
+      | PassThrough a' -> equalAP a' b
+      | _ -> false
+    end
   | Equal b ->
     begin
       match a with
@@ -223,25 +231,37 @@ let computeBaseArgumentInfluence (rm : ruleMap) (bim : branchInfluenceMap)
         List.iteri (fun rhIndex rhArg ->
           let rhAP = { fName = rfsym; pos = rhIndex; p = rhArg;} in
           if not (Poly.isConst rhArg) then
+            (* the right hand argument is fresh *)
             if isFresh rhArg then
-                (* the right hand argument is fresh *)
-              List.iteri (fun lhIndex lhArg ->
-                let key = lfsym, lhIndex in
-                let toAdd = Fresh rhAP in
-                let leftAP = { fName = lfsym; pos = lhIndex; p = lhArg;} in
-                updateLeft leftAP branches;
-                updateAim key toAdd) trans.lhs.Term.args
+                List.iteri (fun lhIndex lhArg ->
+                  let key = lfsym, lhIndex in
+                  let toAdd = Fresh rhAP in
+                  let lhAP = { fName = lfsym; pos = lhIndex; p = lhArg } in
+                  (* if there's a branch in play,
+                     it's influencing a fresh variable. *)
+                  updateLeft lhAP branches;
+                (* then, every lhs variable influences this
+                   rhs position *)
+                  updateAim key toAdd) trans.lhs.Term.args
             else
               List.iteri (fun lhIndex lhArg ->
                 let key = lfsym, lhIndex in
-                let leftAP = { fName = lfsym; pos = lhIndex; p = lhArg;} in
-                updateLeft leftAP branches;
-                if Poly.equal lhArg rhArg
-                  (* arguments are equal. straight up passthrough *)
-                then updateAim key (Equal rhAP)
-                else if Poly.shareVars lhArg rhArg
+                let lhAP = { fName = lfsym; pos = lhIndex; p = lhArg } in
+                if lhIndex = rhIndex && Poly.equal lhArg rhArg
+                  (* arguments and indexes are equal. straight up passthrough *)
+                then
+                    updateAim key (PassThrough rhAP)
+                  (* argument changes position. Equal, but order changes *)
+                else if Poly.equal lhArg rhArg then begin
+                  updateAim key (Equal rhAP);
+                  updateLeft lhAP branches
+                end
                   (* some variables are shared -- it's a delta on the previous argument. *)
-                then updateAim key (Delta rhAP)
+                else if Poly.shareVars lhArg rhArg then begin
+                  updateAim key (Delta rhAP);
+                  updateLeft lhAP branches
+                end
+                  (* no relationship whatsoever. *)
                 else ()
               ) trans.lhs.Term.args
         ) trans.rhs.Term.args
@@ -260,6 +280,7 @@ let computeBaseArgumentInfluence (rm : ruleMap) (bim : branchInfluenceMap)
 let rec computeInfluences (aim : argInfluenceMap) =
   let update = ref false in
   let stripAP = function
+    | PassThrough ap
     | Equal ap
     | Delta ap
     | Fresh ap
