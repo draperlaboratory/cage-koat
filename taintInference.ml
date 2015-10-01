@@ -262,17 +262,17 @@ let computeBaseArgumentInfluence (rm : ruleMap) (bim : branchInfluenceMap)
                 List.iteri (fun lhIndex lhArg ->
                   let (key : string * int) = lfsym, lhIndex in
                   let toAdd = Fresh rhAP in
-                  let _ = { fName = lfsym; pos = lhIndex; p = lhArg } in
+                  let lhAP = { fName = lfsym; pos = lhIndex; p = lhArg } in
                   (* if there's a branch in play,
                      it's influencing a fresh variable. *)
-                  updateLeft rhAP branches;
+                  updateLeft lhAP branches;
                 (* then, every lhs variable influences this
                    rhs position *)
                   updateAim key toAdd) trans.lhs.Term.args
             else
               List.iteri (fun lhIndex lhArg ->
                 let key = lfsym, lhIndex in
-                let _ = { fName = lfsym; pos = lhIndex; p = lhArg } in
+                let lhAP = { fName = lfsym; pos = lhIndex; p = lhArg } in
                 if lhIndex = rhIndex && Poly.equal lhArg rhArg
                   (* arguments and indexes are equal. straight up passthrough *)
                 then
@@ -280,12 +280,12 @@ let computeBaseArgumentInfluence (rm : ruleMap) (bim : branchInfluenceMap)
                   (* argument changes position. Equal, but order changes *)
                 else if Poly.equal lhArg rhArg then begin
                   updateAim key (Equal rhAP);
-                  updateLeft rhAP branches
+                  updateLeft lhAP branches
                 end
                   (* some variables are shared -- it's a delta on the previous argument. *)
                 else if Poly.shareVars lhArg rhArg then begin
                   updateAim key (Delta rhAP);
-                  updateLeft rhAP branches
+                  updateLeft lhAP branches
                 end
                   (* no relationship whatsoever. *)
                 else ()
