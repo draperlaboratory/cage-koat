@@ -230,6 +230,8 @@ let computeBaseArgumentInfluence (rm : ruleMap) (bim : branchInfluenceMap)
         else (fsym, ind)::accum in
       findInCond cond fsym (ind + 1) accum' tl in
   let updateLeft influenced branches =
+    (* It's update left because the 'rule head' sees the branch. The left hand
+       side.  *)
     let toAdd = Branch influenced in
     List.iter (fun bi ->
       let trans = List.nth (Hashtbl.find rm bi.fName) bi.id in
@@ -239,7 +241,7 @@ let computeBaseArgumentInfluence (rm : ruleMap) (bim : branchInfluenceMap)
 (*      (* find all argument positions on the right influencing the condition *)
       let (keys' : apKey list) = findInCond trans.cond trans.rhs.Term.fn 0 keys trans.rhs.Term.args in *)
       List.iter
-        (fun ((fSym,ind) as k : apKey) ->
+        (fun ( (fSym,ind) as k : apKey) ->
           Printf.eprintf "%s_%i influencing" fSym ind;
           debugPrintInf toAdd;
           Printf.eprintf "\n";
@@ -360,8 +362,9 @@ let main () =
       let argMap = makeVarMap system in
       let branchInfluences = findBranchInfluence ruleMap pos in
       let argInfluence = computeBaseArgumentInfluence ruleMap branchInfluences pos in
+      Printf.eprintf "After Computing Branch Influence\n";
       debugPrintBIM branchInfluences;
-      Printf.eprintf "\n";
+      Printf.eprintf "\nAfter Computing Base Argument Influences\n";
       debugPrintAIM argInfluence;
       Printf.eprintf "\n";
       computeInfluences argInfluence;
