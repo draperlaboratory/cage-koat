@@ -190,6 +190,12 @@ let condenseInfluenceList (rm : ruleMap) (bil: branchInfo list) =
   Hashtbl.fold (fun key branchInfos accum ->
     condenseSymbol rm key branchInfos @ accum) bySymbol []
 
+let isBranching (rm : ruleMap) fSym =
+  match Hashtbl.find rm fSym with
+  | []
+  | [_] -> false
+  | _ -> true
+
 let condenseBranchInfluences (rm : ruleMap) (bim : branchInfluenceMap) =
   Hashtbl.iter (fun k e -> Hashtbl.replace bim k (condenseInfluenceList rm e)) bim;
   bim
@@ -249,12 +255,15 @@ let computeBaseArgumentInfluence (rm : ruleMap) (bim : branchInfluenceMap)
         keys)
       branches in
   let incorporateRules branches transitions =
-    List.iter
-      (fun trans ->
+    List.iteri
+      (fun i trans ->
         let lfsym = trans.lhs.Term.fn
         and rfsym = trans.rhs.Term.fn
         and isFresh rhArg =
           not (List.exists (Poly.shareVars rhArg) trans.lhs.Term.args) in
+        let isBranch = isBranching rm lfsym
+        and thisBranch = { fName = lfsym; cond = trans.cond; id = i; } in
+        let branches' = if isBranch then thisBranch::branches else branches in
         Printf.eprintf "%s -> %s\n" lfsym rfsym;
         List.iteri (fun rhIndex rhArg ->
           let rhAP = { fName = rfsym; pos = rhIndex; p = rhArg;} in
@@ -267,7 +276,7 @@ let computeBaseArgumentInfluence (rm : ruleMap) (bim : branchInfluenceMap)
                   let lhAP = { fName = lfsym; pos = lhIndex; p = lhArg } in
                   (* if there's a branch in play,
                      it's influencing a fresh variable. *)
-                  updateLeft lhAP branches;
+                  updateLeft lhAP branches';
                 (* then, every lhs variable influences this
                    rhs position *)
                   updateAim key toAdd) trans.lhs.Term.args
@@ -282,12 +291,12 @@ let computeBaseArgumentInfluence (rm : ruleMap) (bim : branchInfluenceMap)
                   (* argument changes position. Equal, but order changes *)
                 else if Poly.equal lhArg rhArg then begin
                   updateAim key (Equal rhAP);
-                  updateLeft lhAP branches
+                  updateLeft lhAP branches'
                 end
                   (* some variables are shared -- it's a delta on the previous argument. *)
                 else if Poly.shareVars lhArg rhArg then begin
                   updateAim key (Delta rhAP);
-                  updateLeft lhAP branches
+                  updateLeft lhAP branches'
                 end
                   (* no relationship whatsoever. *)
                 else ()
