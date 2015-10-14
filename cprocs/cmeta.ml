@@ -40,9 +40,9 @@ module SlicingProc = SlicingProc.Make(CTRSObl)
 type tgraph = Tgraph.G.t * (Tgraph.G.vertex * Cseparate.TGraph.r) array
 type rvgraph = (Tgraph.G.t * (Tgraph.G.vertex * GSC.trans_data) array) option
 
-(* IFDEF HAVE_APRON THEN *)
-(* module ApronInvariantsProc = ApronInvariantsProcessor.Make(Rule) *)
-(* END *)
+IFDEF HAVE_APRON THEN
+module ApronInvariantsProc = ApronInvariantsProcessor.Make(CTRSObl)
+END
 
 let sep = 10000
 
@@ -239,11 +239,11 @@ and doLoop () =
   doFarkasConstant ()
 and doApronInvariants () =
   did_ai := true;
-(* IFDEF HAVE_APRON THEN *)
-(*   run ApronInvariantsProc.process_koat *)
-(* ELSE *)
+IFDEF HAVE_APRON THEN
+  run ApronInvariantsProc.process_koat
+ELSE
   ()
-(* END *)
+END
 and doUnreachableRemoval () =
   run UnreachableProc.process
 and doKnowledgePropagation () =
@@ -314,19 +314,19 @@ and doFarkasSizeBound () =
 and doFarkasMinimal () =
   run_ite (Cfarkaspolo.process false true 1) doLoop doDesperateMeasures
 and doDesperateMeasures () =
-(* IFDEF HAVE_APRON THEN *)
-(*   if not(!did_ai) then *)
-(*     ( *)
-(*       did_ai := true; *)
-(*       doApronInvariants (); *)
-(*       run UnsatProc.process; (\* New invariants may show transitions to be unusable *\) *)
-(*       doLoop (); *)
-(*     ) *)
-(*   else *)
-(*     doChain1 () *)
-(* ELSE *)
+IFDEF HAVE_APRON THEN
+  if not(!did_ai) then
+    (
+      did_ai := true;
+      doApronInvariants ();
+      run UnsatProc.process; (* New invariants may show transitions to be unusable *)
+      doLoop ();
+    )
+  else
+    doChain1 ()
+ELSE
   doChain1 ()
-(* END *)
+END
 and doChain1 () =
   run_ite (ChainProc.process 1) doLoop doChain2
 and doChain2 () =

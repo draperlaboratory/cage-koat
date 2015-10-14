@@ -23,13 +23,13 @@ IFDEF HAVE_APRON THEN
 open Apron
 open AbstractRule
 
-module Make(RuleT : AbstractRule) = struct
+module Make(CTRSObl : Ctrsobl.S) = struct
+  module CTRS = CTRSObl.CTRS
+  module RuleT = CTRS.RuleT
   module RVG = Rvgraph.Make(RuleT)
   module TGraph = Tgraph.Make(RuleT)
   module VarMap = Map.Make(String)
   module FunMap = Map.Make(String)
-  module CTRS = Ctrs.Make(RuleT)
-  module CTRSObl = Ctrsobl.Make(CTRS)
   open CTRSObl
   open CTRS
 
@@ -129,8 +129,8 @@ module Make(RuleT : AbstractRule) = struct
         | Mul ->
           Poly.mult (texpr0_to_poly env expr1) (texpr0_to_poly env expr2)
         | Div
-        | Mod ->
-          raise (Invalid_argument "Div/mod operations not supported.")
+        | _ ->
+          raise (Invalid_argument "texpr0_to_poly: operation not supported.")
       )
 
   let tcons0_to_pc env cons =
