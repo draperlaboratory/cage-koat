@@ -58,7 +58,7 @@ and formula =
 
 let docleanup = true
 
-let smt_solver = ref Yices
+let smt_solver = ref Z3
 
 let smt_time = ref 0.0
 
