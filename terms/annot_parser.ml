@@ -75,7 +75,7 @@ let parseFunction (functionRep : json) =
       secretArgs = parseSecretList secretJson;
       complexity = parseComplexity complexityJson;
       pure = to_bool purityJson }
-  | _ -> failwith "Excepted Function Representation to be an association list!!"
+  | _ -> failwith "Expected Function representation to be an association list!!"
 
 
 let makeSpecMap l =
@@ -100,7 +100,7 @@ let parsePackage (jsonObj : json) =
           created  = time;
           functions = functionList; }
     end
-    | _ -> failwith "Tried to parse package on not an association list!!"
+    | _ -> failwith "Tried Package representation to be an association list!!"
 
 
 let parsePackageFile fname =
