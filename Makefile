@@ -30,7 +30,7 @@ OPTS=${PP_OPTS} -use-ocamlfind -cflags -warn-error,+a
 
 default: kittel koat
 
-all: kittel koat convert
+all: kittel koat convert detectLeak taintInference
 
 unitTests: dep branch rule ruleInfluence detectLeak
 
