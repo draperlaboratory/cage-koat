@@ -1,12 +1,26 @@
 {
     "created": "0.0",
     "package": "foo.bar",
-    "functions": 
+    "functions":
     [
         {
             "name": "f",
             "args": ["x","y"],
             "secretArgs": [],
+            "pure": true,
+            "complexity":
+            {
+                "size": "0",
+                "upperTime": "y",
+                "lowerTime": "1",
+                "upperSpace": "1",
+                "lowerSpace": "1"
+            }
+        },
+        {
+            "name": "g",
+            "args": ["x","y"],
+            "secretArgs": [0],
             "pure": true,
             "complexity":
             {
