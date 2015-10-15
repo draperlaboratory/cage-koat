@@ -22,7 +22,7 @@ ifeq (${HAVE_Z3},true)
   PP_OPTS_Z3=-DHAVE_Z3
 endif
 
-LIBPATH=-package ocamlgraph -package yojson -package apron $(LIBPATH_APRON) $(LIBPATH_Z3)
+LIBPATH=-package ocamlgraph -package yojson -package unix $(LIBPATH_APRON) $(LIBPATH_Z3)
 LIBS=-libs graph,nums,str$(LIBS_APRON)$(LIBS_Z3)
 PP_OPTS=-pp "camlp4o pa_macro.cmo $(PP_OPTS_APRON) $(PP_OPTS_Z3)"
 
