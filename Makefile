@@ -1,6 +1,6 @@
 -include user.cfg
 
-HAVE_APRON?=false
+HAVE_APRON?=true
 HAVE_Z3?=true
 
 LIBS=-libs graph,str,nums
@@ -16,14 +16,14 @@ endif
 LIBPATH_Z3=
 PP_OPTS_Z3=
 ifeq (${HAVE_Z3},true)
-  LIBPATH_Z3= -package Z3 -cflags -I,+Z3 -lflags -I,+Z3 -lflags "-cclib -lZ3"
+  LIBPATH_Z3= -package Z3 -cflags -I,+Z3 -lflags -I,+Z3 -lflags "-cclib -lz3"
   LIBS=-libs graph,str
   PP_OPTS_Z3=-DHAVE_Z3
 endif
 
 ifeq (${HAVE_Z3},true)
   ifeq (${HAVE_APRON},true)
-	LIBS=-libs graph,str,z3,gmp,apron,boxMPQ,octD
+	LIBS=-libs graph,str,gmp,apron,boxMPQ,octD
   endif
 endif
 
