@@ -1,29 +1,27 @@
 -include user.cfg
 
-HAVE_APRON?=true
-HAVE_Z3?=false
+HAVE_APRON?=false
+HAVE_Z3?=true
+
+LIBS=-libs graph,str,nums
 
 LIBPATH_APRON=
-LIBS_APRON=
 PP_OPTS_APRON=
 ifeq (${HAVE_APRON},true)
   LIBPATH_APRON=-package apron -cflags -I,+apron -cflags -I,+mlgmpidl -lflags -I,+apron -lflags -I,+mlgmpidl
-  LIBS_APRON=,gmp,apron,boxMPQ,octD
+  LIBS=-libs graph,str,nums,gmp,apron,boxMPQ,octD
   PP_OPTS_APRON=-DHAVE_APRON
 endif
 
 LIBPATH_Z3=
-LIBS_Z3=
 PP_OPTS_Z3=
 ifeq (${HAVE_Z3},true)
-  LIBPATH_Z3=-cflags "-I /usr/local/lib/ocaml/4.01.0/Z3/" -lflags "-I /usr/local/lib/ocaml/4.01.0/Z3/" -cflags -I,+z3 -lflags "-cclib -lz3"
-#  LIBPATH_Z3=-cflags "-I /usr/local/lib/ocaml/3.12.1/Z3/" -lflags "-I /usr/local/lib/ocaml/3.12.1/Z3/" -cflags -I,+z3 -lflags "-cclib -lz3"
-  LIBS_Z3=,z3
+  LIBPATH_Z3= -package Z3 -cflags -I,+Z3 -lflags -I,+Z3 -lflags "-cclib -lZ3"
+  LIBS=-libs graph,str,z3
   PP_OPTS_Z3=-DHAVE_Z3
 endif
 
 LIBPATH=-package ocamlgraph -package yojson -package unix $(LIBPATH_APRON) $(LIBPATH_Z3)
-LIBS=-libs graph,nums,str$(LIBS_APRON)$(LIBS_Z3)
 PP_OPTS=-pp "camlp4o pa_macro.cmo $(PP_OPTS_APRON) $(PP_OPTS_Z3)"
 
 OPTS=${PP_OPTS} -use-ocamlfind -cflags -warn-error,+a
