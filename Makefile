@@ -1,13 +1,13 @@
 -include user.cfg
 
-HAVE_APRON?=false
+HAVE_APRON?=true
 HAVE_Z3?=false
 
 LIBPATH_APRON=
 LIBS_APRON=
 PP_OPTS_APRON=
 ifeq (${HAVE_APRON},true)
-  LIBPATH_APRON=-cflags -I,+apron -cflags -I,+mlgmpidl -lflags -I,+apron -lflags -I,+mlgmpidl
+  LIBPATH_APRON=-package apron -cflags -I,+apron -cflags -I,+mlgmpidl -lflags -I,+apron -lflags -I,+mlgmpidl
   LIBS_APRON=,gmp,apron,boxMPQ,octD
   PP_OPTS_APRON=-DHAVE_APRON
 endif
