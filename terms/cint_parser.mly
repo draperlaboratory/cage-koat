@@ -7,7 +7,7 @@
 */
 
 %token <string> IDENT INFIX VAR INT
-%token TO COMMA OPENPAR CLOSEPAR OPENSQ CLOSESQ CONSTRAINTSEP EOL EQU NEQ EOF GEQ GTR LEQ LSS CONJ TIMES POWER GOAL COMPLEXITY STARTTERM FUNCTIONSYMBOLS VART RULES COM TRUE
+%token TO OPENWTO CLOSEWTO COMMA OPENPAR CLOSEPAR OPENSQ CLOSESQ CONSTRAINTSEP EOL EQU NEQ EOF GEQ GTR LEQ LSS CONJ TIMES POWER GOAL COMPLEXITY STARTTERM FUNCTIONSYMBOLS VART RULES COM TRUE
 
 %left INFIX
 %left TIMES
@@ -39,6 +39,8 @@ rules :
     { [] }
 | rule eols rules
     { ($1::$3) }
+| wrule eols rules
+    { ($1::$3) }
 ;
 
 eols:
@@ -61,6 +63,21 @@ rule :
     { Comrule.createRule $1 $5 (Pc.create $8) }
 | term TO term OPENSQ cond_list CLOSESQ
     { Comrule.createRule $1 [$3] (Pc.create $5) }
+;
+
+wrule :
+| term OPENWTO poly COMMA poly CLOSEWTO COM OPENPAR term_list CLOSEPAR
+    { Comrule.createRule $1 $9 (Pc.create []) }
+| term OPENWTO poly COMMA poly CLOSEWTO term
+    { Comrule.createRule $1 [$7] (Pc.create []) }
+| term OPENWTO poly COMMA poly CLOSEWTO COM OPENPAR term_list CLOSEPAR CONSTRAINTSEP cond_list
+    { Comrule.createRule $1 $9 (Pc.create $12) }
+| term OPENWTO poly COMMA poly CLOSEWTO term CONSTRAINTSEP cond_list
+    { Comrule.createRule $1 [$7] (Pc.create $9) }
+| term OPENWTO poly COMMA poly CLOSEWTO COM OPENPAR term_list CLOSEPAR OPENSQ cond_list CLOSESQ
+    { Comrule.createRule $1 $9 (Pc.create $12) }
+| term OPENWTO poly COMMA poly CLOSEWTO term OPENSQ cond_list CLOSESQ
+    { Comrule.createRule $1 [$7] (Pc.create $9) }
 ;
 
 term :

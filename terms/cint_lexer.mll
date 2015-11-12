@@ -29,6 +29,8 @@ rule token = parse
   | ['\r' '\n']                      { pos := 1; incr line; EOL }
   | [',']                            { incr pos; COMMA }
   | '-''>'                           { pos := !pos + 2; TO }
+  | '-''{'                           { pos := !pos + 2; OPENWTO }
+  | '}''>'                           { pos := !pos + 2; CLOSEWTO }
   | 'C''o''m''_'['1'-'9']['0'-'9']*  { let s = Lexing.lexeme lexbuf in
                                          pos := !pos + (String.length s);
                                          COM }
