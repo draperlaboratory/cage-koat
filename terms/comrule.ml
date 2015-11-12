@@ -18,7 +18,11 @@
   limitations under the License.
 *)
 
-type rule = { lhs : Term.term ; rhss : Term.term list ; cond : Pc.cond }
+type rule = {
+  lhs : Term.term;
+  rhss : Term.term list;
+  cond : Pc.cond;
+}
 
 (* Create a comrule. *)
 let createRule l rs c = { lhs = l; rhss = rs; cond = c }
