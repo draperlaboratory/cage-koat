@@ -2,6 +2,8 @@ type rule = {
   lhs : Term.term;
   rhss : Term.term list;
   cond : Pc.cond;
+  lowerBound : Poly.poly;
+  upperBound : Poly.poly;
 }
 val createRule : Term.term -> Term.term list -> Pc.cond -> rule
 

@@ -22,10 +22,18 @@ type rule = {
   lhs : Term.term;
   rhss : Term.term list;
   cond : Pc.cond;
+  lowerBound : Poly.poly;
+  upperBound : Poly.poly;
 }
 
 (* Create a comrule. *)
-let createRule l rs c = { lhs = l; rhss = rs; cond = c }
+let createRule l rs c =
+  { lhs = l;
+    rhss = rs;
+    cond = c;
+    lowerBound = Poly.one;
+    upperBound = Poly.one;
+  }
 
 (* Create a string for a rule *)
 let rec toString r =
@@ -100,7 +108,10 @@ let rec renameVars badvars r =
     let varmapping = createVarMapping badvars vars in
       { lhs = Term.renameVars varmapping r.lhs;
         rhss = List.map (Term.renameVars varmapping) r.rhss;
-        cond = Pc.renameVars varmapping r.cond }
+        cond = Pc.renameVars varmapping r.cond;
+        lowerBound = Poly.renameVars varmapping r.lowerBound;
+        upperBound = Poly.renameVars varmapping r.upperBound;
+      }
 and createVarMapping badvars vars =
   match vars with
     | [] -> []
@@ -146,7 +157,11 @@ let rec internalize r =
         else
           { lhs = r.lhs;
             rhss = List.map (fun r -> Term.instantiate r sigma) r.rhss;
-            cond = newC; }
+            cond = newC;
+            (* JTT 11-12-15 -- It isn't clear that I shouldn't instantiate these too. *)
+            lowerBound = r.lowerBound;
+            upperBound = r.upperBound;
+          }
 and getSubstitution newVars c lvars =
   match newVars with
     | [] -> ([], c)
@@ -208,7 +223,10 @@ let isUnary r =
 let instantiate r varmap =
   { lhs = Term.instantiate r.lhs varmap;
     rhss = List.map (fun r -> Term.instantiate r varmap) r.rhss;
-    cond = Pc.instantiate r.cond varmap;}
+    cond = Pc.instantiate r.cond varmap;
+    lowerBound = Poly.instantiate r.lowerBound varmap;
+    upperBound = Poly.instantiate r.upperBound varmap;
+  }
 
 let chainTwoRules rule1 rule2 =
   if (not (isUnary rule1)) then
@@ -218,7 +236,10 @@ let chainTwoRules rule1 rule2 =
   let subby = List.combine (List.map (fun a -> List.hd (Poly.getVars a)) (Term.getArgs renamedRule2.lhs)) (Term.getArgs (List.hd rule1.rhss)) in
   { lhs = rule1.lhs ;
     rhss = List.map (fun r -> Term.instantiate r subby) renamedRule2.rhss;
-    cond = Utils.remdupC Pc.equalAtom (rule1.cond @ (Pc.instantiate renamedRule2.cond subby)) }
+    cond = Utils.remdupC Pc.equalAtom (rule1.cond @ (Pc.instantiate renamedRule2.cond subby));
+    lowerBound = Poly.add rule1.lowerBound renamedRule2.lowerBound;
+    upperBound = Poly.add rule1.upperBound renamedRule2.upperBound;
+  }
 
 let removeNeq r =
   let rec removeNeqConstraint c =
@@ -231,7 +252,7 @@ let removeNeq r =
       | _ -> addIn a c's
   in
   let c's = removeNeqConstraint r.cond in
-    List.map (fun c' -> {lhs = r.lhs ; rhss = r.rhss ; cond = c' }) c's
+    List.map (fun c' -> {lhs = r.lhs ; rhss = r.rhss ; cond = c'; lowerBound = r.lowerBound; upperBound = r.upperBound }) c's
 
 let restrictArguments indexSet rule =
   { lhs = Term.create' (Term.getFun rule.lhs,
@@ -239,4 +260,7 @@ let restrictArguments indexSet rule =
     rhss = List.map (fun rhs -> Term.create' (Term.getFun rhs,
                                               Utils.getIndexedSubset indexSet (Term.getArgs rhs)))
       rule.rhss ;
-    cond = rule.cond }
+    cond = rule.cond;
+    lowerBound = rule.lowerBound;
+    upperBound = rule.upperBound;
+  }
