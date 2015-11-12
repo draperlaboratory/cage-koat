@@ -6,7 +6,7 @@ type rule = {
   upperBound : Poly.poly;
 }
 val createRule : Term.term -> Term.term list -> Pc.cond -> rule
-
+val createWeightedRule : Term.term -> Term.term list -> Pc.cond -> Poly.poly -> Poly.poly -> rule
 val toString : rule -> string
 val toDotString : rule -> string
 val listToStringPrefix : string -> rule list -> string

@@ -35,6 +35,15 @@ let createRule l rs c =
     upperBound = Poly.one;
   }
 
+(* Create a comrule with bounds. *)
+let createWeightedRule l rs c lb ub =
+  { lhs = l;
+    rhss = rs;
+    cond = c;
+    lowerBound = lb;
+    upperBound = ub;
+  }
+
 (* Create a string for a rule *)
 let rec toString r =
   (Term.toString r.lhs) ^ " -> " ^ (toStringRhss r.rhss) ^
