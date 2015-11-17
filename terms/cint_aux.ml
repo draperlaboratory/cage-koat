@@ -61,7 +61,12 @@ and getCint chan =
 and remdup cint =
   List.map remdupComrule cint
 and remdupComrule r =
-  Comrule.createRule (Comrule.getLeft r) (Comrule.getRights r) (Utils.remdupC Pc.equalAtom (Comrule.getCond r))
+  Comrule.createWeightedRule
+    (Comrule.getLeft r)
+    (Comrule.getRights r)
+    (Utils.remdupC Pc.equalAtom (Comrule.getCond r))
+    (Comrule.getLowerBound r)
+    (Comrule.getUpperBound r)
 
 and check cint =
   match cint with
@@ -119,19 +124,23 @@ and createFunMapping funs used =
                  else
                    (f, f)::(createFunMapping ff used)
 and applyFunMapping mapping r =
-  Comrule.createRule
+  Comrule.createWeightedRule
     (applyFunMappingTerm mapping (Comrule.getLeft r))
     (List.map (applyFunMappingTerm mapping) (Comrule.getRights r))
     (Comrule.getCond r)
+    (Comrule.getLowerBound r)
+    (Comrule.getUpperBound r)
 and applyFunMappingTerm mapping { Term.fn = f; Term.args = args } =
   Term.create' (List.assoc f mapping, args)
 and sanitizeRule r =
   let vars = Comrule.getVars r in
     let varmapping = createVarMapping vars vars in
-      Comrule.createRule
+      Comrule.createWeightedRule
         (Term.renameVars varmapping (Comrule.getLeft r))
         (List.map (fun rhs -> Term.renameVars varmapping rhs) (Comrule.getRights r))
         (Pc.renameVars varmapping (Comrule.getCond r))
+        (Poly.renameVars varmapping (Comrule.getLowerBound r))
+        (Poly.renameVars varmapping (Comrule.getUpperBound r))
 and createVarMapping vars used =
   match vars with
     | [] -> []

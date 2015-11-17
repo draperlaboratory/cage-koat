@@ -37,6 +37,7 @@ let createRule l rs c =
 
 (* Create a comrule with bounds. *)
 let createWeightedRule l rs c lb ub =
+  Printf.eprintf "comRule: %s\n%!" (Poly.toString ub);
   { lhs = l;
     rhss = rs;
     cond = c;
@@ -94,6 +95,12 @@ let getCond r =
 (* Get function symbols from both sides *)
 let getFuns r =
   Utils.remdup ((Term.getFun r.lhs)::(List.map Term.getFun r.rhss))
+
+let getLowerBound r =
+  r.lowerBound
+
+let getUpperBound r =
+  r.upperBound
 
 (* Get function symbol from left side *)
 let getLeftFun r =

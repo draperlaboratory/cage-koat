@@ -18,7 +18,11 @@
   limitations under the License.
 *)
 
-type rule = { lhs : Term.term ; rhs : Term.term ; cond : Pc.cond }
+type rule = {
+  lhs : Term.term ;
+  rhs : Term.term ;
+  cond : Pc.cond;
+}
 
 (* Create a rule. *)
 let create l r c = { lhs = l; rhs = r; cond = c }
@@ -26,6 +30,9 @@ let create l r c = { lhs = l; rhs = r; cond = c }
 let createRule l rs c =
   assert (List.length rs = 1);
   create l (List.hd rs) c
+
+let createWeightedRule l rs c _ _ =
+  failwith "rule doesn't support bounds."
 
 (* Create a string for a rule *)
 let toString r =
@@ -236,3 +243,6 @@ let restrictArguments indexSet rule =
     rhs = Term.create' (Term.getFun rule.rhs,
       Utils.getIndexedSubset indexSet (Term.getArgs rule.rhs)) ;
     cond = rule.cond }
+
+let getLowerBound _ = Poly.one
+let getUpperBound _ = Poly.one

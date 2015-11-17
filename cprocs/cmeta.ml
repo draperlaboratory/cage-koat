@@ -52,7 +52,7 @@ let proofs = ref []
 let output_nums = ref []
 let input_nums = ref []
 let did_ai = ref false
-let todo = ref (CTRSObl.getInitialObl [] "" Annot.empty Complexity.Time,
+let todo = ref (CTRSObl.getInitialObl [] "" Complexity.Time,
                 (Tgraph.G.empty, Array.of_list []), None, 0)
 
 let rec check trs =
@@ -80,7 +80,7 @@ and checkStartCondition tgraph trs startfun =
     if (TGraph.getPreds tgraph startRules) <> [] then
       raise (Cint_aux.ParseException (0, 0, "Error: Start nodes have incoming edges!"))
 
-let rec process trs maxchaining startfun iface ctype =
+let rec process trs maxchaining startfun ctype =
   check trs;
   i := 1;
   proofs := [];
@@ -88,7 +88,7 @@ let rec process trs maxchaining startfun iface ctype =
   output_nums := [];
   ChainProc.max_chaining := maxchaining;
   ChainProc.done_chaining := 0;
-  let initObl = CTRSObl.getInitialObl trs startfun iface ctype in
+  let initObl = CTRSObl.getInitialObl trs startfun ctype in
   let maybeSlicedObl =
     match (SlicingProc.process initObl) with
     | None -> initObl
