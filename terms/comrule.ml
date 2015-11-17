@@ -37,7 +37,6 @@ let createRule l rs c =
 
 (* Create a comrule with bounds. *)
 let createWeightedRule l rs c lb ub =
-  Printf.eprintf "comRule: %s\n%!" (Poly.toString ub);
   { lhs = l;
     rhss = rs;
     cond = c;

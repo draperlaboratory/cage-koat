@@ -84,7 +84,6 @@ module Make(CTRS : Ctrs.S) = struct
 
   let spaceOrTimeWeight rule =
     let p = RuleT.getUpperBound rule in
-    Printf.eprintf "ctrsobl: %s %s\n%!" (RuleT.toString rule) (Poly.toString p);
     Expexp.Pol p
 
 
