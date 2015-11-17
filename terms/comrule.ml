@@ -238,17 +238,22 @@ let instantiate r varmap =
   }
 
 let chainTwoRules rule1 rule2 =
-  if (not (isUnary rule1)) then
-    failwith "Trying to chain rule1 and rule2 where rule1 is non-unary"
-  else
-  let renamedRule2 = renameVars (getVars rule1) rule2 in
-  let subby = List.combine (List.map (fun a -> List.hd (Poly.getVars a)) (Term.getArgs renamedRule2.lhs)) (Term.getArgs (List.hd rule1.rhss)) in
-  { lhs = rule1.lhs ;
-    rhss = List.map (fun r -> Term.instantiate r subby) renamedRule2.rhss;
-    cond = Utils.remdupC Pc.equalAtom (rule1.cond @ (Pc.instantiate renamedRule2.cond subby));
-    lowerBound = Poly.add rule1.lowerBound renamedRule2.lowerBound;
-    upperBound = Poly.add rule1.upperBound renamedRule2.upperBound;
-  }
+  match rule1.rhss with
+  | [_] ->
+    let renamedRule2 = renameVars (getVars rule1) rule2 in
+    let subby =
+      List.combine
+        (List.map (fun a -> List.hd (Poly.getVars a))
+           (Term.getArgs renamedRule2.lhs))
+        (Term.getArgs (List.hd rule1.rhss)) in (* rule1.rhss must be of form [x] *)
+    { lhs = rule1.lhs ;
+      rhss = List.map (fun r -> Term.instantiate r subby) renamedRule2.rhss;
+      cond = Utils.remdupC Pc.equalAtom (rule1.cond @ (Pc.instantiate renamedRule2.cond subby));
+      lowerBound = Poly.add rule1.lowerBound (Poly.instantiate renamedRule2.lowerBound subby);
+      upperBound = Poly.add rule1.upperBound (Poly.instantiate renamedRule2.upperBound subby);
+    }
+  | _ -> failwith "Trying to chain rule1 and rule2 where rule1 is non-unary"
+
 
 let removeNeq r =
   let rec removeNeqConstraint c =
