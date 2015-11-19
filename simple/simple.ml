@@ -133,36 +133,31 @@ let rec isLinear c =
 (* Formula conversion *)
 
 (* Convert to NNF *)
-let rec toNNF c =
-  toNNFAux c
-and toNNFAux c =
-  match c with
-    | Or (x, y) -> Or (toNNF x, toNNF y)
-    | And (x, y) -> And (toNNF x, toNNF y)
-    | Not (Or (x, y)) -> And (toNNF (Not x), toNNF (Not y))
-    | Not (And (x, y)) -> Or (toNNF (Not x), toNNF (Not y))
-    | Not (Not x) -> toNNF x
-    | Not (True) -> False
-    | Not (False) -> True
-    | Not (BRandom) -> BRandom
-    | _ -> c
+let rec toNNF = function
+  | Or (x, y) -> Or (toNNF x, toNNF y)
+  | And (x, y) -> And (toNNF x, toNNF y)
+  | Not (Or (x, y)) -> And (toNNF (Not x), toNNF (Not y))
+  | Not (And (x, y)) -> Or (toNNF (Not x), toNNF (Not y))
+  | Not (Not x) -> toNNF x
+  | Not (True) -> False
+  | Not (False) -> True
+  | Not (BRandom) -> BRandom
+  | c -> c
 
 (* convert to DNF *)
 let rec toDNF c =
   toDNFAux (toNNF c)
-and toDNFAux c =
-  match c with
-    | Or (x, y) -> Or (toDNFAux x, toDNFAux y)
-    | And (x, y) -> toDNFAux2 x y
-    | _ -> c
+and toDNFAux = function
+  | Or (x, y) -> Or (toDNFAux x, toDNFAux y)
+  | And (x, y) -> toDNFAux2 x y
+  | c -> c
 and toDNFAux2 x y =
   match x with
     | Or (z1, z2) -> Or (toDNFAux (And (z1, y)), toDNFAux (And (z2, y)))
     | _ -> toDNFAux3 x y
-and toDNFAux3 x y =
-  match y with
-    | Or (z1, z2) -> Or (toDNFAux (And (x, z1)), toDNFAux (And (x, z2)))
-    | _ -> toDNFAux4 x y
+and toDNFAux3 x = function
+  | Or (z1, z2) -> Or (toDNFAux (And (x, z1)), toDNFAux (And (x, z2)))
+  | y -> toDNFAux4 x y
 and toDNFAux4 x y =
   And (toDNFAux x, toDNFAux y)
 
@@ -492,53 +487,35 @@ and getIdx e l i =
 
 (************************)
 (* Convert program to C *)
-
 let needAssume = ref false
 let needNondef = ref false
 let needExit = ref false
-let rec toC (funs, vars, stmts) =
-  needAssume := false;
-  needNondef := false;
-  needExit := false;
-  let decls = decls_to_Cstring funs
-  and body = "void test_fun(" ^ (toCvars vars) ^ ")\n{\n" ^ (toCstmts stmts 4) ^ "\n}" in
-    (if !needExit then "#include <stdlib.h>\n\n" else "") ^
-    (if !needAssume then "void assume(int);\n" else "") ^
-    (if !needNondef then "int nondef(void);\n" else "") ^
-    (if !needAssume || !needNondef then "\n" else "") ^
-    decls ^ body
-and decls_to_Cstring funs =
-  String.concat "" (List.map decl_to_Cstring funs)
-and decl_to_Cstring (f, in_vars, out_var, local_vars, stmts) =
-  (if out_var = None then "" else "int ") ^
-  f ^
-  "(" ^ (var_list_Cstring_args in_vars) ^ ")\n{\n" ^
-  (out_var_string out_var) ^
-  (if local_vars = [] then "" else ("    " ^ (toCvars local_vars) ^ ";\n")) ^
-  (toCstmts stmts 4) ^
-  (addReturn out_var) ^
-  "\n}\n\n"
-and out_var_string out_var =
-  match out_var with
-    | None -> ""
-    | Some v -> "    int " ^ v ^ ";\n"
-and addReturn out_var =
-  match out_var with
-    | None -> ""
-    | Some v -> "\n    return " ^ v ^ ";"
-and toCvars vars =
-  "int " ^ (var_list_Cstring vars)
-and var_list_Cstring vars =
-  (String.concat ", int " vars)
-and var_list_Cstring_args vars =
-  if vars = [] then
-    ""
-  else
-    toCvars vars
-and toCstmts stmts indent =
-  String.concat "\n" (List.map (fun s -> toCStmt s indent) stmts)
-and toCStmt stmt indent =
-  match stmt with
+
+let toStringAtomC = function
+  | Pc.Equ (l, r) -> (Poly.toString l) ^ " == " ^ (Poly.toString r)
+  | Pc.Neq (l, r) -> (Poly.toString l) ^ " != " ^ (Poly.toString r)
+  | Pc.Geq (l, r) -> (Poly.toString l) ^ " >= " ^ (Poly.toString r)
+  | Pc.Gtr (l, r) -> (Poly.toString l) ^ " > " ^ (Poly.toString r)
+  | Pc.Leq (l, r) -> (Poly.toString l) ^ " <= " ^ (Poly.toString r)
+  | Pc.Lss (l, r) -> (Poly.toString l) ^ " < " ^ (Poly.toString r)
+
+let rec toCBexpr = function
+  | True -> "1"
+  | False -> "0"
+  | BRandom -> needNondef := true; "nondef()"
+  | Atom cc -> toStringAtomC cc
+  | Not cc -> "!(" ^ (toCBexpr cc) ^ ")"
+  | Or (c1, c2) -> "(" ^ (toCBexpr c1) ^ ") || (" ^ (toCBexpr c2) ^ ")"
+  | And (c1, c2) -> "(" ^ (toCBexpr c1) ^ ") && (" ^ (toCBexpr c2) ^ ")"
+
+let getCLHSCall = function
+  | None -> ""
+  | Some v -> v ^ " = "
+
+let rec toCstmts stmts indent =
+  String.concat "\n" (List.map (toCStmt indent) stmts)
+
+and toCStmt indent = function
     | Skip -> (getindent indent) ^ ""
     | Halt -> needExit := true; (getindent indent) ^ "exit(0);"
     | Assume c -> needAssume := true; (getindent indent) ^ "assume (" ^ (toCBexpr c) ^ ");"
@@ -550,25 +527,53 @@ and toCStmt stmt indent =
     | While (c, b) -> (getindent indent) ^ "while (" ^ (toCBexpr c) ^ ") {\n" ^
                       (toCstmts b (indent + 4)) ^ "\n" ^ (getindent indent) ^ "}"
     | Call (x, f, ys) -> (getindent indent) ^ (getCLHSCall x) ^ f ^ "(" ^ (String.concat ", " ys) ^ ");"
-    | Dummy1 _ | Dummy2 _ | Dummy3 _ -> failwith "Internal error in Simple.toC"
-and getCLHSCall x =
-  match x with
-    | None -> ""
-    | Some v -> v ^ " = "
-and toCBexpr c =
-  match c with
-    | True -> "1"
-    | False -> "0"
-    | BRandom -> needNondef := true; "nondef()"
-    | Atom cc -> toStringAtomC cc
-    | Not cc -> "!(" ^ (toCBexpr cc) ^ ")"
-    | Or (c1, c2) -> "(" ^ (toCBexpr c1) ^ ") || (" ^ (toCBexpr c2) ^ ")"
-    | And (c1, c2) -> "(" ^ (toCBexpr c1) ^ ") && (" ^ (toCBexpr c2) ^ ")"
-and toStringAtomC cc =
-  match cc with
-    | Pc.Equ (l, r) -> (Poly.toString l) ^ " == " ^ (Poly.toString r)
-    | Pc.Neq (l, r) -> (Poly.toString l) ^ " != " ^ (Poly.toString r)
-    | Pc.Geq (l, r) -> (Poly.toString l) ^ " >= " ^ (Poly.toString r)
-    | Pc.Gtr (l, r) -> (Poly.toString l) ^ " > " ^ (Poly.toString r)
-    | Pc.Leq (l, r) -> (Poly.toString l) ^ " <= " ^ (Poly.toString r)
-    | Pc.Lss (l, r) -> (Poly.toString l) ^ " < " ^ (Poly.toString r)
+    | Dummy1 _
+    | Dummy2 _
+    | Dummy3 _ -> failwith "Internal error in Simple.toC"
+
+let var_list_Cstring vars =
+  String.concat ", int " vars
+
+let toCvars vars =
+  "int " ^ (var_list_Cstring vars)
+
+let var_list_Cstring_args vars =
+  if vars = [] then
+    ""
+  else
+    toCvars vars
+
+let addReturn = function
+  | None -> ""
+  | Some v -> "\n    return " ^ v ^ ";"
+
+let out_var_string = function
+  | None -> ""
+  | Some v -> "    int " ^ v ^ ";\n"
+
+let decl_to_Cstring (f, in_vars, out_var, local_vars, stmts) =
+  (if out_var = None then "" else "int ") ^
+  f ^
+  "(" ^ (var_list_Cstring_args in_vars) ^ ")\n{\n" ^
+  (out_var_string out_var) ^
+  (if local_vars = [] then "" else ("    " ^ (toCvars local_vars) ^ ";\n")) ^
+  (toCstmts stmts 4) ^
+  (addReturn out_var) ^
+  "\n}\n\n"
+
+let decls_to_Cstring funs =
+  String.concat "" (List.map decl_to_Cstring funs)
+
+let toC (funs, vars, stmts) =
+  needAssume := false;
+  needNondef := false;
+  needExit := false;
+  let decls = decls_to_Cstring funs
+  and body = "void test_fun(" ^ (toCvars vars) ^ ")\n{\n" ^ (toCstmts stmts 4) ^ "\n}" in
+  (if !needExit then "#include <stdlib.h>\n\n" else "") ^
+    (if !needAssume then "void assume(int);\n" else "") ^
+    (if !needNondef then "int nondef(void);\n" else "") ^
+    (if !needAssume || !needNondef then "\n" else "") ^
+    decls ^ body
+
+
