@@ -82,7 +82,7 @@ and getVarErrorString errorstmt =
     | Simple.Dummy1 c -> Printf.sprintf "Use of undeclared variable in '%s'!" (Simple.toStringBexpr c)
     | Simple.Dummy2 vars -> Printf.sprintf "Multiple variable declaration in '%s'!" ((String.concat ": int, " vars) ^ ": int")
     | Simple.Dummy3 f -> Printf.sprintf "Multiple variable declaration in function '%s'!" f
-    | _ -> Printf.sprintf "Use of undeclared variable in '%s'!" (Simple.toStringStmt errorstmt 0)
+    | _ -> Printf.sprintf "Use of undeclared variable in '%s'!" (Simple.toStringStmt 0 errorstmt)
 and check_vars vars stmts =
   let var_dec_check = check_multiple vars in
     if var_dec_check <> None then

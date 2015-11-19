@@ -80,34 +80,38 @@ let rec toStringBexpr = function
   | Or (c1, c2) -> "(" ^ (toStringBexpr c1) ^ ") or (" ^ (toStringBexpr c2) ^ ")"
   | And (c1, c2) -> "(" ^ (toStringBexpr c1) ^ ") and (" ^ (toStringBexpr c2) ^ ")"
 
-let rec toStringStmt stmt indent =
-  match stmt with
+let rec toStringStmt indent = function
     | Skip -> (getindent indent) ^ "skip;"
     | Halt -> (getindent indent) ^ "halt;"
     | Assume c -> (getindent indent) ^ "assume (" ^ (toStringBexpr c) ^ ");"
     | Random x -> (getindent indent) ^ x ^ " = random;"
     | Assign (x, p) -> (getindent indent) ^ x ^ " = " ^ (Poly.toStringSimple p) ^ ";"
-    | ITE (c, t, e) -> (getindent indent) ^ "if (" ^ (toStringBexpr c) ^ ") then\n" ^
-                       (toStringStmts t (indent + 2)) ^ "\n" ^ (getindent indent) ^ "else\n" ^
-                       (toStringStmts e (indent + 2)) ^ "\n" ^ (getindent indent) ^ "endif;"
+    | ITE (c, t, e) ->
+      let istring = getindent indent
+      and indent' = indent + 2 in
+      istring ^ "if (" ^ (toStringBexpr c) ^ ") then\n" ^
+        (toStringStmts indent' t) ^ "\n" ^ istring ^ "else\n" ^
+        (toStringStmts indent' e) ^ "\n" ^ istring ^ "endif;"
     | While (c, b) -> (getindent indent) ^ "while (" ^ (toStringBexpr c) ^ ") do\n" ^
-                      (toStringStmts b (indent + 2)) ^ "\n" ^ (getindent indent) ^ "done;"
+                      (toStringStmts (indent + 2) b) ^ "\n" ^ (getindent indent) ^ "done;"
     | Call (x, f, ys) -> (getindent indent) ^ (getLHSCall x) ^ " = " ^ f ^ "(" ^ (String.concat ", " ys) ^ ");"
-    | Dummy1 _ | Dummy2 _ | Dummy3 _ -> failwith "Internal error in Simple.toString"
+    | Dummy1 _
+    | Dummy2 _
+    | Dummy3 _ -> failwith "Internal error in Simple.toString"
 
-and toStringStmts stmts indent =
-  String.concat "\n" (List.map (fun s -> toStringStmt s indent) stmts)
+and toStringStmts indent stmts =
+  String.concat "\n" (List.map (toStringStmt indent) stmts)
 
 let toStringDecl (f, in_vars, out_var, local_vars, stmts) =
   "proc " ^ f ^ "(" ^ (var_list_string in_vars) ^ ") returns (" ^
     (var_string out_var) ^ ")\n" ^ (toStringVars local_vars) ^
-    "begin\n" ^ (toStringStmts stmts 2) ^ "\nend\n\n"
+    "begin\n" ^ (toStringStmts 2 stmts) ^ "\nend\n\n"
 
 let toStringDecls fun_decls =
   String.concat "\n" (List.map toStringDecl fun_decls)
 
 let toString (fun_decls, vars_decl, statements) =
-  (toStringDecls fun_decls) ^ (toStringVars vars_decl) ^ "\nbegin\n" ^ (toStringStmts statements 2) ^ "\nend"
+  (toStringDecls fun_decls) ^ (toStringVars vars_decl) ^ "\nbegin\n" ^ (toStringStmts 2 statements) ^ "\nend"
 
 (* Return the variables of a bexpr *)
 let rec getVars c =
