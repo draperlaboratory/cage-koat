@@ -18,55 +18,73 @@
   limitations under the License.
 *)
 
-type combine = Stmts | Ctrls | IfsLoops | Loops
+type combine =
+  Stmts
+| Ctrls
+| IfsLoops
+| Loops
 
-type bexpr = True
-           | False
-           | BRandom
-           | Atom of Pc.atom
-           | Not of bexpr
-           | Or of bexpr * bexpr
-           | And of bexpr * bexpr
+type bexpr =
+  True
+| False
+| BRandom
+| Atom of Pc.atom
+| Not of bexpr
+| Or of bexpr * bexpr
+| And of bexpr * bexpr
 
 type nexpr = Poly.poly
 
-type statement = Skip
-               | Halt
-               | Assume of bexpr
-               | Random of string
-               | Assign of string * nexpr
-               | ITE of bexpr * (statement list) * (statement list)
-               | While of bexpr * (statement list)
-               | Call of string option * string * string list
-               | Dummy1 of bexpr
-               | Dummy2 of string list
-               | Dummy3 of string
+type statement =
+  Skip
+| Halt
+| Assume of bexpr
+| Random of string
+| Assign of string * nexpr
+| ITE of bexpr * (statement list) * (statement list)
+| While of bexpr * (statement list)
+| Call of string option * string * string list
+| Dummy1 of bexpr
+| Dummy2 of string list
+| Dummy3 of string
 
 type fun_decl = string * string list * string option * string list * statement list
 
 type program = fun_decl list * string list * statement list
 
 (* Create a string for a program *)
-let rec toString (fun_decls, vars_decl, statements) =
-  (toStringDecls fun_decls) ^ (toStringVars vars_decl) ^ "\nbegin\n" ^ (toStringStmts statements 2) ^ "\nend"
-and toStringVars vars_decl =
+let getindent indent = String.make indent ' '
+
+let var_string out_var =
+  match out_var with
+    | None -> ""
+    | Some v -> v ^ ": int"
+
+let var_list_string vars =
+  (String.concat ", " (List.map (fun x -> x ^ ": int") vars))
+
+let toStringVars vars_decl =
   if vars_decl = [] then
     ""
   else
     ("var " ^ (var_list_string vars_decl) ^ ";\n")
-and var_list_string vars =
-  (String.concat ", " (List.map (fun x -> x ^ ": int") vars))
-and toStringDecls fun_decls =
-  String.concat "\n" (List.map toStringDecl fun_decls)
-and toStringDecl (f, in_vars, out_var, local_vars, stmts) =
-  "proc " ^ f ^ "(" ^ (var_list_string in_vars) ^ ") returns (" ^ (var_string out_var) ^ ")\n" ^ (toStringVars local_vars) ^ "begin\n" ^ (toStringStmts stmts 2) ^ "\nend\n\n"
-and var_string out_var =
-  match out_var with
-    | None -> ""
-    | Some v -> v ^ ": int"
-and toStringStmts stmts indent =
-  String.concat "\n" (List.map (fun s -> toStringStmt s indent) stmts)
-and toStringStmt stmt indent =
+
+let getLHSCall x =
+  match x with
+    | None -> "()"
+    | Some v -> v
+
+let rec toStringBexpr c =
+  match c with
+    | True -> "true"
+    | False -> "false"
+    | BRandom -> "brandom"
+    | Atom cc -> Pc.toStringAtom cc
+    | Not cc -> "not (" ^ (toStringBexpr cc) ^ ")"
+    | Or (c1, c2) -> "(" ^ (toStringBexpr c1) ^ ") or (" ^ (toStringBexpr c2) ^ ")"
+    | And (c1, c2) -> "(" ^ (toStringBexpr c1) ^ ") and (" ^ (toStringBexpr c2) ^ ")"
+
+let rec toStringStmt stmt indent =
   match stmt with
     | Skip -> (getindent indent) ^ "skip;"
     | Halt -> (getindent indent) ^ "halt;"
@@ -80,21 +98,20 @@ and toStringStmt stmt indent =
                       (toStringStmts b (indent + 2)) ^ "\n" ^ (getindent indent) ^ "done;"
     | Call (x, f, ys) -> (getindent indent) ^ (getLHSCall x) ^ " = " ^ f ^ "(" ^ (String.concat ", " ys) ^ ");"
     | Dummy1 _ | Dummy2 _ | Dummy3 _ -> failwith "Internal error in Simple.toString"
-and getLHSCall x =
-  match x with
-    | None -> "()"
-    | Some v -> v
-and toStringBexpr c =
-  match c with
-    | True -> "true"
-    | False -> "false"
-    | BRandom -> "brandom"
-    | Atom cc -> Pc.toStringAtom cc
-    | Not cc -> "not (" ^ (toStringBexpr cc) ^ ")"
-    | Or (c1, c2) -> "(" ^ (toStringBexpr c1) ^ ") or (" ^ (toStringBexpr c2) ^ ")"
-    | And (c1, c2) -> "(" ^ (toStringBexpr c1) ^ ") and (" ^ (toStringBexpr c2) ^ ")"
-and getindent indent =
-  String.make indent ' '
+
+and toStringStmts stmts indent =
+  String.concat "\n" (List.map (fun s -> toStringStmt s indent) stmts)
+
+let toStringDecl (f, in_vars, out_var, local_vars, stmts) =
+  "proc " ^ f ^ "(" ^ (var_list_string in_vars) ^ ") returns (" ^
+    (var_string out_var) ^ ")\n" ^ (toStringVars local_vars) ^
+    "begin\n" ^ (toStringStmts stmts 2) ^ "\nend\n\n"
+
+let toStringDecls fun_decls =
+  String.concat "\n" (List.map toStringDecl fun_decls)
+
+let toString (fun_decls, vars_decl, statements) =
+  (toStringDecls fun_decls) ^ (toStringVars vars_decl) ^ "\nbegin\n" ^ (toStringStmts statements 2) ^ "\nend"
 
 (* Return the variables of a bexpr *)
 let rec getVars c =
