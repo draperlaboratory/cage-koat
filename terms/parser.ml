@@ -43,7 +43,7 @@ let parseTrs filename combine =
 let parseCint filename combine =
   let inchan = open_in filename in
     let res = if (endsWith filename ".simple") then
-                Simple.createCint combine (Simple_aux.getProgram inchan)
+                SimpleToCInt.createCint combine (Simple_aux.getProgram inchan)
               else
                 Cint_aux.getCint inchan
               in
