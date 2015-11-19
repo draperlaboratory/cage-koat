@@ -22,6 +22,7 @@ open SimpleT
 
 (**********************)
 (* Formula conversion *)
+(**********************)
 
 (* Convert to NNF *)
 let rec toNNF = function
@@ -40,26 +41,30 @@ let rec toDNF c =
   toDNFAux (toNNF c)
 and toDNFAux = function
   | Or (x, y) -> Or (toDNFAux x, toDNFAux y)
-  | And (x, y) -> toDNFAux2 x y
+  | And (x, y) -> toDNFAux2 y x (* note the reversal of order *)
   | c -> c
-and toDNFAux2 x y =
-  match x with
+and toDNFAux2 y = function
     | Or (z1, z2) -> Or (toDNFAux (And (z1, y)), toDNFAux (And (z2, y)))
-    | _ -> toDNFAux3 x y
+    | x -> toDNFAux3 x y
 and toDNFAux3 x = function
   | Or (z1, z2) -> Or (toDNFAux (And (x, z1)), toDNFAux (And (x, z2)))
   | y -> toDNFAux4 x y
 and toDNFAux4 x y =
   And (toDNFAux x, toDNFAux y)
 
+
 (********************************)
 (* Convert a program into a trs *)
+(********************************)
 
 let control_points = ref []
 let if_loop_points = ref []
 let loop_points = ref []
 let lhsterms = ref []
 let random_count = ref 0
+
+let prepend list refList =
+  refList := list @ !refList
 
 let rec createTrs combine prog =
   control_points := [];
@@ -68,10 +73,13 @@ let rec createTrs combine prog =
   random_count := 0;
   let rules = createrules combine prog in
     flatten_rules rules
+
 and flatten_rules rules =
   List.flatten (List.map flatten_rule rules)
+
 and flatten_rule r =
   List.map (fun rhs -> Rule.create (Comrule.getLeft r) rhs (Comrule.getCond r) ) (Comrule.getRights r)
+
 and createrules combine (funs, vars, stmts) : Comrule.rule list =
   let funsrules = List.flatten (List.map getRulesForFunDecl funs) in
     let mainrules = getRules stmts "" vars vars in
@@ -83,16 +91,20 @@ and createrules combine (funs, vars, stmts) : Comrule.rule list =
             | Ctrls -> toComrules (normalizeConds (combineRules !control_points rules_dnf))
             | IfsLoops -> toComrules (normalizeConds (combineRules !if_loop_points rules_dnf))
             | Loops -> toComrules (normalizeConds (combineRules !loop_points rules_dnf))
+
 and toComrules =
   (* anything we had about weights for rules comes here to die *)
   List.map (fun (l, rs, c) -> Comrule.createRule l rs c)
+
 and getRulesForFunDecl (f, in_vars, out_var, local_vars, stmts) =
   let vars = in_vars @ (getVar out_var) @ local_vars in
     getRules stmts f vars in_vars
+
 and getVar out_var =
   match out_var with
     | None -> []
     | Some v -> [v]
+
 and getRules stmts f vars in_vars =
   control_points := (if f = "" then ["eval_start"; "eval_stop"] else ["eval_" ^ f ^ "_start"; "eval_" ^ f ^ "_stop"]) @ !control_points;
   if_loop_points := (if f = "" then ["eval_start"; "eval_stop"] else ["eval_" ^ f ^ "_start"; "eval_" ^ f ^ "_stop"]) @ !if_loop_points;
@@ -103,18 +115,22 @@ and getRules stmts f vars in_vars =
   let t2 = Term.create' (eval 1 f, !lhsterms) in
   let tail = (List.flatten (fst (createRulesForStmts stmts 1 true f))) in
   (t1, [t2], True)::tail
+
 and normalizeConds rules =
   List.map (fun (l, r, c) -> (l, r, Utils.remdupC Pc.equalAtom c)) rules
+
 and dnfify (lhs, rhs, c) =
   let c' = toDNF (removeNegation (toNNF c)) in
     let dcs = List.filter (fun c -> not (isFalse c)) (getDualClauses c') in
       List.map (fun dc -> (lhs, rhs, toPc dc)) dcs
+
 and removeNegation c =
   match c with
     | Or (c1, c2) -> Or (removeNegation c1, removeNegation c2)
     | And (c1, c2) -> And (removeNegation c1, removeNegation c2)
     | Not (Atom c) -> negateAtom c
     | _ -> c
+
 and negateAtom c =
   match c with
     | Pc.Equ (l, r) -> Or (Atom (Pc.Gtr (l, r)), Atom (Pc.Gtr (r, l)))
@@ -123,10 +139,12 @@ and negateAtom c =
     | Pc.Gtr (l, r) -> Atom (Pc.Leq (l, r))
     | Pc.Leq (l, r) -> Atom (Pc.Gtr (l, r))
     | Pc.Lss (l, r) -> Atom (Pc.Geq (l, r))
+
 and getDualClauses c =
   match c with
     | Or (c1, c2) -> (getDualClauses c1) @ (getDualClauses c2)
     | _ -> [c]
+
 and isFalse dc =
   match dc with
     | And (c1, c2) -> (isFalse c1) || (isFalse c2)
@@ -134,6 +152,7 @@ and isFalse dc =
     | True | BRandom -> false
     | False -> true
     | _ -> failwith "Internal error in Simple.isFalse"
+
 and toPc dc =
   match dc with
     | And (c1, c2) -> (toPc c1) @ (toPc c2)
@@ -141,8 +160,10 @@ and toPc dc =
     | True -> []
     | BRandom -> []
     | _ -> failwith "Internal error in Simple.toPc"
+
 and createLhsTerms vars =
   List.map Poly.fromVar vars
+
 and createRulesForStmts stmts i halt_for_last f =
   match stmts with
     | [] -> if halt_for_last then
@@ -156,6 +177,7 @@ and createRulesForStmts stmts i halt_for_last f =
     | s::ss -> let (rules, newi) = createRulesForStmt s i f in
                  let (rr, newesti) = createRulesForStmts ss newi halt_for_last f in
                    (rules::rr, newesti)
+
 and createRulesForStmt stmt i f =
   match stmt with
     | Skip -> let lhs = Term.create' (eval i f, !lhsterms)
@@ -213,15 +235,18 @@ and createRulesForStmt stmt i f =
                            and rhs2 = Term.create' (eval (i + 1) f, zapped) in
                              ([(lhs, [rhs1; rhs2], True)], i + 1)
     | Dummy1 _ | Dummy2 _ | Dummy3 _ -> failwith "Internal error in Simple.createRulesForStmt"
+
 and eval i f =
   if f = "" then
     "eval_" ^ (string_of_int i)
   else
     "eval_" ^ f ^ "_" ^ (string_of_int i)
+
 and getZapped vars zappedVar =
   match zappedVar with
     | None -> vars
     | Some v -> getZappedAux vars v
+
 and getZappedAux vars v =
   match vars with
     | [] -> []
@@ -229,9 +254,11 @@ and getZappedAux vars v =
                  (getNextRandom ())::xs
                else
                  x::(getZappedAux xs v)
+
 and getNextRandom () =
   incr random_count;
   Poly.fromVar ("random_" ^ (string_of_int !random_count))
+
 and getAssignment lhsterms x newx =
   match lhsterms with
     | [] -> failwith "Internal error in Simple.getAssignment"
@@ -240,17 +267,21 @@ and getAssignment lhsterms x newx =
                    newx::pp
                  else
                    p::(getAssignment pp x newx)
+
 and combineRules keepfuns trs =
   let (good, junk) = split_trs keepfuns trs in
     combine keepfuns good junk
+
 and combine keepfuns good junk =
   match good with
     | [] -> []
     | r::rr -> (combine_all keepfuns r junk) @ (combine keepfuns rr junk)
+
 and combine_all keepfuns r junk =
   let todo = [r]
   and accu = [] in
     combine_all_loop keepfuns todo accu junk
+
 and combine_all_loop keepfuns todo accu junk =
   match todo with
     | [] -> accu
@@ -259,29 +290,37 @@ and combine_all_loop keepfuns todo accu junk =
                else
                  let newtodos = combine_one r junk in
                    combine_all_loop keepfuns (newtodos @ rr) accu junk
+
 and combine_one r junk =
   let rules = getDefiningRules junk (Term.getFun (getRhs r)) in
     List.map (combine_rule r) rules
+
 and combine_rule (l1, r1s, c1) (l2, r2s, c2) =
   let r1 = getRhs (l1, r1s, c1) in
     let subby = getSubstitution (Term.getArgs r1) (Term.getArgs l2) in
       (l1, List.map (fun r2 -> Term.instantiate r2 subby) r2s, Utils.remdupC Pc.equalAtom (c1 @ (Pc.instantiate c2 subby)))
+
 and getDefiningRules trs f =
   List.filter (fun (l, _, _) -> Term.getFun l = f) trs
+
 and hasMoreThanOne (_, rs, _) =
   match rs with
     | [r] -> false
     | _ -> true
+
 and getRhs (_, rhss, _) =
   match rhss with
     | [rhs] -> rhs
     | _ -> failwith "Internal error in Simple.getRhs"
+
 and getSubstitution args args' =
   match args' with
     | [] -> []
     | x::xx -> (getName x, List.hd args)::(getSubstitution (List.tl args) xx)
+
 and getName poly =
   List.hd (Poly.getVars poly)
+
 and split_trs keepfuns trs =
   match trs with
     | [] -> ([], [])
@@ -291,10 +330,13 @@ and split_trs keepfuns trs =
                  else
                    (good, (l,rs,c)::junk)
 
+(***************************)
 (* Convert program to Cint *)
+(***************************)
 let allvars = ref []
 let addedfuns = ref []
 let start_vars = ref []
+
 let rec createCint combine prog =
   control_points := [];
   if_loop_points := [];
@@ -307,10 +349,12 @@ let rec createCint combine prog =
     let renamed_tuprules = rename tuprules prog in
       let blasted_tuprules = blast renamed_tuprules in
         ("eval_start", toComrules blasted_tuprules)
+
 and rename tuprules (_, vars, _) =
   let res = List.map rename_rule tuprules in
     allvars := !allvars @ vars;
     res
+
 and rename_rule r =
   let toks = Str.split (Str.regexp "_") (Term.getFun (Comrule.getLeft r)) in
     if List.length toks = 3 then
@@ -334,14 +378,17 @@ and rename_rule r =
             )
     else
       r
+
 and blast tuprules =
   List.map blast_rule tuprules
+
 and blast_rule r =
   let vars = Term.getVars (Comrule.getLeft r)
   and left_fun = get_fun (Comrule.getLeft r) in
     let blast_l = blast_term_left vars (Comrule.getLeft r)
     and blast_rs = List.map (blast_term_right vars left_fun) (Comrule.getRights r) in
       (blast_l, blast_rs, (Comrule.getCond r))
+
 and get_fun t =
   let toks = Str.split (Str.regexp "_") (Term.getFun t) in
     if List.length toks = 3 then
@@ -350,16 +397,21 @@ and get_fun t =
       "<main>"
 and blast_term_left vars t =
   Term.create' (Term.getFun t, getNewArgs (Term.getArgs t) vars)
+
 and blast_term_right vars left_fun t =
   let right_fun = get_fun t in
     if left_fun <> right_fun then
-      Term.create' (Term.getFun t, getNewArgs (Term.getArgs t) (get_call_vars right_fun))
+      Term.create' (Term.getFun t, getNewArgs (Term.getArgs t)
+        (get_call_vars right_fun))
     else
       Term.create' (Term.getFun t, getNewArgs (Term.getArgs t) vars)
+
 and get_call_vars f =
   List.assoc f !start_vars
+
 and getNewArgs oldargs vars =
   getNewArgsAux oldargs vars !allvars []
+
 and getNewArgsAux oldargs vars allvars accu =
   match allvars with
     | [] -> accu
@@ -368,6 +420,7 @@ and getNewArgsAux oldargs vars allvars accu =
                    getNewArgsAux oldargs vars vs (accu @ [Poly.fromVar v])
                  else
                    getNewArgsAux oldargs vars vs (accu @ [List.nth oldargs idx])
+
 and getIdx e l i =
   match l with
     | [] -> -1
