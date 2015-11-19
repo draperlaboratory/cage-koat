@@ -61,28 +61,24 @@ let var_string out_var =
     | Some v -> v ^ ": int"
 
 let var_list_string vars =
-  (String.concat ", " (List.map (fun x -> x ^ ": int") vars))
+  String.concat ", " (List.map (fun x -> x ^ ": int") vars)
 
-let toStringVars vars_decl =
-  if vars_decl = [] then
-    ""
-  else
-    ("var " ^ (var_list_string vars_decl) ^ ";\n")
+let toStringVars = function
+  | [] -> ""
+  | vars_decl -> "var " ^ (var_list_string vars_decl) ^ ";\n"
 
-let getLHSCall x =
-  match x with
-    | None -> "()"
-    | Some v -> v
+let getLHSCall = function
+  | None -> "()"
+  | Some v -> v
 
-let rec toStringBexpr c =
-  match c with
-    | True -> "true"
-    | False -> "false"
-    | BRandom -> "brandom"
-    | Atom cc -> Pc.toStringAtom cc
-    | Not cc -> "not (" ^ (toStringBexpr cc) ^ ")"
-    | Or (c1, c2) -> "(" ^ (toStringBexpr c1) ^ ") or (" ^ (toStringBexpr c2) ^ ")"
-    | And (c1, c2) -> "(" ^ (toStringBexpr c1) ^ ") and (" ^ (toStringBexpr c2) ^ ")"
+let rec toStringBexpr = function
+  | True -> "true"
+  | False -> "false"
+  | BRandom -> "brandom"
+  | Atom cc -> Pc.toStringAtom cc
+  | Not cc -> "not (" ^ (toStringBexpr cc) ^ ")"
+  | Or (c1, c2) -> "(" ^ (toStringBexpr c1) ^ ") or (" ^ (toStringBexpr c2) ^ ")"
+  | And (c1, c2) -> "(" ^ (toStringBexpr c1) ^ ") and (" ^ (toStringBexpr c2) ^ ")"
 
 let rec toStringStmt stmt indent =
   match stmt with
