@@ -90,7 +90,6 @@ module Make(CTRS : Ctrs.S) = struct
   let getInitialObl rules start ctype =
     let open Expexp in
     let open CTRS in
-    let open Annot in
     let (rules, initCost, initCompl) =
       List.fold_left
         (fun (rules, cost, compl) rule ->

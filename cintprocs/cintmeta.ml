@@ -27,7 +27,6 @@ module TGraph  = Cintfarkaspolo.TGraph
 
 open CTRSObl
 open CTRS
-open Annot
 
 module KnowledgeProc = KnowledgePropagationProc.Make(CTRSObl)
 module UnreachableProc = DeleteUnreachableProc.Make(CTRSObl)

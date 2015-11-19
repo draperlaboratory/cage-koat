@@ -36,8 +36,6 @@ default: kittel koat
 
 all: kittel koat convert
 
-unitTests: dep branch rule ruleInfluence detectLeak
-
 kittel: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} kittel.native
 
@@ -47,23 +45,8 @@ kittel.d.byte: make_git_sha1 force_look
 koat: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koat.native
 
-ruleInfluence: ruleInfluence.ml
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} ruleInfluence.native
-
 dep: dep.ml
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} dep.native
-
-detectLeak: detectLeak.ml
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} detectLeak.native
-
-detectLeakDebug: detectLeak.ml
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} detectLeak.d.byte
-
-branch: detectBranch.ml
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} detectBranch.native
-
-rule: ruleLoop.ml
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} ruleLoop.native
 
 koat.d.byte: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koat.d.byte
