@@ -78,9 +78,6 @@ let toStringDecl (f, in_vars, out_var, local_vars, stmts) =
 let toStringDecls fun_decls =
   String.concat "\n" (List.map toStringDecl fun_decls)
 
-let toString (fun_decls, vars_decl, statements) =
-  (toStringDecls fun_decls) ^ (toStringVars vars_decl) ^ "\nbegin\n" ^ (toStringStmts 2 statements) ^ "\nend"
-
 (* Return the variables of a bexpr *)
 let rec getVars c =
   match c with
