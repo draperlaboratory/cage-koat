@@ -151,7 +151,7 @@ and isFalse dc =
     | Atom _ -> false
     | True | BRandom -> false
     | False -> true
-    | _ -> failwith "Internal error in Simple.isFalse"
+    | _ -> failwith "Internal error in SimpleToTRS.isFalse"
 
 and toPc dc =
   match dc with
@@ -159,7 +159,7 @@ and toPc dc =
     | Atom a -> [a]
     | True -> []
     | BRandom -> []
-    | _ -> failwith "Internal error in Simple.toPc"
+    | _ -> failwith "Internal error in SimpleToTRS.toPc"
 
 and createLhsTerms vars =
   List.map Poly.fromVar vars
@@ -234,7 +234,7 @@ and createRulesForStmt stmt i f =
                            let rhs1 = Term.create' ("eval_" ^ g ^ "_start", callargs)
                            and rhs2 = Term.create' (eval (i + 1) f, zapped) in
                              ([(lhs, [rhs1; rhs2], True)], i + 1)
-    | Dummy1 _ | Dummy2 _ | Dummy3 _ -> failwith "Internal error in Simple.createRulesForStmt"
+    | Dummy1 _ | Dummy2 _ | Dummy3 _ -> failwith "Internal error in SimpleToTRS.createRulesForStmt"
 
 and eval i f =
   if f = "" then
@@ -261,7 +261,7 @@ and getNextRandom () =
 
 and getAssignment lhsterms x newx =
   match lhsterms with
-    | [] -> failwith "Internal error in Simple.getAssignment"
+    | [] -> failwith "Internal error in SimpleToTRS.getAssignment"
     | p::pp -> let y = List.hd (Poly.getVars p) in
                  if x = y then
                    newx::pp
@@ -311,7 +311,7 @@ and hasMoreThanOne (_, rs, _) =
 and getRhs (_, rhss, _) =
   match rhss with
     | [rhs] -> rhs
-    | _ -> failwith "Internal error in Simple.getRhs"
+    | _ -> failwith "Internal error in SimpleToTRS.getRhs"
 
 and getSubstitution args args' =
   match args' with

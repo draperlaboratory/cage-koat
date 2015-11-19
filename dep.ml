@@ -21,12 +21,16 @@ type reachableGraph = reachablePositions ArgPosTable.t
     That is, after the graph has saturated, is there a delta path between this
     argument and itself.  **)
 let criticalArgument graph (pos : argPos) =
-  let reachableFrom = ArgPosTable.find graph pos in
   try
-    let rp = ArgPosTable.find reachableFrom pos in
-    match rp.qual with
-    | Delta -> true
-    | _ -> false
+    let reachableFrom = ArgPosTable.find graph pos in
+    begin
+      try
+        let rp = ArgPosTable.find reachableFrom pos in
+        match rp.qual with
+      | Delta -> true
+      | _ -> false
+      with Not_found -> false
+    end
   with Not_found -> false
 
 
@@ -164,7 +168,7 @@ let visualizeInformationFlow relationships inputFname =
     else [] in
   draw ~augmentVertex:highlight visGraph inputFname
 
-(*
+
 let main () =
   let usage = "" in
   let filename = ref "" in
@@ -176,14 +180,12 @@ let main () =
     end
   else
     begin
-      Printf.printf "aoenuthoaensthu %s\n\n" !filename;
-      let entrFun, system = Parser.parseCint !filename Simple.Stmts in
+      Printf.printf "Running Relationship Visualizer %s\n\n" !filename;
+      let entrFun, system = Parser.parseCint !filename SimpleT.Stmts in
       let relationships = Utils.concatMap RuleInfluence.processRule system in
-      let graph = computeGraph relationships in
-      let _ (*isCritical*) = criticalArgument graph in
       visualizeInformationFlow relationships !filename
     end
 
 
 let _ = main ()
-*)
+

@@ -163,6 +163,6 @@ let main () =
   else
     begin
       Printf.printf "Processing %s\n\n" !filename;
-      let entrFun, system = Parser.parseCint !filename Simple.Stmts in
+      let entrFun, system = Parser.parseCint !filename SimpleT.Stmts in
       Utils.concatMap processRule system
     end

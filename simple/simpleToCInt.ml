@@ -84,17 +84,17 @@ let blast tuprules =
   List.map blast_rule tuprules
 
 let createCint combine prog =
-  Simple.control_points := [];
-  Simple.if_loop_points := [];
-  Simple.loop_points := [];
-  Simple.lhsterms := [];
-  Simple.random_count := 0;
+  SimpleToTRS.control_points := [];
+  SimpleToTRS.if_loop_points := [];
+  SimpleToTRS.loop_points := [];
+  SimpleToTRS.lhsterms := [];
+  SimpleToTRS.random_count := 0;
   allvars := [];
   addedfuns := [];
   start_vars := [];
-  let tuprules = Simple.createrules combine prog in
+  let tuprules = SimpleToTRS.createrules combine prog in
   let renamed_tuprules = rename tuprules prog in
   let blasted_tuprules = blast renamed_tuprules in
-  ("eval_start", Simple.toComrules blasted_tuprules)
+  ("eval_start", SimpleToTRS.toComrules blasted_tuprules)
 
 

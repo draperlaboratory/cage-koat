@@ -43,7 +43,7 @@ and toCStmt indent = function
     | Call (x, f, ys) -> (getindent indent) ^ (getCLHSCall x) ^ f ^ "(" ^ (String.concat ", " ys) ^ ");"
     | Dummy1 _
     | Dummy2 _
-    | Dummy3 _ -> failwith "Internal error in Simple.toC"
+    | Dummy3 _ -> failwith "Internal error in SimpleToC.toC"
 
 let var_list_Cstring vars =
   String.concat ", int " vars
