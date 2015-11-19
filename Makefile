@@ -34,7 +34,7 @@ OPTS=${PP_OPTS} -use-ocamlfind -cflags -warn-error,+a
 
 default: kittel koat
 
-all: kittel koat convert koatCConv koatFSTConv koatCESConv
+all: kittel koat convert koatCConv koatFSTConv koatCESConv dep
 
 kittel: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} kittel.native
