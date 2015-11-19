@@ -46,7 +46,7 @@ let timed_run4 tsecs defaultval f arg1 arg2 arg3 arg4 =
 
 (* command line stuff *)
 
-let combine = ref Simple.Ctrls
+let combine = ref SimpleT.Ctrls
 let filename = ref ""
 let ifacename = ref ""
 let timeout = ref 0.0
@@ -57,13 +57,13 @@ let usage = "usage: " ^ Sys.argv.(0) ^ " <filename>"
 
 let stringToCombine s printer =
   if s = "statements" then
-    Simple.Stmts
+    SimpleT.Stmts
   else if s = "controlpoints" then
-    Simple.Ctrls
+    SimpleT.Ctrls
   else if s = "ifs-loops" then
-    Simple.IfsLoops
+    SimpleT.IfsLoops
   else if s = "loops" then
-    Simple.Loops
+    SimpleT.Loops
   else
   (
     Printf.printf "%s\n" (Sys.argv.(0) ^ ": unknown combination method `" ^ s ^ "'.");

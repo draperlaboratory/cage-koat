@@ -23,6 +23,6 @@ let main () =
     let inchan = open_in filename in
       let prog = Simple_aux.getProgram inchan in
         close_in inchan;
-        Printf.printf "%s\n" (Simple.toC prog)
+        Printf.printf "%s\n" (SimpleToC.toC prog)
 
 let _ = main ()

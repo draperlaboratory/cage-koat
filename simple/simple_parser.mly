@@ -14,7 +14,7 @@
 %nonassoc IDENT
 
 %start program
-%type <Simple.program> program
+%type <SimpleT.program> program
 
 %%
 
@@ -68,25 +68,25 @@ statement_list:
 
 statement:
 | SKIP SEMI
-    { Simple.Skip }
+    { SimpleT.Skip }
 | HALT SEMI
-    { Simple.Halt }
+    { SimpleT.Halt }
 | ASSUME OPENPAR bexpr CLOSEPAR SEMI
-    { Simple.Assume $3 }
+    { SimpleT.Assume $3 }
 | IDENT ASSIGN RANDOM SEMI
-    { Simple.Random $1 }
+    { SimpleT.Random $1 }
 | IDENT ASSIGN poly SEMI
-    { Simple.Assign ($1, Poly.construct_poly $3) }
+    { SimpleT.Assign ($1, Poly.construct_poly $3) }
 | IF OPENPAR bexpr CLOSEPAR TTHEN statement_list EELSE statement_list EENDIF SEMI
-    { Simple.ITE ($3, $6, $8) }
+    { SimpleT.ITE ($3, $6, $8) }
 | IF OPENPAR bexpr CLOSEPAR TTHEN statement_list EENDIF SEMI
-    { Simple.ITE ($3, $6, [Simple.Skip]) }
+    { SimpleT.ITE ($3, $6, [SimpleT.Skip]) }
 | WHILE OPENPAR bexpr CLOSEPAR DO statement_list DONE SEMI
-    { Simple.While ($3, $6) }
+    { SimpleT.While ($3, $6) }
 | IDENT ASSIGN IDENT OPENPAR var_list CLOSEPAR SEMI
-    { Simple.Call (Some $1, $3, $5) }
+    { SimpleT.Call (Some $1, $3, $5) }
 | OPENPAR CLOSEPAR ASSIGN IDENT OPENPAR var_list CLOSEPAR SEMI
-    { Simple.Call (None, $4, $6) }
+    { SimpleT.Call (None, $4, $6) }
 ;
 
 var_list:
@@ -98,19 +98,19 @@ var_list:
 
 bexpr:
 | TRUE
-    { Simple.True }
+    { SimpleT.True }
 | FALSE
-    { Simple.False }
+    { SimpleT.False }
 | BRANDOM
-    { Simple.BRandom }
+    { SimpleT.BRandom }
 | cond
-    { Simple.Atom $1 }
+    { SimpleT.Atom $1 }
 | NOT OPENPAR bexpr CLOSEPAR
-    { Simple.Not $3 }
+    { SimpleT.Not $3 }
 | OPENPAR bexpr CLOSEPAR OR OPENPAR bexpr CLOSEPAR
-    { Simple.Or ($2, $6) }
+    { SimpleT.Or ($2, $6) }
 | OPENPAR bexpr CLOSEPAR AND OPENPAR bexpr CLOSEPAR
-    { Simple.And ($2, $6) }
+    { SimpleT.And ($2, $6) }
 ;
 
 poly:

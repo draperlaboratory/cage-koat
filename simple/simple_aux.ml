@@ -74,14 +74,14 @@ and check_fun_decl (f, in_vars, out_var_o, local_vars, stmts) =
   let allvars = (in_vars @ (getIt out_var_o) @ local_vars) in
     let tmp = check_multiple allvars in
       if tmp <> None then
-        Some (Simple.Dummy3 f)
+        Some (SimpleT.Dummy3 f)
       else
         check_vars allvars stmts
 and getVarErrorString errorstmt =
   match errorstmt with
-    | Simple.Dummy1 c -> Printf.sprintf "Use of undeclared variable in '%s'!" (Simple.toStringBexpr c)
-    | Simple.Dummy2 vars -> Printf.sprintf "Multiple variable declaration in '%s'!" ((String.concat ": int, " vars) ^ ": int")
-    | Simple.Dummy3 f -> Printf.sprintf "Multiple variable declaration in function '%s'!" f
+    | SimpleT.Dummy1 c -> Printf.sprintf "Use of undeclared variable in '%s'!" (Simple.toStringBexpr c)
+    | SimpleT.Dummy2 vars -> Printf.sprintf "Multiple variable declaration in '%s'!" ((String.concat ": int, " vars) ^ ": int")
+    | SimpleT.Dummy3 f -> Printf.sprintf "Multiple variable declaration in function '%s'!" f
     | _ -> Printf.sprintf "Use of undeclared variable in '%s'!" (Simple.toStringStmt 0 errorstmt)
 and check_vars vars stmts =
   let var_dec_check = check_multiple vars in
@@ -96,32 +96,34 @@ and check_vars vars stmts =
                            | Some _ -> tmp
 and check_multiple vars =
   if (List.length (Utils.remdup vars)) <> (List.length vars) then
-    Some (Simple.Dummy2 vars)
+    Some (SimpleT.Dummy2 vars)
   else
     None
 and check_vars_one vars stmt =
   match stmt with
-    | Simple.Skip -> None
-    | Simple.Halt -> None
-    | Simple.Assume c -> if (Utils.containsAll vars (Simple.getVars c)) then None else Some (Simple.Dummy1 c)
-    | Simple.Random x -> if (Utils.contains vars x) then None else Some stmt
-    | Simple.Assign (x, p) -> if (Utils.containsAll vars (x::Poly.getVars p)) then None else Some stmt
-    | Simple.ITE (c, t, e) -> if (Utils.containsAll vars (Simple.getVars c)) then
+    | SimpleT.Skip -> None
+    | SimpleT.Halt -> None
+    | SimpleT.Assume c -> if (Utils.containsAll vars (Simple.getVars c)) then None else Some (SimpleT.Dummy1 c)
+    | SimpleT.Random x -> if (Utils.contains vars x) then None else Some stmt
+    | SimpleT.Assign (x, p) -> if (Utils.containsAll vars (x::Poly.getVars p)) then None else Some stmt
+    | SimpleT.ITE (c, t, e) -> if (Utils.containsAll vars (Simple.getVars c)) then
                                 let tmp = check_vars vars t in
                                   match tmp with
                                     | None -> check_vars vars e
                                     | Some _ -> tmp
                               else
-                                Some (Simple.Dummy1 c)
-    | Simple.While (c, b) -> if (Utils.containsAll vars (Simple.getVars c)) then
+                                Some (SimpleT.Dummy1 c)
+    | SimpleT.While (c, b) -> if (Utils.containsAll vars (Simple.getVars c)) then
                                check_vars vars b
                              else
-                               Some (Simple.Dummy1 c)
-    | Simple.Call (x, f, ys) -> if Utils.containsAll vars ((getIt x) @ ys) then
+                               Some (SimpleT.Dummy1 c)
+    | SimpleT.Call (x, f, ys) -> if Utils.containsAll vars ((getIt x) @ ys) then
                                   None
                                 else
                                   Some stmt
-    | Simple.Dummy1 _ | Simple.Dummy2 _ | Simple.Dummy3 _ -> failwith "Internal error in Simple_aux.check_vars_one"
+    | SimpleT.Dummy1 _
+    | SimpleT.Dummy2 _
+    | SimpleT.Dummy3 _ -> failwith "Internal error in Simple_aux.check_vars_one"
 and getIt x =
   match x with
     | None -> []

@@ -1,6 +1,7 @@
 (* Convert program to C *)
-open Simple
+open SimpleT
 
+let getindent = Simple.getindent
 let needAssume = ref false
 let needNondef = ref false
 let needExit = ref false
