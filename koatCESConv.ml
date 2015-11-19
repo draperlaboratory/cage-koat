@@ -106,7 +106,7 @@ let print_comrule rule =
 
 let main () =
   let filename = Sys.argv.(1) in
-  let (startFun, comtrs ) = Parser.parseCint filename Simple.Ctrls in
+  let (startFun, comtrs ) = Parser.parseCint filename SimpleT.Ctrls in
 
   (* Rename variables to X_1, ..., X_N *)
   let standardize rule =
@@ -119,7 +119,10 @@ let main () =
     let open Comrule in
     { lhs = Term.instantiate rule.lhs subst ;
       rhss = List.map (fun rhs -> Term.instantiate rhs subst) rule.rhss ;
-      cond = Pc.instantiate rule.cond subst ; } in
+      cond = Pc.instantiate rule.cond subst ;
+      lowerBound = Poly.one;
+      upperBound = Poly.one;
+    } in
   let stdtrs = List.map standardize comtrs in
  
   print_ces_header (List.map (fun pv -> List.hd (Poly.getVars pv)) (Term.getArgs (Comrule.getLeft (List.hd stdtrs)))) startFun;

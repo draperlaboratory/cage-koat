@@ -31,3 +31,21 @@ type statement =
 type fun_decl = string * string list * string option * string list * statement list
 
 type program = fun_decl list * string list * statement list
+
+let getindent indent = String.make indent ' '
+
+(* Return the variables of a bexpr *)
+let rec getVars c =
+  match c with
+    | True | False | BRandom -> []
+    | Atom cc -> Pc.getVarsAtom cc
+    | Not cc -> getVars cc
+    | Or (c1, c2) | And (c1, c2) -> Utils.remdup ((getVars c1) @ (getVars c2))
+
+(* Checks whether a bexpr is linear *)
+let rec isLinear c =
+  match c with
+    | True | False | BRandom -> true
+    | Atom cc -> Pc.isLinearAtom cc
+    | Not cc -> isLinear cc
+    | Or (c1, c2) | And (c1, c2) -> (isLinear c1) && (isLinear c2)

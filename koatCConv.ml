@@ -191,7 +191,7 @@ let printDefSym preVars postVars defSym definingRules =
 
 let main () =
   let filename = Sys.argv.(1) in
-  let (startFun, cint) = Parser.parseCint filename Simple.Ctrls in
+  let (startFun, cint) = Parser.parseCint filename SimpleT.Ctrls in
   if Cint.isUnary cint then
     let trs = Cint.toTrs cint in
     (* Collect rules by defined symbol *)

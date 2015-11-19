@@ -135,7 +135,7 @@ let print_rule preVars postVars rule =
 
 let main () =
   let filename = Sys.argv.(1) in
-  let (startFun, cint) = Parser.parseCint filename Simple.Ctrls in
+  let (startFun, cint) = Parser.parseCint filename SimpleT.Ctrls in
   if Cint.isUnary cint then
     let trs = List.map Rule.standardize (Cint.toTrs cint) in
 
