@@ -1,6 +1,5 @@
-module CTRSObl = Cintfarkaspolo.CTRSObl
 val process :
-  CTRSObl.CTRS.RuleT.rule list ->
+  Cintfarkaspolo.CTRSObl.CTRS.RuleT.rule list ->
   int ->
   Term.funSym ->
   Complexity.ctype ->

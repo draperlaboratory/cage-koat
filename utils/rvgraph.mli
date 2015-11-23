@@ -1,12 +1,11 @@
-module LC = LocalSizeComplexity
-type lc = LC.localcomplexity
+type lc = LocalSizeComplexity.localcomplexity
 
-type size_data = LC.size_data
+type size_data = LocalSizeComplexity.size_data
 
 module Make(RuleT : AbstractRule.AbstractRule) :
     sig
 
-      module LSC : LC.S with module RuleT = RuleT
+      module LSC : LocalSizeComplexity.S with module RuleT = RuleT
       module CTRS : Ctrs.S
       module TGraph : Tgraph.S
 
@@ -14,49 +13,49 @@ module Make(RuleT : AbstractRule.AbstractRule) :
       val getNodes : (Tgraph.G.vertex * LSC.trans_data) array -> string
       val getEdges : Tgraph.G.t -> (Tgraph.G.vertex * LSC.trans_data) array -> string
       val compute :
-        (RuleT.rule * LC.local_size_data) list ->
+        (RuleT.rule * LocalSizeComplexity.local_size_data) list ->
         Tgraph.G.t * (Tgraph.G.vertex * RuleT.rule) array ->
-        Tgraph.G.t * (int * (RuleT.rule * LC.local_size_data)) array
+        Tgraph.G.t * (int * (RuleT.rule * LocalSizeComplexity.local_size_data)) array
       val compute_edges :
         bool array array ->
-        (int * (RuleT.rule * LC.local_size_data)) array ->
+        (int * (RuleT.rule * LocalSizeComplexity.local_size_data)) array ->
         int -> Tgraph.G.t * (Tgraph.G.vertex * RuleT.rule) array -> unit
       val create_graph : int -> bool array array -> Tgraph.G.t
       exception Found of int
       val hasEdge :
         Tgraph.G.t *
-        (Tgraph.G.vertex * (RuleT.rule * LC.local_size_data))
+        (Tgraph.G.vertex * (RuleT.rule * LocalSizeComplexity.local_size_data))
         array ->
-        RuleT.rule * LC.local_size_data ->
-        RuleT.rule * LC.local_size_data -> bool
+        RuleT.rule * LocalSizeComplexity.local_size_data ->
+        RuleT.rule * LocalSizeComplexity.local_size_data -> bool
       val getNum :
-        (Tgraph.G.vertex * (RuleT.rule * LC.local_size_data))
-        array -> RuleT.rule * LC.local_size_data -> int
+        (Tgraph.G.vertex * (RuleT.rule * LocalSizeComplexity.local_size_data))
+        array -> RuleT.rule * LocalSizeComplexity.local_size_data -> int
       val getPreds :
         Tgraph.G.t *
-        (Tgraph.G.vertex * (RuleT.rule * LC.local_size_data))
+        (Tgraph.G.vertex * (RuleT.rule * LocalSizeComplexity.local_size_data))
         array ->
-        (RuleT.rule * LC.local_size_data) list ->
-        (RuleT.rule * LC.local_size_data) list
+        (RuleT.rule * LocalSizeComplexity.local_size_data) list ->
+        (RuleT.rule * LocalSizeComplexity.local_size_data) list
       val computePreds :
         Tgraph.G.t ->
-        (Tgraph.G.vertex * (RuleT.rule * LC.local_size_data))
+        (Tgraph.G.vertex * (RuleT.rule * LocalSizeComplexity.local_size_data))
         array -> int -> int list ref -> int list ref -> unit
       val getNums :
-        (Tgraph.G.vertex * (RuleT.rule * LC.local_size_data))
+        (Tgraph.G.vertex * (RuleT.rule * LocalSizeComplexity.local_size_data))
         array ->
-        (RuleT.rule * LC.local_size_data) list ->
+        (RuleT.rule * LocalSizeComplexity.local_size_data) list ->
         int list
       val isIn : int list ref -> int -> bool
       val hasEdgeNums :
         Tgraph.G.t ->
-        (Tgraph.G.vertex * (RuleT.rule * LC.local_size_data))
+        (Tgraph.G.vertex * (RuleT.rule * LocalSizeComplexity.local_size_data))
         array -> int -> int -> bool
       val getRvs :
-        (Tgraph.G.vertex * (RuleT.rule * LC.local_size_data))
+        (Tgraph.G.vertex * (RuleT.rule * LocalSizeComplexity.local_size_data))
         array ->
         int list ->
-        (RuleT.rule * LC.local_size_data) list
+        (RuleT.rule * LocalSizeComplexity.local_size_data) list
       val removeNodes :
         Tgraph.G.t * (Tgraph.G.vertex * (RuleT.rule * 'a)) array ->
         RuleT.rule list -> Tgraph.G.t * (Tgraph.G.vertex * (RuleT.rule * 'a)) array
@@ -106,37 +105,37 @@ module Make(RuleT : AbstractRule.AbstractRule) :
       val getRvsScc : (Tgraph.G.V.t * 'a) array -> Tgraph.G.V.t list -> 'a list
       val condense :
         Tgraph.G.t *
-        (Tgraph.G.vertex * (RuleT.rule * LC.local_size_data))
+        (Tgraph.G.vertex * (RuleT.rule * LocalSizeComplexity.local_size_data))
         array ->
         Tgraph.G.t *
         (int *
-         ((RuleT.rule * LC.local_size_data) list * bool))
+         ((RuleT.rule * LocalSizeComplexity.local_size_data) list * bool))
         array
       val compute_condensed_edges :
         bool array array ->
         (int *
-         ((RuleT.rule * LC.local_size_data) list * bool))
+         ((RuleT.rule * LocalSizeComplexity.local_size_data) list * bool))
         array ->
         int ->
         Tgraph.G.t *
-        (Tgraph.G.vertex * (RuleT.rule * LC.local_size_data))
+        (Tgraph.G.vertex * (RuleT.rule * LocalSizeComplexity.local_size_data))
         array -> unit
       val hasSccEdge :
         int *
-        ((RuleT.rule * LC.local_size_data) list * bool) ->
+        ((RuleT.rule * LocalSizeComplexity.local_size_data) list * bool) ->
         int *
-        ((RuleT.rule * LC.local_size_data) list * bool) ->
+        ((RuleT.rule * LocalSizeComplexity.local_size_data) list * bool) ->
         Tgraph.G.t *
-        (Tgraph.G.vertex * (RuleT.rule * LC.local_size_data))
+        (Tgraph.G.vertex * (RuleT.rule * LocalSizeComplexity.local_size_data))
         array -> bool
       val isTrivial :
-        (RuleT.rule * LC.local_size_data) list ->
+        (RuleT.rule * LocalSizeComplexity.local_size_data) list ->
         Tgraph.G.t *
-        (Tgraph.G.vertex * (RuleT.rule * LC.local_size_data))
+        (Tgraph.G.vertex * (RuleT.rule * LocalSizeComplexity.local_size_data))
         array -> bool
       val equalSccs :
-        (RuleT.rule * LC.local_size_data) list ->
-        (RuleT.rule * LC.local_size_data) list -> bool
+        (RuleT.rule * LocalSizeComplexity.local_size_data) list ->
+        (RuleT.rule * LocalSizeComplexity.local_size_data) list -> bool
       val getNodesInTopologicalOrder : Tgraph.G.t * (Tgraph.G.V.t * 'a) array -> 'a list
       val getNodesTopo : (Tgraph.G.V.t * 'a) array -> Tgraph.G.V.t -> 'a
       val condensedToDot :
@@ -149,30 +148,30 @@ module Make(RuleT : AbstractRule.AbstractRule) :
       val getCondensedPreds :
         Tgraph.G.t *
         (Tgraph.G.vertex *
-         ((RuleT.rule * LC.local_size_data) list * 'c))
+         ((RuleT.rule * LocalSizeComplexity.local_size_data) list * 'c))
         array ->
-        (RuleT.rule * LC.local_size_data) list list ->
-        (RuleT.rule * LC.local_size_data) list list
+        (RuleT.rule * LocalSizeComplexity.local_size_data) list list ->
+        (RuleT.rule * LocalSizeComplexity.local_size_data) list list
       val getCondensedNums :
         (Tgraph.G.vertex *
-         ((RuleT.rule * LC.local_size_data) list * 'c))
+         ((RuleT.rule * LocalSizeComplexity.local_size_data) list * 'c))
         array ->
-        (RuleT.rule * LC.local_size_data) list list ->
+        (RuleT.rule * LocalSizeComplexity.local_size_data) list list ->
         int list
       val computeCondensedPreds :
         Tgraph.G.t ->
         (Tgraph.G.vertex *
-         ((RuleT.rule * LC.local_size_data) list * 'c))
+         ((RuleT.rule * LocalSizeComplexity.local_size_data) list * 'c))
         array -> int -> int list ref -> int list ref -> unit
       val hasCondensedEdgeNums :
         Tgraph.G.t ->
         (Tgraph.G.vertex *
-         ((RuleT.rule * LC.local_size_data) list * 'c))
+         ((RuleT.rule * LocalSizeComplexity.local_size_data) list * 'c))
         array -> int -> int -> bool
       val getSccsNums :
         (Tgraph.G.vertex *
-         ((RuleT.rule * LC.local_size_data) list * 'c))
+         ((RuleT.rule * LocalSizeComplexity.local_size_data) list * 'c))
         array ->
         int list ->
-        (RuleT.rule * LC.local_size_data) list list
+        (RuleT.rule * LocalSizeComplexity.local_size_data) list list
     end
