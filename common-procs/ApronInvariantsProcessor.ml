@@ -22,17 +22,10 @@ IFDEF HAVE_APRON THEN
 
 open Apron
 open AbstractRule
-
-module Make(CTRSObl : Ctrsobl.S) = struct
-  module CTRS = CTRSObl.CTRS
-  module RuleT = CTRS.RuleT
-  module RVG = Rvgraph.Make(RuleT)
-  module TGraph = Tgraph.Make(RuleT)
-  module VarMap = Map.Make(String)
-  module FunMap = Map.Make(String)
-  open CTRSObl
-  open CTRS
-
+module VarMap = Map.Make(String)
+module FunMap = Map.Make(String)
+       
+module MakeKittelProc(RuleT : AbstractRule) = struct
   let a_var m v = VarMap.find v m
 
   let extend_env env oldMap newVars =
@@ -316,7 +309,7 @@ module Make(CTRSObl : Ctrsobl.S) = struct
     List.fold_left (&&) true result
 *)
 
-  let process_kittel startFuns trs =
+  let process startFuns trs =
     let add_invariants man rules startFuns =
       let funToAbstrVal = compute_invariants man rules startFuns in
       if FunMap.exists (fun _ aV -> not(Abstract1.is_top man aV)) funToAbstrVal then
@@ -361,11 +354,22 @@ module Make(CTRSObl : Ctrsobl.S) = struct
       | Some (funToInv, newRules) ->
         (* assert(check_conditions man trs funToInv); (* DEBUG *) *)
         Some ((newRules, Termgraph.compute newRules, false), get_proof man newRules funToInv)
+end
 
-  let process_koat ctrsobl tgraph rvgraph =
+
+module MakeKoatProc(RVG : Rvgraph.S) = struct
+  module TGraph = RVG.TGraph
+  module CTRSObl = TGraph.CTRSObl
+  module CTRS = CTRSObl.CTRS
+  module RuleT = CTRS.RuleT
+  module ApronKittelProc = MakeKittelProc(RuleT)
+  open CTRSObl
+  open CTRS
+	     
+  let process ctrsobl tgraph rvgraph =
     let add_invariants man rules startFun =
       let sep_rules = Utils.concatMap (fun rule -> List.map (fun rhs -> Rule.create (RuleT.getLeft rule) rhs (RuleT.getCond rule)) (RuleT.getRights rule)) rules in
-      let funToAbstrVal = compute_invariants man sep_rules startFun in
+      let funToAbstrVal = ApronKittelProc.compute_invariants man sep_rules startFun in
       if FunMap.exists (fun _ aV -> not(Abstract1.is_top man aV)) funToAbstrVal then
         Some
           (funToAbstrVal,
@@ -373,7 +377,7 @@ module Make(CTRSObl : Ctrsobl.S) = struct
               (fun rule ->
                 let lhs = RuleT.getLeft rule in
                 let defSym = Term.getFun lhs in
-                let inv = abstr1_to_pc man (FunMap.find defSym funToAbstrVal) in
+                let inv = ApronKittelProc.abstr1_to_pc man (FunMap.find defSym funToAbstrVal) in
 
                 (* Map from std names to actually used names: *)
                 let subst = Utils.mapi (fun i v -> ("X_" ^ (string_of_int (i+1)), v)) (Term.getArgs lhs) in
@@ -389,7 +393,7 @@ module Make(CTRSObl : Ctrsobl.S) = struct
 
     let get_proof man funToInv nctrsobl ini outi =
       let open Printf in
-      let invList = pp_invariants man funToInv in
+      let invList = ApronKittelProc.pp_invariants man funToInv in
       sprintf
         "Applied AI with '%s' on problem %i to obtain the following invariants:\n%s\n\nThis yielded the following problem:\n%s"
         (Manager.get_library man)

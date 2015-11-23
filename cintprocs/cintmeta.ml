@@ -28,14 +28,14 @@ module TGraph  = Cintfarkaspolo.TGraph
 open CTRSObl
 open CTRS
 
-module KnowledgeProc = KnowledgePropagationProc.Make(CTRSObl)
-module UnreachableProc = DeleteUnreachableProc.Make(CTRSObl)
-module UnsatProc = DeleteUnsatProc.Make(CTRSObl)
-module ChainProc = ComplexityChainProc.Make(CTRSObl)
-module SlicingProc = SlicingProc.Make(CTRSObl)
+module KnowledgeProc = KnowledgePropagationProc.Make(RVG)
+module UnreachableProc = DeleteUnreachableProc.Make(RVG)
+module UnsatProc = DeleteUnsatProc.Make(RVG)
+module ChainProc = ComplexityChainProc.Make(RVG)
+module SlicingProc = SlicingProc.Make(RVG)
 
 IFDEF HAVE_APRON THEN
-module ApronInvariantsProc = ApronInvariantsProcessor.Make(CTRSObl)
+module ApronInvariantsProc = ApronInvariantsProcessor.MakeKoatProc(RVG)
 END
 
 let i = ref 1
@@ -44,7 +44,7 @@ let output_nums = ref []
 let input_nums = ref []
 let did_ai = ref false
 let todo = ref (CTRSObl.getInitialObl [] "" Complexity.Time,
-                (Tgraph.G.empty, Array.of_list []), None, 0)
+                TGraph.empty (), None, 0)
 
 let rec check trs =
   if trs = [] then
@@ -200,7 +200,7 @@ END
 and doApronInvariants () =
   did_ai := true;
 IFDEF HAVE_APRON THEN
-  run ApronInvariantsProc.process_koat
+  run ApronInvariantsProc.process
 ELSE
   ()
 END

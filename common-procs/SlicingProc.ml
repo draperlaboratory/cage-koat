@@ -20,9 +20,11 @@
 
 open AbstractRule
 
-module Make (CTRSObl : Ctrsobl.S) = struct
-  module VarMap = Map.Make(String)
+module Make (RVG : Rvgraph.S) = struct
+  module TGraph = RVG.TGraph
+  module CTRSObl = TGraph.CTRSObl
   module CTRS = CTRSObl.CTRS
+  module VarMap = Map.Make(String)
   open CTRSObl
   open CTRS
 

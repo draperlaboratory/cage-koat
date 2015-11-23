@@ -18,13 +18,15 @@
   limitations under the License.
 *)
 
-module RVG = Rvgraph.Make(Comrule)
-module CTRS = Ctrs.Make(Comrule)
+module RuleT = Comrule
+module CTRS = Ctrs.Make(RuleT)
 module CTRSObl = Ctrsobl.Make(CTRS)
-module GSC = GlobalSizeComplexity.Make(CTRSObl)
+module TGraph = Tgraph.Make(CTRSObl)
+module RVG = Rvgraph.Make(TGraph)
+module GSC = GlobalSizeComplexity.Make(RVG)
 module LSC = GSC.LSC
-module TGraph = Tgraph.Make(Comrule)
-
+module VarMap = Poly.VarMap
+	       
 open CTRSObl
 open CTRS
 

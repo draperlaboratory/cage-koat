@@ -18,30 +18,26 @@
   limitations under the License.
 *)
 
-module RuleT = Rule
-module CTRS = Cleaf.CTRS
-module CTRSObl = Cleaf.CTRSObl
-module RVG = Rvgraph.Make(Rule)
-module LSC = LocalSizeComplexity.Make(Rule)
-module GSC = Cseparate.GSC
-module TGraph = Tgraph.Make(Rule)
+module RuleT = Cfarkaspolo.RuleT
+module CTRS = Cfarkaspolo.CTRS
+module CTRSObl = Cfarkaspolo.CTRSObl
+module TGraph = Cfarkaspolo.TGraph
+module RVG = Cfarkaspolo.RVG
+module GSC = Cfarkaspolo.GSC
+module LSC = Cfarkaspolo.LSC
 
 open CTRSObl
 open CTRS
 
 module FMap = Annot.FMap
-module KnowledgeProc = KnowledgePropagationProc.Make(CTRSObl)
-module UnreachableProc = DeleteUnreachableProc.Make(CTRSObl)
-module UnsatProc = DeleteUnsatProc.Make(CTRSObl)
-module ChainProc = ComplexityChainProc.Make(CTRSObl)
-module SlicingProc = SlicingProc.Make(CTRSObl)
-
-
-type tgraph = Tgraph.G.t * (Tgraph.G.vertex * Cseparate.TGraph.r) array
-type rvgraph = (Tgraph.G.t * (Tgraph.G.vertex * GSC.trans_data) array) option
+module KnowledgeProc = KnowledgePropagationProc.Make(RVG)
+module UnreachableProc = DeleteUnreachableProc.Make(RVG)
+module UnsatProc = DeleteUnsatProc.Make(RVG)
+module ChainProc = ComplexityChainProc.Make(RVG)
+module SlicingProc = SlicingProc.Make(RVG)
 
 IFDEF HAVE_APRON THEN
-module ApronInvariantsProc = ApronInvariantsProcessor.Make(CTRSObl)
+module ApronInvariantsProc = ApronInvariantsProcessor.MakeKoatProc(RVG)
 END
 
 let sep = 10000
@@ -53,7 +49,7 @@ let output_nums = ref []
 let input_nums = ref []
 let did_ai = ref false
 let todo = ref (CTRSObl.getInitialObl [] "" Complexity.Time,
-                (Tgraph.G.empty, Array.of_list []), None, 0)
+                TGraph.empty (), None, 0)
 
 let rec check trs =
   if trs = [] then
@@ -240,7 +236,7 @@ and doLoop () =
 and doApronInvariants () =
   did_ai := true;
 IFDEF HAVE_APRON THEN
-  run ApronInvariantsProc.process_koat
+  run ApronInvariantsProc.process
 ELSE
   ()
 END

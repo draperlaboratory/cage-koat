@@ -1,6 +1,6 @@
-module Make(CTRSObl : Ctrsobl.S) :
+module Make(RVG : Rvgraph.S) :
 sig
 (*  val getProof : 'a -> CTRSObl.t -> string list -> int -> int -> string *)
-  val getProof : CTRSObl.t -> CTRSObl.t -> string list -> int -> int -> string
-  val process : CTRSObl.t -> (CTRSObl.t * (int -> int -> string)) option
+  val getProof : RVG.TGraph.CTRSObl.t -> RVG.TGraph.CTRSObl.t -> string list -> int -> int -> string
+  val process : RVG.TGraph.CTRSObl.t -> (RVG.TGraph.CTRSObl.t * (int -> int -> string)) option
 end

@@ -43,12 +43,15 @@ end
 
 module G = Tgraph.G
 
-module Make (RuleT : AbstractRule) = struct
+module Make (TGraph : Tgraph.S) = struct
+  module TGraph = TGraph
+  module CTRS = TGraph.CTRSObl.CTRS
+  module RuleT = CTRS.RuleT
   module SCC = Graph.Components.Make(G)
   module Topo = Graph.Topological.Make(G)
   module LSC = LocalSizeComplexity.Make(RuleT)
-  module CTRS = Ctrs.Make(RuleT)
-  module TGraph = Tgraph.Make(RuleT)
+  type rule = RuleT.rule
+  type rvg = Tgraph.G.t * (Tgraph.G.vertex * (rule * LocalSizeComplexity.local_size_data)) array
 
   module RV = RV.Make(RuleT)
 
@@ -82,115 +85,117 @@ module Make (RuleT : AbstractRule) = struct
       done;
       String.concat "\n" !accu
 
+  exception Found of int
+  let getNum rva rv =
+    let tmp1 = fst rv
+    and tmp2 = snd rv in
+    try
+      for i = 0 to (Array.length rva) - 1 do
+	if (rv == (snd rva.(i))) then
+	  raise (Found i)
+      done;
+      for i = 0 to (Array.length rva) - 1 do
+	if (LSC.equalLSC tmp2 (snd (snd rva.(i)))) && (RuleT.equal tmp1 (fst (snd rva.(i)))) then
+	  raise (Found i)
+      done;
+      failwith "Did not find rv!"
+    with
+    | Found i -> i					 
+		    
+  let create_graph len edges =
+    let res = ref G.empty in
+    for i = 0 to (len - 1) do
+      res := G.add_vertex !res i
+    done;
+    for i = 0 to (len - 1) do
+      for j = 0 to (len - 1) do
+        if edges.(i).(j) then
+          res := G.add_edge !res i j
+      done
+    done;
+    !res
+		    
   (* Compute rv graph *)
-  let rec compute rvs tgraph : Tgraph.G.t * (int * LSC.trans_data) array
-=
+  let rec compute rvs tgraph : Tgraph.G.t * (int * LSC.trans_data) array =
+    let compute_edges edges (rva : (int * LSC.trans_data) array) len tgraph =
+      for i = 0 to (len - 1) do
+	(* rva.(i) = (i, (rule, ((rhsIdx, argumentIdx), (LSC, activeVarIdxs)))) *)
+	let rule1 = fst (snd rva.(i)) in
+	let { LC.rhsIdx = rhsnum1; LC.varIdx = argnum1} = fst (snd (snd rva.(i))) in
+	for j = 0 to (len - 1) do
+          let rule2 = fst (snd rva.(j)) in
+          let activeVars2 = (snd (snd (snd rva.(j)))).LC.active_vars in
+          if (TGraph.hasEdge tgraph rule1 rule2) && (Utils.contains activeVars2 argnum1) then (* rule1 \in pre(rule2), argnum1 \in activeVars(S_l(rule2, var2)) *)
+            edges.(i).(j) <- true;
+	done
+      done in
+      
     let len = List.length rvs in
       let rva = Array.init len (fun i -> (i, List.nth rvs i))
       and edges = Array.make_matrix len len false in
         compute_edges edges rva len tgraph;
         (create_graph len edges, rva)
-  and compute_edges edges (rva : (int * LSC.trans_data) array) len tgraph =
-    for i = 0 to (len - 1) do
-      (* rva.(i) = (i, (rule, ((rhsIdx, argumentIdx), (LSC, activeVarIdxs)))) *)
-      let rule1 = fst (snd rva.(i)) in
-      let { LC.rhsIdx = rhsnum1; LC.varIdx = argnum1} = fst (snd (snd rva.(i))) in
-      for j = 0 to (len - 1) do
-        let rule2 = fst (snd rva.(j)) in
-        let activeVars2 = (snd (snd (snd rva.(j)))).LC.active_vars in
-        if (TGraph.hasEdge tgraph rule1 rule2) && (Utils.contains activeVars2 argnum1) then (* rule1 \in pre(rule2), argnum1 \in activeVars(S_l(rule2, var2)) *)
-          edges.(i).(j) <- true;
-      done
-    done
-  and create_graph len edges =
-    let res = ref G.empty in
-      for i = 0 to (len - 1) do
-        res := G.add_vertex !res i
-      done;
-      for i = 0 to (len - 1) do
-        for j = 0 to (len - 1) do
-          if edges.(i).(j) then
-            res := G.add_edge !res i j
-        done
-      done;
-      !res
-
-  exception Found of int
 
   (* determine whether there is an edge *)
   let rec hasEdge (g, rva) rv1 rv2 =
     let rv1num = getNum rva rv1
     and rv2num = getNum rva rv2 in
       G.mem_edge g (fst rva.(rv1num)) (fst rva.(rv2num))
-  and getNum rva rv =
-    let tmp1 = fst rv
-    and tmp2 = snd rv in
-      try
-        for i = 0 to (Array.length rva) - 1 do
-          if (rv == (snd rva.(i))) then
-            raise (Found i)
-        done;
-        for i = 0 to (Array.length rva) - 1 do
-          if (LSC.equalLSC tmp2 (snd (snd rva.(i)))) && (RuleT.equal tmp1 (fst (snd rva.(i)))) then
-            raise (Found i)
-        done;
-        failwith "Did not find rv!"
-      with
-        | Found i -> i
-
+		 
+  let getNums rva rvs =
+    let res = ref [] in
+    for i = 0 to (Array.length rva) - 1 do
+      let tmp = snd rva.(i) in
+      if (List.exists (fun rv' -> (LSC.equalLSC (snd rv') (snd tmp)) && (RuleT.equal (fst rv') (fst tmp))) rvs) then
+        res := i::!res
+    done;
+    !res
+		 
   (* compute predecessors of rvs *)
   let rec getPreds (g, rva) rvs =
-    let preds = ref []
-    and rvsnums = ref (getNums rva rvs) in
-      computePreds g rva (Array.length rva) rvsnums preds;
-      getRvs rva (Utils.remdup !preds)
-  and computePreds g rva len rvsnums preds =
-    for i = 0 to (len - 1) do
-      if (isIn rvsnums i) then
-        for j = 0 to (len - 1) do
-          if (hasEdgeNums g rva j i) then
-            preds := j::!preds
-        done;
-    done
-  and getNums rva rvs =
-    let res = ref [] in
-      for i = 0 to (Array.length rva) - 1 do
-        let tmp = snd rva.(i) in
-        if (List.exists (fun rv' -> (LSC.equalLSC (snd rv') (snd tmp)) && (RuleT.equal (fst rv') (fst tmp))) rvs) then
-          res := i::!res
-      done;
-      !res
-  and isIn listref j =
-    Utils.contains !listref j
-  and hasEdgeNums g rva i j =
-    G.mem_edge g (fst rva.(i)) (fst rva.(j))
-  and getRvs rva nums =
-    List.map (fun i -> (snd rva.(i))) nums
+    let getRvs rva nums =
+      List.map (fun i -> (snd rva.(i))) nums in
+    let computePreds g rva len rvsnums preds =
+      let hasEdgeNums g rva i j =
+	G.mem_edge g (fst rva.(i)) (fst rva.(j)) in
+      for i = 0 to (len - 1) do
+	if (Utils.contains !rvsnums i) then
+          for j = 0 to (len - 1) do
+            if (hasEdgeNums g rva j i) then
+              preds := j::!preds
+          done;
+      done in
+    let rvsnums = ref (getNums rva rvs) in
+    let preds = ref [] in
+    computePreds g rva (Array.length rva) rvsnums preds;
+    getRvs rva (Utils.remdup !preds)
 
+  let rec removeFromGraph g toRemove =
+    match toRemove with
+    | [] -> g
+    | i::more -> removeFromGraph (G.remove_vertex g i) more
+
+  let removeFromArray rva badnums =
+    let res = ref [] in
+    for i = 0 to (Array.length rva) - 1 do
+      if not (Utils.contains badnums i) then
+        res := (rva.(i))::!res
+    done;
+    Array.of_list (List.rev !res)
+				 
   (* remove nodes *)
   let rec removeNodes (g, rva) rules =
-    let bad = getPairs rva rules in
-      (removeFromGraph g (List.map snd bad), removeFromArray rva (List.map fst bad))
-  and removeFromGraph g toRemove =
-    match toRemove with
-      | [] -> g
-      | i::more -> removeFromGraph (G.remove_vertex g i) more
-  and removeFromArray rva badnums =
-    let res = ref [] in
-      for i = 0 to (Array.length rva) - 1 do
-        if not (Utils.contains badnums i) then
-          res := (rva.(i))::!res
-      done;
-      Array.of_list (List.rev !res)
-  and getPairs rva rules =
-    let res = ref [] in
+    let getPairs rva rules =
+      let res = ref [] in
       for i = 0 to (Array.length rva) - 1 do
         let entry = rva.(i) in
         let rule = fst (snd entry) in
-          if (List.exists (fun rule' -> RuleT.equal rule rule') rules) then
-            res := (i, fst entry)::!res
+        if (List.exists (fun rule' -> RuleT.equal rule rule') rules) then
+          res := (i, fst entry)::!res
       done;
-      !res
+      !res in
+    let bad = getPairs rva rules in
+    (removeFromGraph g (List.map snd bad), removeFromArray rva (List.map fst bad))
 
   (* add nodes *)
   let rec addNodes (g, rva) (ruleWithLSCs : LSC.tds) tgraph =
@@ -283,41 +288,43 @@ module Make (RuleT : AbstractRule) = struct
 
   (* condense *)
   let rec condense rvgraph =
-    let sccs = getSccs rvgraph in
-      let len = List.length sccs in
-        let nodesa = Array.init len (fun i -> (i, (List.nth sccs i, isTrivial (List.nth sccs i) rvgraph)))
-        and edges = Array.make_matrix len len false in
-          compute_condensed_edges edges nodesa len rvgraph;
-          (create_graph len edges, nodesa)
-  and compute_condensed_edges edges nodesa len rvgraph =
-    for i = 0 to (len - 1) do
-      for j = 0 to (len - 1) do
-        if (i <> j) && hasSccEdge nodesa.(i) nodesa.(j) rvgraph then
-          edges.(i).(j) <- true
-      done
-    done
-  and hasSccEdge scc1 scc2 rvgraph =
-    let scc1rvs = fst (snd scc1)
-    and scc2rvs = fst (snd scc2) in
-      let len1 = List.length scc1rvs
-      and len2 = List.length scc2rvs in
-        try
+    let compute_condensed_edges edges nodesa len =
+      let hasSccEdge scc1 scc2 =
+	let scc1rvs = fst (snd scc1)
+	and scc2rvs = fst (snd scc2) in
+	let len1 = List.length scc1rvs
+	and len2 = List.length scc2rvs in
+	try
           for i = 0 to (len1 - 1) do
             let first = List.nth scc1rvs i in
-              for j = 0 to (len2 - 1) do
-                if (hasEdge rvgraph first (List.nth scc2rvs j)) then
-                  raise (Found 0)
-              done
+            for j = 0 to (len2 - 1) do
+              if (hasEdge rvgraph first (List.nth scc2rvs j)) then
+		raise (Found 0)
+            done
           done;
           false
-        with
-          | Found _ -> true
-  and isTrivial scc rvgraph =
-    let len = List.length scc in
-      len = 1 && (let rv = List.nth scc 0 in not (hasEdge rvgraph rv rv))
-  and equalSccs scc1 scc2 =
-    scc1 == scc2 || ((List.length scc1) = (List.length scc2) && (List.for_all2 (fun (r1, lsc1) (r2, lsc2) -> (LSC.equalLSC lsc1 lsc2) && (RuleT.equal r1 r2)) scc1 scc2))
+	with
+	| Found _ -> true in
+      for i = 0 to (len - 1) do
+	for j = 0 to (len - 1) do
+          if (i <> j) && hasSccEdge nodesa.(i) nodesa.(j) then
+            edges.(i).(j) <- true
+	done
+      done in
+    let isTrivial scc =
+      let len = List.length scc in
+      len = 1 && (let rv = List.nth scc 0 in not (hasEdge rvgraph rv rv)) in
 
+    let sccs = getSccs rvgraph in
+    let len = List.length sccs in
+    let nodesa = Array.init len (fun i -> (i, (List.nth sccs i, isTrivial (List.nth sccs i))))
+    and edges = Array.make_matrix len len false in
+    compute_condensed_edges edges nodesa len;
+    (create_graph len edges, nodesa)
+
+  let equalSccs scc1 scc2 =
+    scc1 == scc2 || ((List.length scc1) = (List.length scc2) && (List.for_all2 (fun (r1, lsc1) (r2, lsc2) -> (LSC.equalLSC lsc1 lsc2) && (RuleT.equal r1 r2)) scc1 scc2))
+	    
   (* return nodes in topological order *)
   let rec getNodesInTopologicalOrder (g, nodesa) =
     let revtopo = Topo.fold (fun x l -> x::l) g [] in
@@ -355,29 +362,34 @@ module Make (RuleT : AbstractRule) = struct
         done
       done;
       String.concat "\n" !accu
-
-  and getCondensedPreds (g, nodesa) somenodes =
-    let preds = ref []
-    and somenums = ref (getCondensedNums nodesa somenodes) in
-      computeCondensedPreds g nodesa (Array.length nodesa) somenums preds;
-      getSccsNums nodesa (Utils.remdup !preds)
-  and getCondensedNums nodesa somenodes =
-    let res = ref [] in
-      for i = 0 to (Array.length nodesa) - 1 do
-        if (List.exists (equalSccs (fst (snd nodesa.(i)))) somenodes) then
-          res := i::!res
-      done;
-      !res
-  and computeCondensedPreds g nodesa len nodesnums preds =
-    for i = 0 to (len - 1) do
-      if (isIn nodesnums i) then
-        for j = 0 to (len - 1) do
-          if (hasCondensedEdgeNums g nodesa j i) then
-            preds := j::!preds
-        done;
-    done
-  and hasCondensedEdgeNums g nodesa i j =
-    G.mem_edge g (fst nodesa.(i)) (fst nodesa.(j))
-  and getSccsNums nodesa nums =
-    List.map (fun i -> (fst (snd nodesa.(i)))) nums
 end
+
+module type S =
+    sig
+      module TGraph : Tgraph.S
+      module LSC : LocalSizeComplexity.S with module RuleT = TGraph.CTRSObl.CTRS.RuleT
+      module CTRS : Ctrs.S
+      type rvg = Tgraph.G.t * (Tgraph.G.vertex * (TGraph.CTRSObl.CTRS.RuleT.rule * LocalSizeComplexity.local_size_data)) array
+      type rule = TGraph.CTRSObl.CTRS.RuleT.rule
+
+      val toDot : Tgraph.G.t * (Tgraph.G.vertex * LSC.trans_data) array -> string
+      val getNodes : (Tgraph.G.vertex * LSC.trans_data) array -> string
+      val getEdges : Tgraph.G.t -> (Tgraph.G.vertex * LSC.trans_data) array -> string
+      val compute :
+        (rule * LocalSizeComplexity.local_size_data) list -> TGraph.tgraph -> rvg
+      exception Found of int
+      val hasEdge :
+        rvg -> rule * LocalSizeComplexity.local_size_data -> rule * LocalSizeComplexity.local_size_data -> bool
+      val getPreds :
+        rvg -> (rule * LocalSizeComplexity.local_size_data) list -> (rule * LocalSizeComplexity.local_size_data) list
+      val removeNodes : rvg -> rule list -> rvg
+      val addNodes : rvg -> LSC.tds -> TGraph.tgraph -> rvg
+      val updateOptionRVGraph :
+	rvg option -> rule list -> rule list -> TGraph.tgraph -> rvg option
+      val keepNodes : rvg -> rule list -> rvg
+      val condense :
+	rvg -> Tgraph.G.t * (Tgraph.G.vertex * ((rule * LocalSizeComplexity.local_size_data) list * bool)) array
+      val equalSccs :
+        (rule * LocalSizeComplexity.local_size_data) list -> (rule * LocalSizeComplexity.local_size_data) list -> bool
+      val getNodesInTopologicalOrder : Tgraph.G.t * (Tgraph.G.V.t * 'a) array -> 'a list
+    end

@@ -18,12 +18,15 @@
   limitations under the License.
 *)
 
-module LSC = LocalSizeComplexity.Make(Rule)
-module TGraph = Tgraph.Make(Rule)
-module CTRS = Ctrs.Make(Rule)
+module RuleT = Rule
+module CTRS = Ctrs.Make(RuleT)
 module CTRSObl = Ctrsobl.Make(CTRS)
-module GSC = GlobalSizeComplexity.Make(CTRSObl)
+module TGraph = Tgraph.Make(CTRSObl)
+module RVG = Rvgraph.Make(TGraph)
+module GSC = GlobalSizeComplexity.Make(RVG)
+module LSC = GSC.LSC
 module VarMap = Poly.VarMap
+
 open CTRSObl
 open CTRS
 

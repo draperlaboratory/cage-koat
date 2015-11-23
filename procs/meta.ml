@@ -25,7 +25,7 @@ let input_nums = ref []
 let todo = ref []
 
 IFDEF HAVE_APRON THEN
-module ApronInvariantsProc = ApronInvariantsProcessor.Make(Cleaf.CTRSObl)
+module ApronInvariantsProc = ApronInvariantsProcessor.MakeKittelProc(Rule)
 
 let setInitialProblem trs startFuns =
   (* If we have start function symbols, we can generate invariants as first step (it becomes unsound the second we start manipulating the TRS!) *)
@@ -33,7 +33,7 @@ let setInitialProblem trs startFuns =
   | None ->
     todo := [((trs, Termgraph.compute trs, false), 1)]
   | Some startFuns ->
-    match ApronInvariantsProc.process_kittel startFuns trs with
+    match ApronInvariantsProc.process startFuns trs with
     | None ->
       todo := [((trs, Termgraph.compute trs, false), 1)];
     | Some ((newTrs, tgraph, _), get_proof) ->

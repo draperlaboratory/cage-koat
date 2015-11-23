@@ -30,34 +30,36 @@ end
 module G = Graph.Persistent.Digraph.Concrete(Int)
 exception Found of int
 
-module Make (RuleT : AbstractRule) = struct
-
+module Make(CTRSObl : Ctrsobl.S) = struct
+  module CTRSObl = CTRSObl
+  module RuleT = CTRSObl.CTRS.RuleT
   module SCC = Graph.Components.Make(G)
 
   type r = RuleT.rule
+  type tgraph = G.t * (G.vertex * r) array
 
-  let rec toDot (g, trsa) =
+  let rec toDot tgraph =
     "digraph kittel {\n" ^
-    (getNodes trsa) ^
+    (getNodes tgraph) ^
     "\n" ^
-    (getEdges g trsa) ^
+    (getEdges tgraph) ^
     "\n\n}\n"
-  and getNodes trsa =
+  and getNodes (_, trsa) =
     let res = ref "" in
       for i = 0 to (Array.length trsa - 1) do
         res := !res ^ "\n  \"" ^ (RuleT.toDotString (snd trsa.(i))) ^ "\""
       done;
       !res
-  and getEdges g trsa =
+  and getEdges (g, trsa) =
     let len = Array.length trsa
     and accu = ref [] in
-      for i = 0 to (len - 1) do
-        for j = 0 to (len - 1) do
-          if G.mem_edge g (fst trsa.(i)) (fst trsa.(j)) then
-            accu := !accu @ ["  \"" ^ (RuleT.toDotString (snd trsa.(i))) ^ "\" -> \"" ^ (RuleT.toDotString (snd trsa.(j))) ^ "\""]
-        done
-      done;
-      String.concat "\n" !accu
+    for i = 0 to (len - 1) do
+      for j = 0 to (len - 1) do
+        if G.mem_edge g (fst trsa.(i)) (fst trsa.(j)) then
+          accu := !accu @ ["  \"" ^ (RuleT.toDotString (snd trsa.(i))) ^ "\" -> \"" ^ (RuleT.toDotString (snd trsa.(j))) ^ "\""]
+      done
+    done;
+    String.concat "\n" !accu
 
   (* Compute termination graph of trs *)
   let rec compute trs =
@@ -140,9 +142,9 @@ module Make (RuleT : AbstractRule) = struct
   and computeReachableAuxStep g trsa len frontier reachable =
     let new_frontier = ref [] in
       for i = 0 to (len - 1) do
-        if (isIn frontier i) then
+        if (Utils.contains !frontier i) then
           for j = 0 to (len - 1) do
-            if hasEdgeNums g trsa i j && not (isIn reachable j) then
+            if hasEdgeNums g trsa i j && not (Utils.contains !reachable j) then
             (
               reachable := j::!reachable;
               new_frontier := j::!new_frontier
@@ -156,8 +158,6 @@ module Make (RuleT : AbstractRule) = struct
         frontier := !new_frontier;
         true
       )
-  and isIn listref j =
-    Utils.contains !listref j
   and getNums trsa rules =
     let res = ref [] in
       for i = 0 to (Array.length trsa) - 1 do
@@ -225,38 +225,21 @@ module Make (RuleT : AbstractRule) = struct
 
   (* add nodes *)
   let rec addNodes (g, trsa) rules =
-    let maxx = getMaxNum trsa in
-      let news = getNewPairs rules (maxx + 1) in
-        let (g', trsa') = (addToGraph g (List.map fst news), addToArray trsa news) in
-          let res = (addNeededEdges g' trsa' news, trsa') in
-            res
-  and getMaxNum trsa =
-    let res = ref 0 in
-      for i = 0 to (Array.length trsa - 1) do
-        let entry = trsa.(i) in
-          if (fst entry) > !res then
-            res := fst entry
-      done;
-      !res
-  and getNewPairs rules j =
-    match rules with
+    let rec getNewPairs rules j =
+      match rules with
       | [] -> []
-      | rule::more -> (j, rule)::(getNewPairs more (j + 1))
-  and addToGraph g nums =
-    match nums with
+      | rule::more -> (j, rule)::(getNewPairs more (j + 1)) in
+    let rec addToGraph g nums =
+      match nums with
       | [] -> g
-      | i::more -> addToGraph (G.add_vertex g i) more
-  and addNeededEdges g trsa news =
-    match news with
-      | [] -> g
-      | irule::more -> addNeededEdges (addNeededEdgesOne g trsa irule) trsa more
-  and addNeededEdgesOne g trsa (i, rule) =
-    let res = ref g in
+      | i::more -> addToGraph (G.add_vertex g i) more in
+    let addNeededEdgesOne g trsa (i, rule) =
+      let res = ref g in
       if connectable rule rule then
         res := G.add_edge !res i i;
       for j = 0 to (Array.length trsa - 1) do
         let entry = trsa.(j) in
-          if i <> (fst entry) then
+        if i <> (fst entry) then
           (
             if connectable rule (snd entry) then
               res := G.add_edge !res i (fst entry);
@@ -264,10 +247,20 @@ module Make (RuleT : AbstractRule) = struct
               res := G.add_edge !res (fst entry) i
           )
       done;
-      !res
-  and addToArray trsa news =
-    let trsa' = Array.init (List.length news) (fun i -> List.nth news i) in
-      Array.append trsa trsa'
+      !res in
+    let rec addNeededEdges g trsa news =
+      match news with
+      | [] -> g
+      | irule::more -> addNeededEdges (addNeededEdgesOne g trsa irule) trsa more in
+    let addToArray trsa news =
+      let trsa' = Array.init (List.length news) (fun i -> List.nth news i) in
+      Array.append trsa trsa' in
+    
+    let maxUsedRuleIdx = Array.fold_left (fun m value -> max m (fst value)) 0 trsa in
+    let news = getNewPairs rules (maxUsedRuleIdx + 1) in
+    let (g', trsa') = (addToGraph g (List.map fst news), addToArray trsa news) in
+    let res = (addNeededEdges g' trsa' news, trsa') in
+    res
 
   (* only keep certain nodes *)
   let rec keepNodes (g, trsa) rules =
@@ -291,7 +284,7 @@ module Make (RuleT : AbstractRule) = struct
       getRules trsa (Utils.remdup !preds)
   and computePreds g trsa len rulesnums preds =
     for i = 0 to (len - 1) do
-      if (isIn rulesnums i) then
+      if (Utils.contains !rulesnums i) then
         for j = 0 to (len - 1) do
           if (hasEdgeNums g trsa j i) then
             preds := j::!preds
@@ -306,7 +299,7 @@ module Make (RuleT : AbstractRule) = struct
       getRules trsa (Utils.remdup !succs)
   and computeSuccs g trsa len rulesnums succs =
     for i = 0 to (len - 1) do
-      if (isIn rulesnums i) then
+      if (Utils.contains !rulesnums i) then
         for j = 0 to (len - 1) do
           if (hasEdgeNums g trsa i j) then
             succs := j::!succs
@@ -343,10 +336,10 @@ module Make (RuleT : AbstractRule) = struct
   and computeLeavesAuxStep g trsa len leaves =
     let res = ref false in
       for i = 0 to (len - 1) do
-        if not (isIn leaves i) then
+        if not (Utils.contains !leaves i) then
           let goodrow = ref true in
             for j = 0 to (len - 1) do
-              if hasEdgeNums g trsa i j && not (isIn leaves j) then
+              if hasEdgeNums g trsa i j && not (Utils.contains !leaves j) then
                 goodrow := false
             done;
             if !goodrow then
@@ -356,110 +349,30 @@ module Make (RuleT : AbstractRule) = struct
             )
       done;
       !res
+
+  let empty () = (G.empty, Array.of_list [])
 end
 
 module type S =
     sig
-      type r
-
-      val toDot : G.t * (G.vertex * r) array -> string
-      val getNodes : (G.vertex * r) array -> string
-      val getEdges : G.t -> (G.vertex * r) array -> string
-      val compute : r list -> G.t * (int * r) array
-      val compute_edges :
-        bool array array -> (int * r) array -> int -> unit
-      val create_graph : int -> bool array array -> G.t
+      module CTRSObl : Ctrsobl.S 
+      type r = CTRSObl.CTRS.RuleT.rule
+      type tgraph
+      val toDot : tgraph -> string
+      val compute : r list -> tgraph
       val connectable : r -> r -> bool
-      val connectableOne :
-        Term.term -> Pc.cond -> Pc.cond -> Term.term -> bool
-      val getSubstitution :
-        Poly.poly list -> Poly.poly list -> (Poly.var * Poly.poly) list
-      val getSubstitutionAux :
-        Poly.poly list ->
-        Poly.poly list ->
-        (Poly.var * Poly.poly) list -> (Poly.var * Poly.poly) list
-      val getNontrivialSccs : G.t * (G.V.t * 'a) array -> 'a list list
-      val nontrivial : G.t -> G.V.t list -> bool
-      val getTrsScc : (G.V.t * 'a) array -> G.V.t list -> 'a list
-      val hasEdgeNums : G.t -> (G.vertex * 'a) array -> int -> int -> bool
-      val computeReachable :
-        G.t * (G.vertex * r) array ->
-        r list -> r list
-      val computeReachableAux :
-        G.t ->
-        (G.vertex * r) array ->
-        int -> int list ref -> int list ref -> unit
-      val computeReachableAuxStep :
-        G.t ->
-        (G.vertex * r) array ->
-        int -> int list ref -> int list ref -> bool
-      val isIn : int list ref -> int -> bool
-      val getNums :
-        (G.vertex * r) array -> r list -> int list
-      val getRules :
-        (G.vertex * r) array -> int list -> r list
-      val computeSubsumed :
-        G.t * (G.vertex * r) array ->
-        r list -> r list -> r list
-      val computeSubsumedAux :
-        int list ->
-        int list ->
-        G.t -> (G.vertex * r) array -> int -> int list ref -> unit
-      val computeSubsumedAuxStep :
-        int list ->
-        int list ->
-        G.t -> (G.vertex * r) array -> int -> int list ref -> bool
-      val isK : int list -> int list ref -> int -> bool
-      val removeNodes :
-        G.t * (G.vertex * r) array ->
-        r list -> G.t * (G.vertex * r) array
-      val removeFromGraph : G.t -> G.vertex list -> G.t
-      val removeFromArray :
-        (G.vertex * r) array ->
-        int list -> (G.vertex * r) array
-      val getPairs :
-        (G.vertex * r) array ->
-        r list -> (int * G.vertex) list
-      val addNodes :
-        G.t * (G.vertex * r) array ->
-        r list -> G.t * (G.vertex * r) array
-      val getMaxNum : (G.vertex * r) array -> G.vertex
-      val getNewPairs :
-        r list -> G.vertex -> (G.vertex * r) list
-      val addToGraph : G.t -> G.vertex list -> G.t
-      val addNeededEdges :
-        G.t ->
-        (G.vertex * r) array -> (G.vertex * r) list -> G.t
-      val addNeededEdgesOne :
-        G.t -> (G.vertex * r) array -> G.vertex * r -> G.t
-      val addToArray :
-        (G.vertex * r) array ->
-        (G.vertex * r) list -> (G.vertex * r) array
-      val keepNodes :
-        G.t * (G.vertex * r) array ->
-        r list -> G.t * (G.vertex * r) array
-      val getComplementPairs :
-        (G.vertex * r) array ->
-        r list -> (int * G.vertex) list
-      val getPreds :
-        G.t * (G.vertex * r) array ->
-        r list -> r list
-      val computePreds :
-        G.t ->
-        (G.vertex * r) array ->
-        int -> int list ref -> int list ref -> unit
-      val getSuccs :
-        G.t * (G.vertex * r) array ->
-        r list -> r list
-      val computeSuccs :
-        G.t ->
-        (G.vertex * r) array ->
-        int -> int list ref -> int list ref -> unit
+      val connectableOne : Term.term -> Pc.cond -> Pc.cond -> Term.term -> bool
+      val getSubstitution : Poly.poly list -> Poly.poly list -> (Poly.var * Poly.poly) list
+      val getNontrivialSccs : tgraph -> r list list
+      val computeReachable : tgraph -> r list -> r list
+      val computeSubsumed : tgraph -> r list -> r list -> r list
+      val removeNodes : tgraph -> r list -> tgraph
+      val addNodes : tgraph -> r list -> tgraph
+      val keepNodes : tgraph -> r list -> tgraph
+      val getPreds : tgraph -> r list -> r list
+      val getSuccs : tgraph -> r list -> r list
       exception Found of int
-      val hasEdge :
-        G.t * (G.vertex * r) array ->
-        r -> r -> bool
-      val getNum : (G.vertex * r) array -> r -> int
-      val computeRulesInTwigs :
-        G.t * (G.vertex * r) array -> r list
+      val hasEdge : tgraph -> r -> r -> bool
+      val computeRulesInTwigs : tgraph -> r list
+      val empty : unit -> tgraph
     end

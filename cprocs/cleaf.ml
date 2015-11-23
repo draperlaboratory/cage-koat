@@ -18,12 +18,10 @@
   limitations under the License.
 *)
 
-
-
 module CTRS = Cfarkaspolo.CTRS
 module CTRSObl = Cfarkaspolo.CTRSObl
-module RVG = Rvgraph.Make(Rule)
-module TGraph = Tgraph.Make(Rule)
+module TGraph = Cfarkaspolo.TGraph
+module RVG = Cfarkaspolo.RVG
 
 open CTRSObl
 open CTRS

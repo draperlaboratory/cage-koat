@@ -18,12 +18,13 @@
   limitations under the License.
 *)
 
-module RVG = Rvgraph.Make(Rule)
-module LSC = LocalSizeComplexity.Make(Rule)
-module CTRS = Cleaf.CTRS
-module CTRSObl = Cleaf.CTRSObl
-module GSC = GlobalSizeComplexity.Make(CTRSObl)
-module TGraph = Tgraph.Make(Rule)
+module RuleT = Cfarkaspolo.RuleT
+module CTRS = Cfarkaspolo.CTRS
+module CTRSObl = Cfarkaspolo.CTRSObl
+module TGraph = Cfarkaspolo.TGraph
+module RVG = Cfarkaspolo.RVG
+module GSC = Cfarkaspolo.GSC
+module LSC = Cfarkaspolo.LSC
 
 open CTRSObl
 open CTRS
