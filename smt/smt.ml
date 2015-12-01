@@ -29,12 +29,15 @@ open Z3.Arithmetic
 open Z3.Arithmetic.Integer
 
 let z3_ctx =
+  if not(Z3.Version.major < 4 && Z3.Version.minor < 3 && Z3.Version.build < 2) then
+    Z3.set_global_param "model_evaluator.completion" "true";
   let z3_cfg = [("model", "true"); ("proof", "false")] in
   ref (mk_context z3_cfg)
 
 let z3_params =
   let params = Params.mk_params !z3_ctx in
-  Params.add_bool params (Symbol.mk_string !z3_ctx "model_completion") true;
+  if Z3.Version.major < 4 && Z3.Version.minor < 3 && Z3.Version.build < 2 then
+    Params.add_bool params (Symbol.mk_string !z3_ctx "model_completion") true;
   params
 
 type solver = Yices | Z3 | Mathsat | CVC4 | Yices2 | Z3_Internal
