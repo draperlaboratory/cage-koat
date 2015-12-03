@@ -1,0 +1,35 @@
+MAYBE
+
+Initial complexity problem:
+1:	T:
+		(1, $!@)                     start(x, y) -> Com_1(g(x, 0))
+		(?, x^2)                     g(x, y) -> Com_1(f(x, y)) [ x = 0 ]
+		(?, 3*x + 2*y^2 + 17*$!@)    g(x, y) -> Com_1(g(x - 1, y + x)) [ x > 0 ]
+	start location:	start
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(start) = V_1
+	Pol(g) = V_1
+	Pol(f) = V_1 - 1
+orients all transitions weakly and the transition
+	g(x, y) -> Com_1(g(x - 1, y + x)) [ x > 0 ]
+strictly and produces the following problem:
+2:	T:
+		(1, $!@)                     start(x, y) -> Com_1(g(x, 0))
+		(?, x^2)                     g(x, y) -> Com_1(f(x, y)) [ x = 0 ]
+		(x, 3*x + 2*y^2 + 17*$!@)    g(x, y) -> Com_1(g(x - 1, y + x)) [ x > 0 ]
+	start location:	start
+	leaf cost:	0
+
+Repeatedly propagating knowledge in problem 2 produces the following problem:
+3:	T:
+		(1, $!@)                     start(x, y) -> Com_1(g(x, 0))
+		(x + 1, x^2)                 g(x, y) -> Com_1(f(x, y)) [ x = 0 ]
+		(x, 3*x + 2*y^2 + 17*$!@)    g(x, y) -> Com_1(g(x - 1, y + x)) [ x > 0 ]
+	start location:	start
+	leaf cost:	0
+
+Complexity upper bound ?
+
+Time: 0.536 sec (SMT: 0.529 sec)

@@ -1,0 +1,24 @@
+YES(?, n + j)
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    start(n, i, j) -> Com_1(bb2(n, i, j))
+		(?, 1)    bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ j < n /\ n >= 0 ]
+	start location:	start
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(start) = V_1 - V_3
+	Pol(bb2) = V_1 - V_3
+orients all transitions weakly and the transition
+	bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ j < n /\ n >= 0 ]
+strictly and produces the following problem:
+2:	T:
+		(1, 1)        start(n, i, j) -> Com_1(bb2(n, i, j))
+		(n + j, 1)    bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ j < n /\ n >= 0 ]
+	start location:	start
+	leaf cost:	0
+
+Complexity upper bound n + j
+
+Time: 0.130 sec (SMT: 0.128 sec)

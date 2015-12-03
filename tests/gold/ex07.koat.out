@@ -1,0 +1,28 @@
+YES(?, x^3)
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    f(x) -> Com_1(g(x^3))
+		(?, 1)    g(x) -> Com_1(g(x - 1)) [ x > 0 ]
+	start location:	f
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(g) = V_1
+and size complexities
+	S("g(x) -> Com_1(g(x - 1)) [ x > 0 ]", 0-0) = x^3
+	S("f(x) -> Com_1(g(x^3))", 0-0) = x^3
+orients the transitions
+	g(x) -> Com_1(g(x - 1)) [ x > 0 ]
+weakly and the transition
+	g(x) -> Com_1(g(x - 1)) [ x > 0 ]
+strictly and produces the following problem:
+2:	T:
+		(1, 1)      f(x) -> Com_1(g(x^3))
+		(x^3, 1)    g(x) -> Com_1(g(x - 1)) [ x > 0 ]
+	start location:	f
+	leaf cost:	0
+
+Complexity upper bound x^3
+
+Time: 0.170 sec (SMT: 0.167 sec)

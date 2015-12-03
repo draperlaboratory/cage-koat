@@ -1,0 +1,147 @@
+MAYBE
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    start(a, b) -> Com_1(cycle(a, b))
+		(?, 1)    cycle(a, b) -> Com_1(cycle(b, a))
+	start location:	start
+	leaf cost:	0
+
+By chaining the transition start(a, b) -> Com_1(cycle(a, b)) with all transitions in problem 1, the following new transition is obtained:
+	start(a, b) -> Com_1(cycle(b, a))
+We thus obtain the following problem:
+2:	T:
+		(1, 2)    start(a, b) -> Com_1(cycle(b, a))
+		(?, 1)    cycle(a, b) -> Com_1(cycle(b, a))
+	start location:	start
+	leaf cost:	0
+
+By chaining the transition start(a, b) -> Com_1(cycle(b, a)) with all transitions in problem 2, the following new transition is obtained:
+	start(a, b) -> Com_1(cycle(a, b))
+We thus obtain the following problem:
+3:	T:
+		(1, 3)    start(a, b) -> Com_1(cycle(a, b))
+		(?, 1)    cycle(a, b) -> Com_1(cycle(b, a))
+	start location:	start
+	leaf cost:	0
+
+By chaining the transition start(a, b) -> Com_1(cycle(a, b)) with all transitions in problem 3, the following new transition is obtained:
+	start(a, b) -> Com_1(cycle(b, a))
+We thus obtain the following problem:
+4:	T:
+		(1, 4)    start(a, b) -> Com_1(cycle(b, a))
+		(?, 1)    cycle(a, b) -> Com_1(cycle(b, a))
+	start location:	start
+	leaf cost:	0
+
+By chaining the transition start(a, b) -> Com_1(cycle(b, a)) with all transitions in problem 4, the following new transition is obtained:
+	start(a, b) -> Com_1(cycle(a, b))
+We thus obtain the following problem:
+5:	T:
+		(1, 5)    start(a, b) -> Com_1(cycle(a, b))
+		(?, 1)    cycle(a, b) -> Com_1(cycle(b, a))
+	start location:	start
+	leaf cost:	0
+
+By chaining the transition start(a, b) -> Com_1(cycle(a, b)) with all transitions in problem 5, the following new transition is obtained:
+	start(a, b) -> Com_1(cycle(b, a))
+We thus obtain the following problem:
+6:	T:
+		(1, 6)    start(a, b) -> Com_1(cycle(b, a))
+		(?, 1)    cycle(a, b) -> Com_1(cycle(b, a))
+	start location:	start
+	leaf cost:	0
+
+By chaining the transition start(a, b) -> Com_1(cycle(b, a)) with all transitions in problem 6, the following new transition is obtained:
+	start(a, b) -> Com_1(cycle(a, b))
+We thus obtain the following problem:
+7:	T:
+		(1, 7)    start(a, b) -> Com_1(cycle(a, b))
+		(?, 1)    cycle(a, b) -> Com_1(cycle(b, a))
+	start location:	start
+	leaf cost:	0
+
+By chaining the transition start(a, b) -> Com_1(cycle(a, b)) with all transitions in problem 7, the following new transition is obtained:
+	start(a, b) -> Com_1(cycle(b, a))
+We thus obtain the following problem:
+8:	T:
+		(1, 8)    start(a, b) -> Com_1(cycle(b, a))
+		(?, 1)    cycle(a, b) -> Com_1(cycle(b, a))
+	start location:	start
+	leaf cost:	0
+
+By chaining the transition start(a, b) -> Com_1(cycle(b, a)) with all transitions in problem 8, the following new transition is obtained:
+	start(a, b) -> Com_1(cycle(a, b))
+We thus obtain the following problem:
+9:	T:
+		(1, 9)    start(a, b) -> Com_1(cycle(a, b))
+		(?, 1)    cycle(a, b) -> Com_1(cycle(b, a))
+	start location:	start
+	leaf cost:	0
+
+By chaining the transition start(a, b) -> Com_1(cycle(a, b)) with all transitions in problem 9, the following new transition is obtained:
+	start(a, b) -> Com_1(cycle(b, a))
+We thus obtain the following problem:
+10:	T:
+		(1, 10)    start(a, b) -> Com_1(cycle(b, a))
+		(?, 1)     cycle(a, b) -> Com_1(cycle(b, a))
+	start location:	start
+	leaf cost:	0
+
+By chaining the transition start(a, b) -> Com_1(cycle(b, a)) with all transitions in problem 10, the following new transition is obtained:
+	start(a, b) -> Com_1(cycle(a, b))
+We thus obtain the following problem:
+11:	T:
+		(1, 11)    start(a, b) -> Com_1(cycle(a, b))
+		(?, 1)     cycle(a, b) -> Com_1(cycle(b, a))
+	start location:	start
+	leaf cost:	0
+
+By chaining the transition start(a, b) -> Com_1(cycle(a, b)) with all transitions in problem 11, the following new transition is obtained:
+	start(a, b) -> Com_1(cycle(b, a))
+We thus obtain the following problem:
+12:	T:
+		(1, 12)    start(a, b) -> Com_1(cycle(b, a))
+		(?, 1)     cycle(a, b) -> Com_1(cycle(b, a))
+	start location:	start
+	leaf cost:	0
+
+By chaining the transition start(a, b) -> Com_1(cycle(b, a)) with all transitions in problem 12, the following new transition is obtained:
+	start(a, b) -> Com_1(cycle(a, b))
+We thus obtain the following problem:
+13:	T:
+		(1, 13)    start(a, b) -> Com_1(cycle(a, b))
+		(?, 1)     cycle(a, b) -> Com_1(cycle(b, a))
+	start location:	start
+	leaf cost:	0
+
+By chaining the transition start(a, b) -> Com_1(cycle(a, b)) with all transitions in problem 13, the following new transition is obtained:
+	start(a, b) -> Com_1(cycle(b, a))
+We thus obtain the following problem:
+14:	T:
+		(1, 14)    start(a, b) -> Com_1(cycle(b, a))
+		(?, 1)     cycle(a, b) -> Com_1(cycle(b, a))
+	start location:	start
+	leaf cost:	0
+
+By chaining the transition start(a, b) -> Com_1(cycle(b, a)) with all transitions in problem 14, the following new transition is obtained:
+	start(a, b) -> Com_1(cycle(a, b))
+We thus obtain the following problem:
+15:	T:
+		(1, 15)    start(a, b) -> Com_1(cycle(a, b))
+		(?, 1)     cycle(a, b) -> Com_1(cycle(b, a))
+	start location:	start
+	leaf cost:	0
+
+By chaining the transition start(a, b) -> Com_1(cycle(a, b)) with all transitions in problem 15, the following new transition is obtained:
+	start(a, b) -> Com_1(cycle(b, a))
+We thus obtain the following problem:
+16:	T:
+		(1, 16)    start(a, b) -> Com_1(cycle(b, a))
+		(?, 1)     cycle(a, b) -> Com_1(cycle(b, a))
+	start location:	start
+	leaf cost:	0
+
+Complexity upper bound ?
+
+Time: 1.780 sec (SMT: 1.670 sec)

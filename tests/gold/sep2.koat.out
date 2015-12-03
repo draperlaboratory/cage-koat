@@ -1,0 +1,368 @@
+YES(?, 9*x + 3*x^2 + 21)
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+		(?, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ x > 0 ]
+		(?, 1)    l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ i < x ]
+		(?, 1)    l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ i >= x ]
+		(?, 1)    l1(r, x, i, s) -> Com_1(l3(r, x, i, s)) [ x <= 0 ]
+		(?, 1)    l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ r > 0 ]
+	start location:	l0
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(l0) = 1
+	Pol(l1) = 1
+	Pol(l2) = 1
+	Pol(l3) = 0
+orients all transitions weakly and the transition
+	l1(r, x, i, s) -> Com_1(l3(r, x, i, s)) [ x <= 0 ]
+strictly and produces the following problem:
+2:	T:
+		(1, 1)    l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+		(?, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ x > 0 ]
+		(?, 1)    l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ i < x ]
+		(?, 1)    l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ i >= x ]
+		(1, 1)    l1(r, x, i, s) -> Com_1(l3(r, x, i, s)) [ x <= 0 ]
+		(?, 1)    l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ r > 0 ]
+	start location:	l0
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(l0) = 3*V_2 - 2
+	Pol(l1) = 3*V_2 - 2
+	Pol(l2) = 3*V_2 - 4
+	Pol(l3) = 3*V_2 - 2
+orients all transitions weakly and the transition
+	l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ x > 0 ]
+strictly and produces the following problem:
+3:	T:
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ x > 0 ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ i < x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ i >= x ]
+		(1, 1)          l1(r, x, i, s) -> Com_1(l3(r, x, i, s)) [ x <= 0 ]
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ r > 0 ]
+	start location:	l0
+	leaf cost:	0
+
+Applied AI with 'oct' on problem 3 to obtain the following invariants:
+  For symbol l1: X_1 >= 0
+  For symbol l2: X_4 >= 0 /\ X_3 + X_4 >= 0 /\ X_2 + X_4 - 1 >= 0 /\ X_1 + X_4 >= 0 /\ X_3 >= 0 /\ X_2 + X_3 - 1 >= 0 /\ X_1 + X_3 >= 0 /\ X_2 - 1 >= 0 /\ X_1 + X_2 - 1 >= 0 /\ X_1 >= 0
+  For symbol l3: -X_2 >= 0 /\ X_1 - X_2 >= 0 /\ X_1 >= 0
+
+
+This yielded the following problem:
+4:	T:
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(1, 1)          l1(r, x, i, s) -> Com_1(l3(r, x, i, s)) [ r >= 0 /\ x <= 0 ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(l3) = V_2
+	Pol(l1) = V_2
+	Pol(l2) = V_2
+	Pol(l0) = V_2
+orients all transitions weakly and the transition
+	l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+strictly and produces the following problem:
+5:	T:
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(1, 1)          l1(r, x, i, s) -> Com_1(l3(r, x, i, s)) [ r >= 0 /\ x <= 0 ]
+		(x, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+By chaining the transition l1(r, x, i, s) -> Com_1(l3(r, x, i, s)) [ r >= 0 /\ x <= 0 ] with all transitions in problem 5, the following new transition is obtained:
+	l1(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 ]
+We thus obtain the following problem:
+6:	T:
+		(1, 2)          l1(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 ]
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(x, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+By chaining the transition l1(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 ] with all transitions in problem 6, the following new transition is obtained:
+	l1(r, x, i, s) -> Com_1(l3(r - 2, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 ]
+We thus obtain the following problem:
+7:	T:
+		(1, 3)          l1(r, x, i, s) -> Com_1(l3(r - 2, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 ]
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(x, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+By chaining the transition l1(r, x, i, s) -> Com_1(l3(r - 2, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 ] with all transitions in problem 7, the following new transition is obtained:
+	l1(r, x, i, s) -> Com_1(l3(r - 3, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 ]
+We thus obtain the following problem:
+8:	T:
+		(1, 4)          l1(r, x, i, s) -> Com_1(l3(r - 3, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 ]
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(x, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+By chaining the transition l1(r, x, i, s) -> Com_1(l3(r - 3, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 ] with all transitions in problem 8, the following new transition is obtained:
+	l1(r, x, i, s) -> Com_1(l3(r - 4, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 ]
+We thus obtain the following problem:
+9:	T:
+		(1, 5)          l1(r, x, i, s) -> Com_1(l3(r - 4, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 ]
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(x, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+By chaining the transition l1(r, x, i, s) -> Com_1(l3(r - 4, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 ] with all transitions in problem 9, the following new transition is obtained:
+	l1(r, x, i, s) -> Com_1(l3(r - 5, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 ]
+We thus obtain the following problem:
+10:	T:
+		(1, 6)          l1(r, x, i, s) -> Com_1(l3(r - 5, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 ]
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(x, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+By chaining the transition l1(r, x, i, s) -> Com_1(l3(r - 5, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 ] with all transitions in problem 10, the following new transition is obtained:
+	l1(r, x, i, s) -> Com_1(l3(r - 6, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 ]
+We thus obtain the following problem:
+11:	T:
+		(1, 7)          l1(r, x, i, s) -> Com_1(l3(r - 6, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 ]
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(x, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+By chaining the transition l1(r, x, i, s) -> Com_1(l3(r - 6, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 ] with all transitions in problem 11, the following new transition is obtained:
+	l1(r, x, i, s) -> Com_1(l3(r - 7, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 ]
+We thus obtain the following problem:
+12:	T:
+		(1, 8)          l1(r, x, i, s) -> Com_1(l3(r - 7, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 ]
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(x, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+By chaining the transition l1(r, x, i, s) -> Com_1(l3(r - 7, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 ] with all transitions in problem 12, the following new transition is obtained:
+	l1(r, x, i, s) -> Com_1(l3(r - 8, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 ]
+We thus obtain the following problem:
+13:	T:
+		(1, 9)          l1(r, x, i, s) -> Com_1(l3(r - 8, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 ]
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(x, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+By chaining the transition l1(r, x, i, s) -> Com_1(l3(r - 8, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 ] with all transitions in problem 13, the following new transition is obtained:
+	l1(r, x, i, s) -> Com_1(l3(r - 9, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 ]
+We thus obtain the following problem:
+14:	T:
+		(1, 10)         l1(r, x, i, s) -> Com_1(l3(r - 9, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 ]
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(x, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+By chaining the transition l1(r, x, i, s) -> Com_1(l3(r - 9, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 ] with all transitions in problem 14, the following new transition is obtained:
+	l1(r, x, i, s) -> Com_1(l3(r - 10, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 ]
+We thus obtain the following problem:
+15:	T:
+		(1, 11)         l1(r, x, i, s) -> Com_1(l3(r - 10, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 ]
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(x, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+By chaining the transition l1(r, x, i, s) -> Com_1(l3(r - 10, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 ] with all transitions in problem 15, the following new transition is obtained:
+	l1(r, x, i, s) -> Com_1(l3(r - 11, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 /\ r - x - 10 >= 0 /\ r - 10 >= 0 /\ r - 10 > 0 ]
+We thus obtain the following problem:
+16:	T:
+		(1, 12)         l1(r, x, i, s) -> Com_1(l3(r - 11, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 /\ r - x - 10 >= 0 /\ r - 10 >= 0 /\ r - 10 > 0 ]
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(x, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+By chaining the transition l1(r, x, i, s) -> Com_1(l3(r - 11, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 /\ r - x - 10 >= 0 /\ r - 10 >= 0 /\ r - 10 > 0 ] with all transitions in problem 16, the following new transition is obtained:
+	l1(r, x, i, s) -> Com_1(l3(r - 12, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 /\ r - x - 10 >= 0 /\ r - 10 >= 0 /\ r - 10 > 0 /\ r - x - 11 >= 0 /\ r - 11 >= 0 /\ r - 11 > 0 ]
+We thus obtain the following problem:
+17:	T:
+		(1, 13)         l1(r, x, i, s) -> Com_1(l3(r - 12, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 /\ r - x - 10 >= 0 /\ r - 10 >= 0 /\ r - 10 > 0 /\ r - x - 11 >= 0 /\ r - 11 >= 0 /\ r - 11 > 0 ]
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(x, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+By chaining the transition l1(r, x, i, s) -> Com_1(l3(r - 12, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 /\ r - x - 10 >= 0 /\ r - 10 >= 0 /\ r - 10 > 0 /\ r - x - 11 >= 0 /\ r - 11 >= 0 /\ r - 11 > 0 ] with all transitions in problem 17, the following new transition is obtained:
+	l1(r, x, i, s) -> Com_1(l3(r - 13, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 /\ r - x - 10 >= 0 /\ r - 10 >= 0 /\ r - 10 > 0 /\ r - x - 11 >= 0 /\ r - 11 >= 0 /\ r - 11 > 0 /\ r - x - 12 >= 0 /\ r - 12 >= 0 /\ r - 12 > 0 ]
+We thus obtain the following problem:
+18:	T:
+		(1, 14)         l1(r, x, i, s) -> Com_1(l3(r - 13, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 /\ r - x - 10 >= 0 /\ r - 10 >= 0 /\ r - 10 > 0 /\ r - x - 11 >= 0 /\ r - 11 >= 0 /\ r - 11 > 0 /\ r - x - 12 >= 0 /\ r - 12 >= 0 /\ r - 12 > 0 ]
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(x, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+By chaining the transition l1(r, x, i, s) -> Com_1(l3(r - 13, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 /\ r - x - 10 >= 0 /\ r - 10 >= 0 /\ r - 10 > 0 /\ r - x - 11 >= 0 /\ r - 11 >= 0 /\ r - 11 > 0 /\ r - x - 12 >= 0 /\ r - 12 >= 0 /\ r - 12 > 0 ] with all transitions in problem 18, the following new transition is obtained:
+	l1(r, x, i, s) -> Com_1(l3(r - 14, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 /\ r - x - 10 >= 0 /\ r - 10 >= 0 /\ r - 10 > 0 /\ r - x - 11 >= 0 /\ r - 11 >= 0 /\ r - 11 > 0 /\ r - x - 12 >= 0 /\ r - 12 >= 0 /\ r - 12 > 0 /\ r - x - 13 >= 0 /\ r - 13 >= 0 /\ r - 13 > 0 ]
+We thus obtain the following problem:
+19:	T:
+		(1, 15)         l1(r, x, i, s) -> Com_1(l3(r - 14, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 /\ r - x - 10 >= 0 /\ r - 10 >= 0 /\ r - 10 > 0 /\ r - x - 11 >= 0 /\ r - 11 >= 0 /\ r - 11 > 0 /\ r - x - 12 >= 0 /\ r - 12 >= 0 /\ r - 12 > 0 /\ r - x - 13 >= 0 /\ r - 13 >= 0 /\ r - 13 > 0 ]
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(x, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+By chaining the transition l1(r, x, i, s) -> Com_1(l3(r - 14, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 /\ r - x - 10 >= 0 /\ r - 10 >= 0 /\ r - 10 > 0 /\ r - x - 11 >= 0 /\ r - 11 >= 0 /\ r - 11 > 0 /\ r - x - 12 >= 0 /\ r - 12 >= 0 /\ r - 12 > 0 /\ r - x - 13 >= 0 /\ r - 13 >= 0 /\ r - 13 > 0 ] with all transitions in problem 19, the following new transition is obtained:
+	l1(r, x, i, s) -> Com_1(l3(r - 15, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 /\ r - x - 10 >= 0 /\ r - 10 >= 0 /\ r - 10 > 0 /\ r - x - 11 >= 0 /\ r - 11 >= 0 /\ r - 11 > 0 /\ r - x - 12 >= 0 /\ r - 12 >= 0 /\ r - 12 > 0 /\ r - x - 13 >= 0 /\ r - 13 >= 0 /\ r - 13 > 0 /\ r - x - 14 >= 0 /\ r - 14 >= 0 /\ r - 14 > 0 ]
+We thus obtain the following problem:
+20:	T:
+		(1, 16)         l1(r, x, i, s) -> Com_1(l3(r - 15, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 /\ r - x - 10 >= 0 /\ r - 10 >= 0 /\ r - 10 > 0 /\ r - x - 11 >= 0 /\ r - 11 >= 0 /\ r - 11 > 0 /\ r - x - 12 >= 0 /\ r - 12 >= 0 /\ r - 12 > 0 /\ r - x - 13 >= 0 /\ r - 13 >= 0 /\ r - 13 > 0 /\ r - x - 14 >= 0 /\ r - 14 >= 0 /\ r - 14 > 0 ]
+		(?, 1)          l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(x, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+A separated polynomial rank function for exponential bounds with
+	Pol(l3) = V_1 + 1
+	Pol(l2) = -4*V_2 - 4*V_3
+and size complexities
+	S("l0(r, x, i, s) -> Com_1(l1(0, x, i, s))", 0-0) = 0
+	S("l0(r, x, i, s) -> Com_1(l1(0, x, i, s))", 0-1) = x
+	S("l0(r, x, i, s) -> Com_1(l1(0, x, i, s))", 0-2) = i
+	S("l0(r, x, i, s) -> Com_1(l1(0, x, i, s))", 0-3) = s
+	S("l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\\ x > 0 ]", 0-0) = ?
+	S("l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\\ x > 0 ]", 0-1) = x
+	S("l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\\ x > 0 ]", 0-2) = 0
+	S("l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\\ x > 0 ]", 0-3) = 0
+	S("l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\\ i + s >= 0 /\\ x + s - 1 >= 0 /\\ r + s >= 0 /\\ i >= 0 /\\ x + i - 1 >= 0 /\\ r + i >= 0 /\\ x - 1 >= 0 /\\ r + x - 1 >= 0 /\\ r >= 0 /\\ i < x ]", 0-0) = ?
+	S("l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\\ i + s >= 0 /\\ x + s - 1 >= 0 /\\ r + s >= 0 /\\ i >= 0 /\\ x + i - 1 >= 0 /\\ r + i >= 0 /\\ x - 1 >= 0 /\\ r + x - 1 >= 0 /\\ r >= 0 /\\ i < x ]", 0-1) = x
+	S("l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\\ i + s >= 0 /\\ x + s - 1 >= 0 /\\ r + s >= 0 /\\ i >= 0 /\\ x + i - 1 >= 0 /\\ r + i >= 0 /\\ x - 1 >= 0 /\\ r + x - 1 >= 0 /\\ r >= 0 /\\ i < x ]", 0-2) = x
+	S("l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\\ i + s >= 0 /\\ x + s - 1 >= 0 /\\ r + s >= 0 /\\ i >= 0 /\\ x + i - 1 >= 0 /\\ r + i >= 0 /\\ x - 1 >= 0 /\\ r + x - 1 >= 0 /\\ r >= 0 /\\ i < x ]", 0-3) = ?
+	S("l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\\ i + s >= 0 /\\ x + s - 1 >= 0 /\\ r + s >= 0 /\\ i >= 0 /\\ x + i - 1 >= 0 /\\ r + i >= 0 /\\ x - 1 >= 0 /\\ r + x - 1 >= 0 /\\ r >= 0 /\\ i >= x ]", 0-0) = ?
+	S("l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\\ i + s >= 0 /\\ x + s - 1 >= 0 /\\ r + s >= 0 /\\ i >= 0 /\\ x + i - 1 >= 0 /\\ r + i >= 0 /\\ x - 1 >= 0 /\\ r + x - 1 >= 0 /\\ r >= 0 /\\ i >= x ]", 0-1) = x
+	S("l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\\ i + s >= 0 /\\ x + s - 1 >= 0 /\\ r + s >= 0 /\\ i >= 0 /\\ x + i - 1 >= 0 /\\ r + i >= 0 /\\ x - 1 >= 0 /\\ r + x - 1 >= 0 /\\ r >= 0 /\\ i >= x ]", 0-2) = x
+	S("l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\\ i + s >= 0 /\\ x + s - 1 >= 0 /\\ r + s >= 0 /\\ i >= 0 /\\ x + i - 1 >= 0 /\\ r + i >= 0 /\\ x - 1 >= 0 /\\ r + x - 1 >= 0 /\\ r >= 0 /\\ i >= x ]", 0-3) = ?
+	S("l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\\ r - x >= 0 /\\ r >= 0 /\\ r > 0 ]", 0-0) = ?
+	S("l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\\ r - x >= 0 /\\ r >= 0 /\\ r > 0 ]", 0-1) = x
+	S("l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\\ r - x >= 0 /\\ r >= 0 /\\ r > 0 ]", 0-2) = x
+	S("l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\\ r - x >= 0 /\\ r >= 0 /\\ r > 0 ]", 0-3) = ?
+	S("l1(r, x, i, s) -> Com_1(l3(r - 15, x, i, s)) [ r >= 0 /\\ x <= 0 /\\ -x >= 0 /\\ r - x >= 0 /\\ r > 0 /\\ r - x - 1 >= 0 /\\ r - 1 >= 0 /\\ r - 1 > 0 /\\ r - x - 2 >= 0 /\\ r - 2 >= 0 /\\ r - 2 > 0 /\\ r - x - 3 >= 0 /\\ r - 3 >= 0 /\\ r - 3 > 0 /\\ r - x - 4 >= 0 /\\ r - 4 >= 0 /\\ r - 4 > 0 /\\ r - x - 5 >= 0 /\\ r - 5 >= 0 /\\ r - 5 > 0 /\\ r - x - 6 >= 0 /\\ r - 6 >= 0 /\\ r - 6 > 0 /\\ r - x - 7 >= 0 /\\ r - 7 >= 0 /\\ r - 7 > 0 /\\ r - x - 8 >= 0 /\\ r - 8 >= 0 /\\ r - 8 > 0 /\\ r - x - 9 >= 0 /\\ r - 9 >= 0 /\\ r - 9 > 0 /\\ r - x - 10 >= 0 /\\ r - 10 >= 0 /\\ r - 10 > 0 /\\ r - x - 11 >= 0 /\\ r - 11 >= 0 /\\ r - 11 > 0 /\\ r - x - 12 >= 0 /\\ r - 12 >= 0 /\\ r - 12 > 0 /\\ r - x - 13 >= 0 /\\ r - 13 >= 0 /\\ r - 13 > 0 /\\ r - x - 14 >= 0 /\\ r - 14 >= 0 /\\ r - 14 > 0 ]", 0-0) = ?
+	S("l1(r, x, i, s) -> Com_1(l3(r - 15, x, i, s)) [ r >= 0 /\\ x <= 0 /\\ -x >= 0 /\\ r - x >= 0 /\\ r > 0 /\\ r - x - 1 >= 0 /\\ r - 1 >= 0 /\\ r - 1 > 0 /\\ r - x - 2 >= 0 /\\ r - 2 >= 0 /\\ r - 2 > 0 /\\ r - x - 3 >= 0 /\\ r - 3 >= 0 /\\ r - 3 > 0 /\\ r - x - 4 >= 0 /\\ r - 4 >= 0 /\\ r - 4 > 0 /\\ r - x - 5 >= 0 /\\ r - 5 >= 0 /\\ r - 5 > 0 /\\ r - x - 6 >= 0 /\\ r - 6 >= 0 /\\ r - 6 > 0 /\\ r - x - 7 >= 0 /\\ r - 7 >= 0 /\\ r - 7 > 0 /\\ r - x - 8 >= 0 /\\ r - 8 >= 0 /\\ r - 8 > 0 /\\ r - x - 9 >= 0 /\\ r - 9 >= 0 /\\ r - 9 > 0 /\\ r - x - 10 >= 0 /\\ r - 10 >= 0 /\\ r - 10 > 0 /\\ r - x - 11 >= 0 /\\ r - 11 >= 0 /\\ r - 11 > 0 /\\ r - x - 12 >= 0 /\\ r - 12 >= 0 /\\ r - 12 > 0 /\\ r - x - 13 >= 0 /\\ r - 13 >= 0 /\\ r - 13 > 0 /\\ r - x - 14 >= 0 /\\ r - 14 >= 0 /\\ r - 14 > 0 ]", 0-1) = x
+	S("l1(r, x, i, s) -> Com_1(l3(r - 15, x, i, s)) [ r >= 0 /\\ x <= 0 /\\ -x >= 0 /\\ r - x >= 0 /\\ r > 0 /\\ r - x - 1 >= 0 /\\ r - 1 >= 0 /\\ r - 1 > 0 /\\ r - x - 2 >= 0 /\\ r - 2 >= 0 /\\ r - 2 > 0 /\\ r - x - 3 >= 0 /\\ r - 3 >= 0 /\\ r - 3 > 0 /\\ r - x - 4 >= 0 /\\ r - 4 >= 0 /\\ r - 4 > 0 /\\ r - x - 5 >= 0 /\\ r - 5 >= 0 /\\ r - 5 > 0 /\\ r - x - 6 >= 0 /\\ r - 6 >= 0 /\\ r - 6 > 0 /\\ r - x - 7 >= 0 /\\ r - 7 >= 0 /\\ r - 7 > 0 /\\ r - x - 8 >= 0 /\\ r - 8 >= 0 /\\ r - 8 > 0 /\\ r - x - 9 >= 0 /\\ r - 9 >= 0 /\\ r - 9 > 0 /\\ r - x - 10 >= 0 /\\ r - 10 >= 0 /\\ r - 10 > 0 /\\ r - x - 11 >= 0 /\\ r - 11 >= 0 /\\ r - 11 > 0 /\\ r - x - 12 >= 0 /\\ r - 12 >= 0 /\\ r - 12 > 0 /\\ r - x - 13 >= 0 /\\ r - 13 >= 0 /\\ r - 13 > 0 /\\ r - x - 14 >= 0 /\\ r - 14 >= 0 /\\ r - 14 > 0 ]", 0-2) = x
+	S("l1(r, x, i, s) -> Com_1(l3(r - 15, x, i, s)) [ r >= 0 /\\ x <= 0 /\\ -x >= 0 /\\ r - x >= 0 /\\ r > 0 /\\ r - x - 1 >= 0 /\\ r - 1 >= 0 /\\ r - 1 > 0 /\\ r - x - 2 >= 0 /\\ r - 2 >= 0 /\\ r - 2 > 0 /\\ r - x - 3 >= 0 /\\ r - 3 >= 0 /\\ r - 3 > 0 /\\ r - x - 4 >= 0 /\\ r - 4 >= 0 /\\ r - 4 > 0 /\\ r - x - 5 >= 0 /\\ r - 5 >= 0 /\\ r - 5 > 0 /\\ r - x - 6 >= 0 /\\ r - 6 >= 0 /\\ r - 6 > 0 /\\ r - x - 7 >= 0 /\\ r - 7 >= 0 /\\ r - 7 > 0 /\\ r - x - 8 >= 0 /\\ r - 8 >= 0 /\\ r - 8 > 0 /\\ r - x - 9 >= 0 /\\ r - 9 >= 0 /\\ r - 9 > 0 /\\ r - x - 10 >= 0 /\\ r - 10 >= 0 /\\ r - 10 > 0 /\\ r - x - 11 >= 0 /\\ r - 11 >= 0 /\\ r - 11 > 0 /\\ r - x - 12 >= 0 /\\ r - 12 >= 0 /\\ r - 12 > 0 /\\ r - x - 13 >= 0 /\\ r - 13 >= 0 /\\ r - 13 > 0 /\\ r - x - 14 >= 0 /\\ r - 14 >= 0 /\\ r - 14 > 0 ]", 0-3) = ?
+orients the transitions
+	l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+	l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+weakly and the transition
+	l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+strictly and produces the following problem:
+21:	T:
+		(1, 16)         l1(r, x, i, s) -> Com_1(l3(r - 15, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 /\ r - x - 10 >= 0 /\ r - 10 >= 0 /\ r - 10 > 0 /\ r - x - 11 >= 0 /\ r - 11 >= 0 /\ r - 11 > 0 /\ r - x - 12 >= 0 /\ r - 12 >= 0 /\ r - 12 > 0 /\ r - x - 13 >= 0 /\ r - 13 >= 0 /\ r - 13 > 0 /\ r - x - 14 >= 0 /\ r - 14 >= 0 /\ r - 14 > 0 ]
+		(3*x + 3, 1)    l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(x, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(l2) = V_2 - V_3
+and size complexities
+	S("l0(r, x, i, s) -> Com_1(l1(0, x, i, s))", 0-0) = 0
+	S("l0(r, x, i, s) -> Com_1(l1(0, x, i, s))", 0-1) = x
+	S("l0(r, x, i, s) -> Com_1(l1(0, x, i, s))", 0-2) = i
+	S("l0(r, x, i, s) -> Com_1(l1(0, x, i, s))", 0-3) = s
+	S("l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\\ x > 0 ]", 0-0) = ?
+	S("l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\\ x > 0 ]", 0-1) = x
+	S("l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\\ x > 0 ]", 0-2) = 0
+	S("l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\\ x > 0 ]", 0-3) = 0
+	S("l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\\ i + s >= 0 /\\ x + s - 1 >= 0 /\\ r + s >= 0 /\\ i >= 0 /\\ x + i - 1 >= 0 /\\ r + i >= 0 /\\ x - 1 >= 0 /\\ r + x - 1 >= 0 /\\ r >= 0 /\\ i < x ]", 0-0) = ?
+	S("l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\\ i + s >= 0 /\\ x + s - 1 >= 0 /\\ r + s >= 0 /\\ i >= 0 /\\ x + i - 1 >= 0 /\\ r + i >= 0 /\\ x - 1 >= 0 /\\ r + x - 1 >= 0 /\\ r >= 0 /\\ i < x ]", 0-1) = x
+	S("l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\\ i + s >= 0 /\\ x + s - 1 >= 0 /\\ r + s >= 0 /\\ i >= 0 /\\ x + i - 1 >= 0 /\\ r + i >= 0 /\\ x - 1 >= 0 /\\ r + x - 1 >= 0 /\\ r >= 0 /\\ i < x ]", 0-2) = x
+	S("l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\\ i + s >= 0 /\\ x + s - 1 >= 0 /\\ r + s >= 0 /\\ i >= 0 /\\ x + i - 1 >= 0 /\\ r + i >= 0 /\\ x - 1 >= 0 /\\ r + x - 1 >= 0 /\\ r >= 0 /\\ i < x ]", 0-3) = ?
+	S("l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\\ i + s >= 0 /\\ x + s - 1 >= 0 /\\ r + s >= 0 /\\ i >= 0 /\\ x + i - 1 >= 0 /\\ r + i >= 0 /\\ x - 1 >= 0 /\\ r + x - 1 >= 0 /\\ r >= 0 /\\ i >= x ]", 0-0) = ?
+	S("l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\\ i + s >= 0 /\\ x + s - 1 >= 0 /\\ r + s >= 0 /\\ i >= 0 /\\ x + i - 1 >= 0 /\\ r + i >= 0 /\\ x - 1 >= 0 /\\ r + x - 1 >= 0 /\\ r >= 0 /\\ i >= x ]", 0-1) = x
+	S("l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\\ i + s >= 0 /\\ x + s - 1 >= 0 /\\ r + s >= 0 /\\ i >= 0 /\\ x + i - 1 >= 0 /\\ r + i >= 0 /\\ x - 1 >= 0 /\\ r + x - 1 >= 0 /\\ r >= 0 /\\ i >= x ]", 0-2) = x
+	S("l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\\ i + s >= 0 /\\ x + s - 1 >= 0 /\\ r + s >= 0 /\\ i >= 0 /\\ x + i - 1 >= 0 /\\ r + i >= 0 /\\ x - 1 >= 0 /\\ r + x - 1 >= 0 /\\ r >= 0 /\\ i >= x ]", 0-3) = ?
+	S("l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\\ r - x >= 0 /\\ r >= 0 /\\ r > 0 ]", 0-0) = ?
+	S("l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\\ r - x >= 0 /\\ r >= 0 /\\ r > 0 ]", 0-1) = x
+	S("l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\\ r - x >= 0 /\\ r >= 0 /\\ r > 0 ]", 0-2) = x
+	S("l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\\ r - x >= 0 /\\ r >= 0 /\\ r > 0 ]", 0-3) = ?
+	S("l1(r, x, i, s) -> Com_1(l3(r - 15, x, i, s)) [ r >= 0 /\\ x <= 0 /\\ -x >= 0 /\\ r - x >= 0 /\\ r > 0 /\\ r - x - 1 >= 0 /\\ r - 1 >= 0 /\\ r - 1 > 0 /\\ r - x - 2 >= 0 /\\ r - 2 >= 0 /\\ r - 2 > 0 /\\ r - x - 3 >= 0 /\\ r - 3 >= 0 /\\ r - 3 > 0 /\\ r - x - 4 >= 0 /\\ r - 4 >= 0 /\\ r - 4 > 0 /\\ r - x - 5 >= 0 /\\ r - 5 >= 0 /\\ r - 5 > 0 /\\ r - x - 6 >= 0 /\\ r - 6 >= 0 /\\ r - 6 > 0 /\\ r - x - 7 >= 0 /\\ r - 7 >= 0 /\\ r - 7 > 0 /\\ r - x - 8 >= 0 /\\ r - 8 >= 0 /\\ r - 8 > 0 /\\ r - x - 9 >= 0 /\\ r - 9 >= 0 /\\ r - 9 > 0 /\\ r - x - 10 >= 0 /\\ r - 10 >= 0 /\\ r - 10 > 0 /\\ r - x - 11 >= 0 /\\ r - 11 >= 0 /\\ r - 11 > 0 /\\ r - x - 12 >= 0 /\\ r - 12 >= 0 /\\ r - 12 > 0 /\\ r - x - 13 >= 0 /\\ r - 13 >= 0 /\\ r - 13 > 0 /\\ r - x - 14 >= 0 /\\ r - 14 >= 0 /\\ r - 14 > 0 ]", 0-0) = ?
+	S("l1(r, x, i, s) -> Com_1(l3(r - 15, x, i, s)) [ r >= 0 /\\ x <= 0 /\\ -x >= 0 /\\ r - x >= 0 /\\ r > 0 /\\ r - x - 1 >= 0 /\\ r - 1 >= 0 /\\ r - 1 > 0 /\\ r - x - 2 >= 0 /\\ r - 2 >= 0 /\\ r - 2 > 0 /\\ r - x - 3 >= 0 /\\ r - 3 >= 0 /\\ r - 3 > 0 /\\ r - x - 4 >= 0 /\\ r - 4 >= 0 /\\ r - 4 > 0 /\\ r - x - 5 >= 0 /\\ r - 5 >= 0 /\\ r - 5 > 0 /\\ r - x - 6 >= 0 /\\ r - 6 >= 0 /\\ r - 6 > 0 /\\ r - x - 7 >= 0 /\\ r - 7 >= 0 /\\ r - 7 > 0 /\\ r - x - 8 >= 0 /\\ r - 8 >= 0 /\\ r - 8 > 0 /\\ r - x - 9 >= 0 /\\ r - 9 >= 0 /\\ r - 9 > 0 /\\ r - x - 10 >= 0 /\\ r - 10 >= 0 /\\ r - 10 > 0 /\\ r - x - 11 >= 0 /\\ r - 11 >= 0 /\\ r - 11 > 0 /\\ r - x - 12 >= 0 /\\ r - 12 >= 0 /\\ r - 12 > 0 /\\ r - x - 13 >= 0 /\\ r - 13 >= 0 /\\ r - 13 > 0 /\\ r - x - 14 >= 0 /\\ r - 14 >= 0 /\\ r - 14 > 0 ]", 0-1) = x
+	S("l1(r, x, i, s) -> Com_1(l3(r - 15, x, i, s)) [ r >= 0 /\\ x <= 0 /\\ -x >= 0 /\\ r - x >= 0 /\\ r > 0 /\\ r - x - 1 >= 0 /\\ r - 1 >= 0 /\\ r - 1 > 0 /\\ r - x - 2 >= 0 /\\ r - 2 >= 0 /\\ r - 2 > 0 /\\ r - x - 3 >= 0 /\\ r - 3 >= 0 /\\ r - 3 > 0 /\\ r - x - 4 >= 0 /\\ r - 4 >= 0 /\\ r - 4 > 0 /\\ r - x - 5 >= 0 /\\ r - 5 >= 0 /\\ r - 5 > 0 /\\ r - x - 6 >= 0 /\\ r - 6 >= 0 /\\ r - 6 > 0 /\\ r - x - 7 >= 0 /\\ r - 7 >= 0 /\\ r - 7 > 0 /\\ r - x - 8 >= 0 /\\ r - 8 >= 0 /\\ r - 8 > 0 /\\ r - x - 9 >= 0 /\\ r - 9 >= 0 /\\ r - 9 > 0 /\\ r - x - 10 >= 0 /\\ r - 10 >= 0 /\\ r - 10 > 0 /\\ r - x - 11 >= 0 /\\ r - 11 >= 0 /\\ r - 11 > 0 /\\ r - x - 12 >= 0 /\\ r - 12 >= 0 /\\ r - 12 > 0 /\\ r - x - 13 >= 0 /\\ r - 13 >= 0 /\\ r - 13 > 0 /\\ r - x - 14 >= 0 /\\ r - 14 >= 0 /\\ r - 14 > 0 ]", 0-2) = x
+	S("l1(r, x, i, s) -> Com_1(l3(r - 15, x, i, s)) [ r >= 0 /\\ x <= 0 /\\ -x >= 0 /\\ r - x >= 0 /\\ r > 0 /\\ r - x - 1 >= 0 /\\ r - 1 >= 0 /\\ r - 1 > 0 /\\ r - x - 2 >= 0 /\\ r - 2 >= 0 /\\ r - 2 > 0 /\\ r - x - 3 >= 0 /\\ r - 3 >= 0 /\\ r - 3 > 0 /\\ r - x - 4 >= 0 /\\ r - 4 >= 0 /\\ r - 4 > 0 /\\ r - x - 5 >= 0 /\\ r - 5 >= 0 /\\ r - 5 > 0 /\\ r - x - 6 >= 0 /\\ r - 6 >= 0 /\\ r - 6 > 0 /\\ r - x - 7 >= 0 /\\ r - 7 >= 0 /\\ r - 7 > 0 /\\ r - x - 8 >= 0 /\\ r - 8 >= 0 /\\ r - 8 > 0 /\\ r - x - 9 >= 0 /\\ r - 9 >= 0 /\\ r - 9 > 0 /\\ r - x - 10 >= 0 /\\ r - 10 >= 0 /\\ r - 10 > 0 /\\ r - x - 11 >= 0 /\\ r - 11 >= 0 /\\ r - 11 > 0 /\\ r - x - 12 >= 0 /\\ r - 12 >= 0 /\\ r - 12 > 0 /\\ r - x - 13 >= 0 /\\ r - 13 >= 0 /\\ r - 13 > 0 /\\ r - x - 14 >= 0 /\\ r - 14 >= 0 /\\ r - 14 > 0 ]", 0-3) = ?
+orients the transitions
+	l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+weakly and the transition
+	l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+strictly and produces the following problem:
+22:	T:
+		(1, 16)             l1(r, x, i, s) -> Com_1(l3(r - 15, x, i, s)) [ r >= 0 /\ x <= 0 /\ -x >= 0 /\ r - x >= 0 /\ r > 0 /\ r - x - 1 >= 0 /\ r - 1 >= 0 /\ r - 1 > 0 /\ r - x - 2 >= 0 /\ r - 2 >= 0 /\ r - 2 > 0 /\ r - x - 3 >= 0 /\ r - 3 >= 0 /\ r - 3 > 0 /\ r - x - 4 >= 0 /\ r - 4 >= 0 /\ r - 4 > 0 /\ r - x - 5 >= 0 /\ r - 5 >= 0 /\ r - 5 > 0 /\ r - x - 6 >= 0 /\ r - 6 >= 0 /\ r - 6 > 0 /\ r - x - 7 >= 0 /\ r - 7 >= 0 /\ r - 7 > 0 /\ r - x - 8 >= 0 /\ r - 8 >= 0 /\ r - 8 > 0 /\ r - x - 9 >= 0 /\ r - 9 >= 0 /\ r - 9 > 0 /\ r - x - 10 >= 0 /\ r - 10 >= 0 /\ r - 10 > 0 /\ r - x - 11 >= 0 /\ r - 11 >= 0 /\ r - 11 > 0 /\ r - x - 12 >= 0 /\ r - 12 >= 0 /\ r - 12 > 0 /\ r - x - 13 >= 0 /\ r - 13 >= 0 /\ r - 13 > 0 /\ r - x - 14 >= 0 /\ r - 14 >= 0 /\ r - 14 > 0 ]
+		(3*x + 3, 1)        l3(r, x, i, s) -> Com_1(l3(r - 1, x, i, s)) [ -x >= 0 /\ r - x >= 0 /\ r >= 0 /\ r > 0 ]
+		(x, 1)              l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(3*x^2 + 2*x, 1)    l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(3*x + 2, 1)        l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(1, 1)              l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+	start location:	l0
+	leaf cost:	0
+
+Complexity upper bound 9*x + 3*x^2 + 21
+
+Time: 8.366 sec (SMT: 7.972 sec)

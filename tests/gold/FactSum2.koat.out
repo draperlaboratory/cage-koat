@@ -1,0 +1,46 @@
+YES(?, x + x^2)
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    start(x) -> Com_1(facSum(x))
+		(?, 1)    facSum(x) -> Com_2(fac(x), facSum(x - 1)) [ x > 0 ]
+		(?, 1)    fac(x) -> Com_1(fac(x - 1)) [ x > 0 ]
+	start location:	start
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(start) = V_1
+	Pol(facSum) = V_1
+	Pol(fac) = 0
+orients all transitions weakly and the transition
+	facSum(x) -> Com_2(fac(x), facSum(x - 1)) [ x > 0 ]
+strictly and produces the following problem:
+2:	T:
+		(1, 1)    start(x) -> Com_1(facSum(x))
+		(x, 1)    facSum(x) -> Com_2(fac(x), facSum(x - 1)) [ x > 0 ]
+		(?, 1)    fac(x) -> Com_1(fac(x - 1)) [ x > 0 ]
+	start location:	start
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(fac) = V_1
+and size complexities
+	S("fac(x) -> Com_1(fac(x - 1)) [ x > 0 ]", 0-0) = x
+	S("facSum(x) -> Com_2(fac(x), facSum(x - 1)) [ x > 0 ]", 0-0) = x
+	S("facSum(x) -> Com_2(fac(x), facSum(x - 1)) [ x > 0 ]", 1-0) = x
+	S("start(x) -> Com_1(facSum(x))", 0-0) = x
+orients the transitions
+	fac(x) -> Com_1(fac(x - 1)) [ x > 0 ]
+weakly and the transition
+	fac(x) -> Com_1(fac(x - 1)) [ x > 0 ]
+strictly and produces the following problem:
+3:	T:
+		(1, 1)      start(x) -> Com_1(facSum(x))
+		(x, 1)      facSum(x) -> Com_2(fac(x), facSum(x - 1)) [ x > 0 ]
+		(x^2, 1)    fac(x) -> Com_1(fac(x - 1)) [ x > 0 ]
+	start location:	start
+	leaf cost:	0
+
+Complexity upper bound x + x^2
+
+Time: 0.353 sec (SMT: 0.346 sec)

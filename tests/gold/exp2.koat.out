@@ -1,0 +1,125 @@
+YES(?, pow(2, x) * 2 + pow(2, pow(2, x) * 2) * 2 + x + 4)
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    f(x, y, z) -> Com_1(g(x, 1, 1))
+		(?, 1)    g(x, y, z) -> Com_1(g(x - 1, 2*y, z)) [ x > 0 ]
+		(?, 1)    g(x, y, z) -> Com_1(h(x, y, z)) [ x <= 0 ]
+		(?, 1)    h(x, y, z) -> Com_1(h(x, y - 1, 2*z)) [ y > 0 ]
+		(?, 1)    h(x, y, z) -> Com_1(i(x, y, z)) [ y <= 0 ]
+		(?, 1)    i(x, y, z) -> Com_1(i(x, y, z - 1)) [ z > 0 ]
+	start location:	f
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(f) = 2
+	Pol(g) = 2
+	Pol(h) = 1
+	Pol(i) = 0
+orients all transitions weakly and the transitions
+	h(x, y, z) -> Com_1(i(x, y, z)) [ y <= 0 ]
+	g(x, y, z) -> Com_1(h(x, y, z)) [ x <= 0 ]
+strictly and produces the following problem:
+2:	T:
+		(1, 1)    f(x, y, z) -> Com_1(g(x, 1, 1))
+		(?, 1)    g(x, y, z) -> Com_1(g(x - 1, 2*y, z)) [ x > 0 ]
+		(2, 1)    g(x, y, z) -> Com_1(h(x, y, z)) [ x <= 0 ]
+		(?, 1)    h(x, y, z) -> Com_1(h(x, y - 1, 2*z)) [ y > 0 ]
+		(2, 1)    h(x, y, z) -> Com_1(i(x, y, z)) [ y <= 0 ]
+		(?, 1)    i(x, y, z) -> Com_1(i(x, y, z - 1)) [ z > 0 ]
+	start location:	f
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(f) = V_1
+	Pol(g) = V_1
+	Pol(h) = V_1
+	Pol(i) = V_1
+orients all transitions weakly and the transition
+	g(x, y, z) -> Com_1(g(x - 1, 2*y, z)) [ x > 0 ]
+strictly and produces the following problem:
+3:	T:
+		(1, 1)    f(x, y, z) -> Com_1(g(x, 1, 1))
+		(x, 1)    g(x, y, z) -> Com_1(g(x - 1, 2*y, z)) [ x > 0 ]
+		(2, 1)    g(x, y, z) -> Com_1(h(x, y, z)) [ x <= 0 ]
+		(?, 1)    h(x, y, z) -> Com_1(h(x, y - 1, 2*z)) [ y > 0 ]
+		(2, 1)    h(x, y, z) -> Com_1(i(x, y, z)) [ y <= 0 ]
+		(?, 1)    i(x, y, z) -> Com_1(i(x, y, z - 1)) [ z > 0 ]
+	start location:	f
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(h) = V_2
+and size complexities
+	S("i(x, y, z) -> Com_1(i(x, y, z - 1)) [ z > 0 ]", 0-0) = x
+	S("i(x, y, z) -> Com_1(i(x, y, z - 1)) [ z > 0 ]", 0-1) = pow(2, x)
+	S("i(x, y, z) -> Com_1(i(x, y, z - 1)) [ z > 0 ]", 0-2) = ?
+	S("h(x, y, z) -> Com_1(i(x, y, z)) [ y <= 0 ]", 0-0) = x
+	S("h(x, y, z) -> Com_1(i(x, y, z)) [ y <= 0 ]", 0-1) = pow(2, x)
+	S("h(x, y, z) -> Com_1(i(x, y, z)) [ y <= 0 ]", 0-2) = ?
+	S("h(x, y, z) -> Com_1(h(x, y - 1, 2*z)) [ y > 0 ]", 0-0) = x
+	S("h(x, y, z) -> Com_1(h(x, y - 1, 2*z)) [ y > 0 ]", 0-1) = pow(2, x)
+	S("h(x, y, z) -> Com_1(h(x, y - 1, 2*z)) [ y > 0 ]", 0-2) = ?
+	S("g(x, y, z) -> Com_1(h(x, y, z)) [ x <= 0 ]", 0-0) = x
+	S("g(x, y, z) -> Com_1(h(x, y, z)) [ x <= 0 ]", 0-1) = pow(2, x)
+	S("g(x, y, z) -> Com_1(h(x, y, z)) [ x <= 0 ]", 0-2) = 1
+	S("g(x, y, z) -> Com_1(g(x - 1, 2*y, z)) [ x > 0 ]", 0-0) = x
+	S("g(x, y, z) -> Com_1(g(x - 1, 2*y, z)) [ x > 0 ]", 0-1) = pow(2, x)
+	S("g(x, y, z) -> Com_1(g(x - 1, 2*y, z)) [ x > 0 ]", 0-2) = 1
+	S("f(x, y, z) -> Com_1(g(x, 1, 1))", 0-0) = x
+	S("f(x, y, z) -> Com_1(g(x, 1, 1))", 0-1) = 1
+	S("f(x, y, z) -> Com_1(g(x, 1, 1))", 0-2) = 1
+orients the transitions
+	h(x, y, z) -> Com_1(h(x, y - 1, 2*z)) [ y > 0 ]
+weakly and the transition
+	h(x, y, z) -> Com_1(h(x, y - 1, 2*z)) [ y > 0 ]
+strictly and produces the following problem:
+4:	T:
+		(1, 1)                f(x, y, z) -> Com_1(g(x, 1, 1))
+		(x, 1)                g(x, y, z) -> Com_1(g(x - 1, 2*y, z)) [ x > 0 ]
+		(2, 1)                g(x, y, z) -> Com_1(h(x, y, z)) [ x <= 0 ]
+		(pow(2, x) * 2, 1)    h(x, y, z) -> Com_1(h(x, y - 1, 2*z)) [ y > 0 ]
+		(2, 1)                h(x, y, z) -> Com_1(i(x, y, z)) [ y <= 0 ]
+		(?, 1)                i(x, y, z) -> Com_1(i(x, y, z - 1)) [ z > 0 ]
+	start location:	f
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(i) = V_3
+and size complexities
+	S("i(x, y, z) -> Com_1(i(x, y, z - 1)) [ z > 0 ]", 0-0) = x
+	S("i(x, y, z) -> Com_1(i(x, y, z - 1)) [ z > 0 ]", 0-1) = pow(2, x)
+	S("i(x, y, z) -> Com_1(i(x, y, z - 1)) [ z > 0 ]", 0-2) = pow(2, pow(2, x) * 2)
+	S("h(x, y, z) -> Com_1(i(x, y, z)) [ y <= 0 ]", 0-0) = x
+	S("h(x, y, z) -> Com_1(i(x, y, z)) [ y <= 0 ]", 0-1) = pow(2, x)
+	S("h(x, y, z) -> Com_1(i(x, y, z)) [ y <= 0 ]", 0-2) = pow(2, pow(2, x) * 2)
+	S("h(x, y, z) -> Com_1(h(x, y - 1, 2*z)) [ y > 0 ]", 0-0) = x
+	S("h(x, y, z) -> Com_1(h(x, y - 1, 2*z)) [ y > 0 ]", 0-1) = pow(2, x)
+	S("h(x, y, z) -> Com_1(h(x, y - 1, 2*z)) [ y > 0 ]", 0-2) = pow(2, pow(2, x) * 2)
+	S("g(x, y, z) -> Com_1(h(x, y, z)) [ x <= 0 ]", 0-0) = x
+	S("g(x, y, z) -> Com_1(h(x, y, z)) [ x <= 0 ]", 0-1) = pow(2, x)
+	S("g(x, y, z) -> Com_1(h(x, y, z)) [ x <= 0 ]", 0-2) = 1
+	S("g(x, y, z) -> Com_1(g(x - 1, 2*y, z)) [ x > 0 ]", 0-0) = x
+	S("g(x, y, z) -> Com_1(g(x - 1, 2*y, z)) [ x > 0 ]", 0-1) = pow(2, x)
+	S("g(x, y, z) -> Com_1(g(x - 1, 2*y, z)) [ x > 0 ]", 0-2) = 1
+	S("f(x, y, z) -> Com_1(g(x, 1, 1))", 0-0) = x
+	S("f(x, y, z) -> Com_1(g(x, 1, 1))", 0-1) = 1
+	S("f(x, y, z) -> Com_1(g(x, 1, 1))", 0-2) = 1
+orients the transitions
+	i(x, y, z) -> Com_1(i(x, y, z - 1)) [ z > 0 ]
+weakly and the transition
+	i(x, y, z) -> Com_1(i(x, y, z - 1)) [ z > 0 ]
+strictly and produces the following problem:
+5:	T:
+		(1, 1)                            f(x, y, z) -> Com_1(g(x, 1, 1))
+		(x, 1)                            g(x, y, z) -> Com_1(g(x - 1, 2*y, z)) [ x > 0 ]
+		(2, 1)                            g(x, y, z) -> Com_1(h(x, y, z)) [ x <= 0 ]
+		(pow(2, x) * 2, 1)                h(x, y, z) -> Com_1(h(x, y - 1, 2*z)) [ y > 0 ]
+		(2, 1)                            h(x, y, z) -> Com_1(i(x, y, z)) [ y <= 0 ]
+		(pow(2, pow(2, x) * 2) * 2, 1)    i(x, y, z) -> Com_1(i(x, y, z - 1)) [ z > 0 ]
+	start location:	f
+	leaf cost:	0
+
+Complexity upper bound pow(2, x) * 2 + pow(2, pow(2, x) * 2) * 2 + x + 4
+
+Time: 1.296 sec (SMT: 1.274 sec)

@@ -1,0 +1,19 @@
+YES(?, 1)
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    f(x) -> Com_1(g(x))
+		(?, 1)    g(x) -> Com_1(h(x))
+	start location:	f
+	leaf cost:	0
+
+Repeatedly propagating knowledge in problem 1 produces the following problem:
+2:	T:
+		(1, 1)    f(x) -> Com_1(g(x))
+		(1, 1)    g(x) -> Com_1(h(x))
+	start location:	f
+	leaf cost:	0
+
+Complexity upper bound 1
+
+Time: 0.029 sec (SMT: 0.028 sec)

@@ -1,0 +1,24 @@
+YES(?, 999999)
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    f(x) -> Com_1(g(0))
+		(?, 1)    g(x) -> Com_1(g(x + 1)) [ x < 999999 ]
+	start location:	f
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(f) = 999999
+	Pol(g) = -V_1 + 999999
+orients all transitions weakly and the transition
+	g(x) -> Com_1(g(x + 1)) [ x < 999999 ]
+strictly and produces the following problem:
+2:	T:
+		(1, 1)         f(x) -> Com_1(g(0))
+		(999999, 1)    g(x) -> Com_1(g(x + 1)) [ x < 999999 ]
+	start location:	f
+	leaf cost:	0
+
+Complexity upper bound 999999
+
+Time: 0.079 sec (SMT: 0.077 sec)

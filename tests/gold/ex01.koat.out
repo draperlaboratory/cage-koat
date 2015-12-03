@@ -1,0 +1,53 @@
+YES(?, 4*n + 3*x + 2)
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    start(n, x) -> Com_1(f(n, x))
+		(?, 1)    f(n, x) -> Com_1(f(n, x + 1)) [ x < n ]
+		(?, 1)    f(n, x) -> Com_1(g(n, x)) [ x <= n /\ x >= n ]
+		(?, 1)    g(n, x) -> Com_1(g(n - 1, x)) [ n > 0 ]
+	start location:	start
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(start) = 2*V_1 - V_2 + 1
+	Pol(f) = 2*V_1 - V_2 + 1
+	Pol(g) = V_1
+orients all transitions weakly and the transition
+	g(n, x) -> Com_1(g(n - 1, x)) [ n > 0 ]
+strictly and produces the following problem:
+2:	T:
+		(1, 1)              start(n, x) -> Com_1(f(n, x))
+		(?, 1)              f(n, x) -> Com_1(f(n, x + 1)) [ x < n ]
+		(?, 1)              f(n, x) -> Com_1(g(n, x)) [ x <= n /\ x >= n ]
+		(2*n + x + 1, 1)    g(n, x) -> Com_1(g(n - 1, x)) [ n > 0 ]
+	start location:	start
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(start) = V_1 - V_2
+	Pol(f) = V_1 - V_2
+	Pol(g) = V_1 - V_2 - 1
+orients all transitions weakly and the transition
+	f(n, x) -> Com_1(f(n, x + 1)) [ x < n ]
+strictly and produces the following problem:
+3:	T:
+		(1, 1)              start(n, x) -> Com_1(f(n, x))
+		(n + x, 1)          f(n, x) -> Com_1(f(n, x + 1)) [ x < n ]
+		(?, 1)              f(n, x) -> Com_1(g(n, x)) [ x <= n /\ x >= n ]
+		(2*n + x + 1, 1)    g(n, x) -> Com_1(g(n - 1, x)) [ n > 0 ]
+	start location:	start
+	leaf cost:	0
+
+Repeatedly propagating knowledge in problem 3 produces the following problem:
+4:	T:
+		(1, 1)              start(n, x) -> Com_1(f(n, x))
+		(n + x, 1)          f(n, x) -> Com_1(f(n, x + 1)) [ x < n ]
+		(n + x + 1, 1)      f(n, x) -> Com_1(g(n, x)) [ x <= n /\ x >= n ]
+		(2*n + x + 1, 1)    g(n, x) -> Com_1(g(n - 1, x)) [ n > 0 ]
+	start location:	start
+	leaf cost:	0
+
+Complexity upper bound 4*n + 3*x + 2
+
+Time: 0.322 sec (SMT: 0.316 sec)

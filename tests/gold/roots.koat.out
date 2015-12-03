@@ -1,0 +1,51 @@
+YES(?, x^3 + x^17 + 6)
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    f(x) -> Com_1(g(x))
+		(?, 1)    g(x) -> Com_1(h1(x)) [ x >= 0 ]
+		(?, 1)    g(x) -> Com_1(h2(x)) [ x < 0 ]
+		(?, 1)    h1(x) -> Com_1(h(x^17))
+		(?, 1)    h2(x) -> Com_1(h(x^3))
+		(?, 1)    h(x) -> Com_1(h(x - 1)) [ x >= 0 ]
+	start location:	f
+	leaf cost:	0
+
+Repeatedly propagating knowledge in problem 1 produces the following problem:
+2:	T:
+		(1, 1)    f(x) -> Com_1(g(x))
+		(1, 1)    g(x) -> Com_1(h1(x)) [ x >= 0 ]
+		(1, 1)    g(x) -> Com_1(h2(x)) [ x < 0 ]
+		(1, 1)    h1(x) -> Com_1(h(x^17))
+		(1, 1)    h2(x) -> Com_1(h(x^3))
+		(?, 1)    h(x) -> Com_1(h(x - 1)) [ x >= 0 ]
+	start location:	f
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(h) = V_1 + 1
+and size complexities
+	S("h(x) -> Com_1(h(x - 1)) [ x >= 0 ]", 0-0) = x^17 + x^3 + 1
+	S("h2(x) -> Com_1(h(x^3))", 0-0) = x^3
+	S("h1(x) -> Com_1(h(x^17))", 0-0) = x^17
+	S("g(x) -> Com_1(h2(x)) [ x < 0 ]", 0-0) = x
+	S("g(x) -> Com_1(h1(x)) [ x >= 0 ]", 0-0) = x
+	S("f(x) -> Com_1(g(x))", 0-0) = x
+orients the transitions
+	h(x) -> Com_1(h(x - 1)) [ x >= 0 ]
+weakly and the transition
+	h(x) -> Com_1(h(x - 1)) [ x >= 0 ]
+strictly and produces the following problem:
+3:	T:
+		(1, 1)                 f(x) -> Com_1(g(x))
+		(1, 1)                 g(x) -> Com_1(h1(x)) [ x >= 0 ]
+		(1, 1)                 g(x) -> Com_1(h2(x)) [ x < 0 ]
+		(1, 1)                 h1(x) -> Com_1(h(x^17))
+		(1, 1)                 h2(x) -> Com_1(h(x^3))
+		(x^3 + x^17 + 2, 1)    h(x) -> Com_1(h(x - 1)) [ x >= 0 ]
+	start location:	f
+	leaf cost:	0
+
+Complexity upper bound x^3 + x^17 + 6
+
+Time: 0.252 sec (SMT: 0.247 sec)

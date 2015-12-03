@@ -1,0 +1,24 @@
+YES(?, n + i)
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    start(n, i) -> Com_1(bb4(n, i))
+		(?, 1)    bb4(n, i) -> Com_1(bb4(n, i + 1)) [ i < n /\ n >= 0 ]
+	start location:	start
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(start) = V_1 - V_2
+	Pol(bb4) = V_1 - V_2
+orients all transitions weakly and the transition
+	bb4(n, i) -> Com_1(bb4(n, i + 1)) [ i < n /\ n >= 0 ]
+strictly and produces the following problem:
+2:	T:
+		(1, 1)        start(n, i) -> Com_1(bb4(n, i))
+		(n + i, 1)    bb4(n, i) -> Com_1(bb4(n, i + 1)) [ i < n /\ n >= 0 ]
+	start location:	start
+	leaf cost:	0
+
+Complexity upper bound n + i
+
+Time: 0.110 sec (SMT: 0.108 sec)

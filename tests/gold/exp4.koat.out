@@ -1,0 +1,33 @@
+YES(?, pow(2, x + 1))
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    f(x) -> Com_1(g(x))
+		(?, 1)    g(x) -> Com_2(g(x - 1), g(x - 1)) [ x >= 0 ]
+	start location:	f
+	leaf cost:	0
+
+By chaining the transition f(x) -> Com_1(g(x)) with all transitions in problem 1, the following new transition is obtained:
+	f(x) -> Com_2(g(x - 1), g(x - 1)) [ x >= 0 ]
+We thus obtain the following problem:
+2:	T:
+		(1, 2)    f(x) -> Com_2(g(x - 1), g(x - 1)) [ x >= 0 ]
+		(?, 1)    g(x) -> Com_2(g(x - 1), g(x - 1)) [ x >= 0 ]
+	start location:	f
+	leaf cost:	0
+
+A separated polynomial rank function for exponential bounds with
+	Pol(f) = V_1
+	Pol(g) = V_1 + 1
+orients all transitions weakly and the transition
+	g(x) -> Com_2(g(x - 1), g(x - 1)) [ x >= 0 ]
+strictly and produces the following problem:
+3:	T:
+		(1, 2)                f(x) -> Com_2(g(x - 1), g(x - 1)) [ x >= 0 ]
+		(pow(2, x + 1), 1)    g(x) -> Com_2(g(x - 1), g(x - 1)) [ x >= 0 ]
+	start location:	f
+	leaf cost:	0
+
+Complexity upper bound pow(2, x + 1)
+
+Time: 0.820 sec (SMT: 0.794 sec)

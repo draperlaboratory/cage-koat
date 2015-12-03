@@ -1,0 +1,79 @@
+YES(?, 870*x + 18*x^3 + 234*x^2 + 654)
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    start(x, y) -> Com_1(f(x, y))
+		(?, 1)    f(x, y) -> Com_1(g(x, x^2)) [ x > 0 ]
+		(?, 1)    g(x, y) -> Com_1(g(x, y - 1)) [ y >= 0 ]
+		(?, 1)    g(x, y) -> Com_1(f(x - 1, y)) [ y < 0 ]
+	start location:	start
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(start) = 2*V_1 + 2
+	Pol(f) = 2*V_1 + 2
+	Pol(g) = 2*V_1 + 1
+orients all transitions weakly and the transition
+	f(x, y) -> Com_1(g(x, x^2)) [ x > 0 ]
+strictly and produces the following problem:
+2:	T:
+		(1, 1)          start(x, y) -> Com_1(f(x, y))
+		(2*x + 2, 1)    f(x, y) -> Com_1(g(x, x^2)) [ x > 0 ]
+		(?, 1)          g(x, y) -> Com_1(g(x, y - 1)) [ y >= 0 ]
+		(?, 1)          g(x, y) -> Com_1(f(x - 1, y)) [ y < 0 ]
+	start location:	start
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(g) = 1
+	Pol(f) = 0
+and size complexities
+	S("g(x, y) -> Com_1(f(x - 1, y)) [ y < 0 ]", 0-0) = ?
+	S("g(x, y) -> Com_1(f(x - 1, y)) [ y < 0 ]", 0-1) = ?
+	S("g(x, y) -> Com_1(g(x, y - 1)) [ y >= 0 ]", 0-0) = ?
+	S("g(x, y) -> Com_1(g(x, y - 1)) [ y >= 0 ]", 0-1) = ?
+	S("f(x, y) -> Com_1(g(x, x^2)) [ x > 0 ]", 0-0) = ?
+	S("f(x, y) -> Com_1(g(x, x^2)) [ x > 0 ]", 0-1) = ?
+	S("start(x, y) -> Com_1(f(x, y))", 0-0) = x
+	S("start(x, y) -> Com_1(f(x, y))", 0-1) = y
+orients the transitions
+	g(x, y) -> Com_1(g(x, y - 1)) [ y >= 0 ]
+	g(x, y) -> Com_1(f(x - 1, y)) [ y < 0 ]
+weakly and the transition
+	g(x, y) -> Com_1(f(x - 1, y)) [ y < 0 ]
+strictly and produces the following problem:
+3:	T:
+		(1, 1)          start(x, y) -> Com_1(f(x, y))
+		(2*x + 2, 1)    f(x, y) -> Com_1(g(x, x^2)) [ x > 0 ]
+		(?, 1)          g(x, y) -> Com_1(g(x, y - 1)) [ y >= 0 ]
+		(2*x + 2, 1)    g(x, y) -> Com_1(f(x - 1, y)) [ y < 0 ]
+	start location:	start
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(g) = V_2 + 1
+and size complexities
+	S("g(x, y) -> Com_1(f(x - 1, y)) [ y < 0 ]", 0-0) = 3*x + 18
+	S("g(x, y) -> Com_1(f(x - 1, y)) [ y < 0 ]", 0-1) = 9*x^2 + 108*x + 324
+	S("g(x, y) -> Com_1(g(x, y - 1)) [ y >= 0 ]", 0-0) = 3*x + 18
+	S("g(x, y) -> Com_1(g(x, y - 1)) [ y >= 0 ]", 0-1) = 9*x^2 + 108*x + 324
+	S("f(x, y) -> Com_1(g(x, x^2)) [ x > 0 ]", 0-0) = 3*x + 18
+	S("f(x, y) -> Com_1(g(x, x^2)) [ x > 0 ]", 0-1) = 9*x^2 + 108*x + 324
+	S("start(x, y) -> Com_1(f(x, y))", 0-0) = x
+	S("start(x, y) -> Com_1(f(x, y))", 0-1) = y
+orients the transitions
+	g(x, y) -> Com_1(g(x, y - 1)) [ y >= 0 ]
+weakly and the transition
+	g(x, y) -> Com_1(g(x, y - 1)) [ y >= 0 ]
+strictly and produces the following problem:
+4:	T:
+		(1, 1)                                 start(x, y) -> Com_1(f(x, y))
+		(2*x + 2, 1)                           f(x, y) -> Com_1(g(x, x^2)) [ x > 0 ]
+		(18*x^3 + 234*x^2 + 866*x + 650, 1)    g(x, y) -> Com_1(g(x, y - 1)) [ y >= 0 ]
+		(2*x + 2, 1)                           g(x, y) -> Com_1(f(x - 1, y)) [ y < 0 ]
+	start location:	start
+	leaf cost:	0
+
+Complexity upper bound 870*x + 18*x^3 + 234*x^2 + 654
+
+Time: 0.333 sec (SMT: 0.325 sec)

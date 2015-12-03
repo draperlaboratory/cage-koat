@@ -1,0 +1,52 @@
+YES(?, x^3 + y^17 + 3)
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    f1(x, y) -> Com_1(f2(x^3, y))
+		(?, 1)    f2(x, y) -> Com_1(f3(x, y^17))
+		(?, 1)    f3(x, y) -> Com_1(f4(x, y))
+		(?, 1)    f4(x, y) -> Com_1(g(x, y))
+		(?, 1)    g(x, y) -> Com_1(g(x + 1, y)) [ x < y ]
+	start location:	f1
+	leaf cost:	0
+
+Repeatedly propagating knowledge in problem 1 produces the following problem:
+2:	T:
+		(1, 1)    f1(x, y) -> Com_1(f2(x^3, y))
+		(1, 1)    f2(x, y) -> Com_1(f3(x, y^17))
+		(1, 1)    f3(x, y) -> Com_1(f4(x, y))
+		(1, 1)    f4(x, y) -> Com_1(g(x, y))
+		(?, 1)    g(x, y) -> Com_1(g(x + 1, y)) [ x < y ]
+	start location:	f1
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(g) = -V_1 + V_2
+and size complexities
+	S("g(x, y) -> Com_1(g(x + 1, y)) [ x < y ]", 0-0) = ?
+	S("g(x, y) -> Com_1(g(x + 1, y)) [ x < y ]", 0-1) = y^17
+	S("f4(x, y) -> Com_1(g(x, y))", 0-0) = x^3
+	S("f4(x, y) -> Com_1(g(x, y))", 0-1) = y^17
+	S("f3(x, y) -> Com_1(f4(x, y))", 0-0) = x^3
+	S("f3(x, y) -> Com_1(f4(x, y))", 0-1) = y^17
+	S("f2(x, y) -> Com_1(f3(x, y^17))", 0-0) = x^3
+	S("f2(x, y) -> Com_1(f3(x, y^17))", 0-1) = y^17
+	S("f1(x, y) -> Com_1(f2(x^3, y))", 0-0) = x^3
+	S("f1(x, y) -> Com_1(f2(x^3, y))", 0-1) = y
+orients the transitions
+	g(x, y) -> Com_1(g(x + 1, y)) [ x < y ]
+weakly and the transition
+	g(x, y) -> Com_1(g(x + 1, y)) [ x < y ]
+strictly and produces the following problem:
+3:	T:
+		(1, 1)             f1(x, y) -> Com_1(f2(x^3, y))
+		(1, 1)             f2(x, y) -> Com_1(f3(x, y^17))
+		(1, 1)             f3(x, y) -> Com_1(f4(x, y))
+		(1, 1)             f4(x, y) -> Com_1(g(x, y))
+		(x^3 + y^17, 1)    g(x, y) -> Com_1(g(x + 1, y)) [ x < y ]
+	start location:	f1
+	leaf cost:	0
+
+Complexity upper bound x^3 + y^17 + 3
+
+Time: 0.186 sec (SMT: 0.182 sec)

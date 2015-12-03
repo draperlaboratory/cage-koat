@@ -1,0 +1,24 @@
+YES(?, x)
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    f(x) -> Com_1(g(x))
+		(?, 1)    g(x) -> Com_1(g(x - 1)) [ x > 0 ]
+	start location:	f
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(f) = V_1
+	Pol(g) = V_1
+orients all transitions weakly and the transition
+	g(x) -> Com_1(g(x - 1)) [ x > 0 ]
+strictly and produces the following problem:
+2:	T:
+		(1, 1)    f(x) -> Com_1(g(x))
+		(x, 1)    g(x) -> Com_1(g(x - 1)) [ x > 0 ]
+	start location:	f
+	leaf cost:	0
+
+Complexity upper bound x
+
+Time: 0.171 sec (SMT: 0.168 sec)

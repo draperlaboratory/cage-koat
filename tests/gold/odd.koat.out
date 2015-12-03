@@ -1,0 +1,147 @@
+MAYBE
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    f(x, y) -> Com_1(g(x, y))
+		(?, 1)    g(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+	start location:	f
+	leaf cost:	0
+
+By chaining the transition f(x, y) -> Com_1(g(x, y)) with all transitions in problem 1, the following new transition is obtained:
+	f(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+We thus obtain the following problem:
+2:	T:
+		(1, 2)    f(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+		(?, 1)    g(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+	start location:	f
+	leaf cost:	0
+
+By chaining the transition f(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ] with all transitions in problem 2, the following new transition is obtained:
+	f(x, y) -> Com_1(g(x + 2*y + 1, y + 2)) [ x < y /\ x + y < y + 1 ]
+We thus obtain the following problem:
+3:	T:
+		(1, 3)    f(x, y) -> Com_1(g(x + 2*y + 1, y + 2)) [ x < y /\ x + y < y + 1 ]
+		(?, 1)    g(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+	start location:	f
+	leaf cost:	0
+
+By chaining the transition f(x, y) -> Com_1(g(x + 2*y + 1, y + 2)) [ x < y /\ x + y < y + 1 ] with all transitions in problem 3, the following new transition is obtained:
+	f(x, y) -> Com_1(g(x + 3*y + 3, y + 3)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 ]
+We thus obtain the following problem:
+4:	T:
+		(1, 4)    f(x, y) -> Com_1(g(x + 3*y + 3, y + 3)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 ]
+		(?, 1)    g(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+	start location:	f
+	leaf cost:	0
+
+By chaining the transition f(x, y) -> Com_1(g(x + 3*y + 3, y + 3)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 ] with all transitions in problem 4, the following new transition is obtained:
+	f(x, y) -> Com_1(g(x + 4*y + 6, y + 4)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 ]
+We thus obtain the following problem:
+5:	T:
+		(1, 5)    f(x, y) -> Com_1(g(x + 4*y + 6, y + 4)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 ]
+		(?, 1)    g(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+	start location:	f
+	leaf cost:	0
+
+By chaining the transition f(x, y) -> Com_1(g(x + 4*y + 6, y + 4)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 ] with all transitions in problem 5, the following new transition is obtained:
+	f(x, y) -> Com_1(g(x + 5*y + 10, y + 5)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 ]
+We thus obtain the following problem:
+6:	T:
+		(1, 6)    f(x, y) -> Com_1(g(x + 5*y + 10, y + 5)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 ]
+		(?, 1)    g(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+	start location:	f
+	leaf cost:	0
+
+By chaining the transition f(x, y) -> Com_1(g(x + 5*y + 10, y + 5)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 ] with all transitions in problem 6, the following new transition is obtained:
+	f(x, y) -> Com_1(g(x + 6*y + 15, y + 6)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 ]
+We thus obtain the following problem:
+7:	T:
+		(1, 7)    f(x, y) -> Com_1(g(x + 6*y + 15, y + 6)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 ]
+		(?, 1)    g(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+	start location:	f
+	leaf cost:	0
+
+By chaining the transition f(x, y) -> Com_1(g(x + 6*y + 15, y + 6)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 ] with all transitions in problem 7, the following new transition is obtained:
+	f(x, y) -> Com_1(g(x + 7*y + 21, y + 7)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 ]
+We thus obtain the following problem:
+8:	T:
+		(1, 8)    f(x, y) -> Com_1(g(x + 7*y + 21, y + 7)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 ]
+		(?, 1)    g(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+	start location:	f
+	leaf cost:	0
+
+By chaining the transition f(x, y) -> Com_1(g(x + 7*y + 21, y + 7)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 ] with all transitions in problem 8, the following new transition is obtained:
+	f(x, y) -> Com_1(g(x + 8*y + 28, y + 8)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 ]
+We thus obtain the following problem:
+9:	T:
+		(1, 9)    f(x, y) -> Com_1(g(x + 8*y + 28, y + 8)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 ]
+		(?, 1)    g(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+	start location:	f
+	leaf cost:	0
+
+By chaining the transition f(x, y) -> Com_1(g(x + 8*y + 28, y + 8)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 ] with all transitions in problem 9, the following new transition is obtained:
+	f(x, y) -> Com_1(g(x + 9*y + 36, y + 9)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 ]
+We thus obtain the following problem:
+10:	T:
+		(1, 10)    f(x, y) -> Com_1(g(x + 9*y + 36, y + 9)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 ]
+		(?, 1)     g(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+	start location:	f
+	leaf cost:	0
+
+By chaining the transition f(x, y) -> Com_1(g(x + 9*y + 36, y + 9)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 ] with all transitions in problem 10, the following new transition is obtained:
+	f(x, y) -> Com_1(g(x + 10*y + 45, y + 10)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 /\ x + 9*y + 36 < y + 9 ]
+We thus obtain the following problem:
+11:	T:
+		(1, 11)    f(x, y) -> Com_1(g(x + 10*y + 45, y + 10)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 /\ x + 9*y + 36 < y + 9 ]
+		(?, 1)     g(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+	start location:	f
+	leaf cost:	0
+
+By chaining the transition f(x, y) -> Com_1(g(x + 10*y + 45, y + 10)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 /\ x + 9*y + 36 < y + 9 ] with all transitions in problem 11, the following new transition is obtained:
+	f(x, y) -> Com_1(g(x + 11*y + 55, y + 11)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 /\ x + 9*y + 36 < y + 9 /\ x + 10*y + 45 < y + 10 ]
+We thus obtain the following problem:
+12:	T:
+		(1, 12)    f(x, y) -> Com_1(g(x + 11*y + 55, y + 11)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 /\ x + 9*y + 36 < y + 9 /\ x + 10*y + 45 < y + 10 ]
+		(?, 1)     g(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+	start location:	f
+	leaf cost:	0
+
+By chaining the transition f(x, y) -> Com_1(g(x + 11*y + 55, y + 11)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 /\ x + 9*y + 36 < y + 9 /\ x + 10*y + 45 < y + 10 ] with all transitions in problem 12, the following new transition is obtained:
+	f(x, y) -> Com_1(g(x + 12*y + 66, y + 12)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 /\ x + 9*y + 36 < y + 9 /\ x + 10*y + 45 < y + 10 /\ x + 11*y + 55 < y + 11 ]
+We thus obtain the following problem:
+13:	T:
+		(1, 13)    f(x, y) -> Com_1(g(x + 12*y + 66, y + 12)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 /\ x + 9*y + 36 < y + 9 /\ x + 10*y + 45 < y + 10 /\ x + 11*y + 55 < y + 11 ]
+		(?, 1)     g(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+	start location:	f
+	leaf cost:	0
+
+By chaining the transition f(x, y) -> Com_1(g(x + 12*y + 66, y + 12)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 /\ x + 9*y + 36 < y + 9 /\ x + 10*y + 45 < y + 10 /\ x + 11*y + 55 < y + 11 ] with all transitions in problem 13, the following new transition is obtained:
+	f(x, y) -> Com_1(g(x + 13*y + 78, y + 13)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 /\ x + 9*y + 36 < y + 9 /\ x + 10*y + 45 < y + 10 /\ x + 11*y + 55 < y + 11 /\ x + 12*y + 66 < y + 12 ]
+We thus obtain the following problem:
+14:	T:
+		(1, 14)    f(x, y) -> Com_1(g(x + 13*y + 78, y + 13)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 /\ x + 9*y + 36 < y + 9 /\ x + 10*y + 45 < y + 10 /\ x + 11*y + 55 < y + 11 /\ x + 12*y + 66 < y + 12 ]
+		(?, 1)     g(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+	start location:	f
+	leaf cost:	0
+
+By chaining the transition f(x, y) -> Com_1(g(x + 13*y + 78, y + 13)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 /\ x + 9*y + 36 < y + 9 /\ x + 10*y + 45 < y + 10 /\ x + 11*y + 55 < y + 11 /\ x + 12*y + 66 < y + 12 ] with all transitions in problem 14, the following new transition is obtained:
+	f(x, y) -> Com_1(g(x + 14*y + 91, y + 14)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 /\ x + 9*y + 36 < y + 9 /\ x + 10*y + 45 < y + 10 /\ x + 11*y + 55 < y + 11 /\ x + 12*y + 66 < y + 12 /\ x + 13*y + 78 < y + 13 ]
+We thus obtain the following problem:
+15:	T:
+		(1, 15)    f(x, y) -> Com_1(g(x + 14*y + 91, y + 14)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 /\ x + 9*y + 36 < y + 9 /\ x + 10*y + 45 < y + 10 /\ x + 11*y + 55 < y + 11 /\ x + 12*y + 66 < y + 12 /\ x + 13*y + 78 < y + 13 ]
+		(?, 1)     g(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+	start location:	f
+	leaf cost:	0
+
+By chaining the transition f(x, y) -> Com_1(g(x + 14*y + 91, y + 14)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 /\ x + 9*y + 36 < y + 9 /\ x + 10*y + 45 < y + 10 /\ x + 11*y + 55 < y + 11 /\ x + 12*y + 66 < y + 12 /\ x + 13*y + 78 < y + 13 ] with all transitions in problem 15, the following new transition is obtained:
+	f(x, y) -> Com_1(g(x + 15*y + 105, y + 15)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 /\ x + 9*y + 36 < y + 9 /\ x + 10*y + 45 < y + 10 /\ x + 11*y + 55 < y + 11 /\ x + 12*y + 66 < y + 12 /\ x + 13*y + 78 < y + 13 /\ x + 14*y + 91 < y + 14 ]
+We thus obtain the following problem:
+16:	T:
+		(1, 16)    f(x, y) -> Com_1(g(x + 15*y + 105, y + 15)) [ x < y /\ x + y < y + 1 /\ x + 2*y + 1 < y + 2 /\ x + 3*y + 3 < y + 3 /\ x + 4*y + 6 < y + 4 /\ x + 5*y + 10 < y + 5 /\ x + 6*y + 15 < y + 6 /\ x + 7*y + 21 < y + 7 /\ x + 8*y + 28 < y + 8 /\ x + 9*y + 36 < y + 9 /\ x + 10*y + 45 < y + 10 /\ x + 11*y + 55 < y + 11 /\ x + 12*y + 66 < y + 12 /\ x + 13*y + 78 < y + 13 /\ x + 14*y + 91 < y + 14 ]
+		(?, 1)     g(x, y) -> Com_1(g(x + y, y + 1)) [ x < y ]
+	start location:	f
+	leaf cost:	0
+
+Complexity upper bound ?
+
+Time: 8.994 sec (SMT: 8.799 sec)

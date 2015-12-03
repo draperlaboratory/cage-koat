@@ -1,0 +1,24 @@
+YES(?, a + b)
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    start(a, b) -> Com_1(one(a, b))
+		(?, 1)    one(a, b) -> Com_1(one(a - 1, b)) [ a > b ]
+	start location:	start
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(start) = V_1 - V_2
+	Pol(one) = V_1 - V_2
+orients all transitions weakly and the transition
+	one(a, b) -> Com_1(one(a - 1, b)) [ a > b ]
+strictly and produces the following problem:
+2:	T:
+		(1, 1)        start(a, b) -> Com_1(one(a, b))
+		(a + b, 1)    one(a, b) -> Com_1(one(a - 1, b)) [ a > b ]
+	start location:	start
+	leaf cost:	0
+
+Complexity upper bound a + b
+
+Time: 0.110 sec (SMT: 0.107 sec)

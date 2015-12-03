@@ -1,0 +1,24 @@
+YES(?, x)
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    start(x) -> Com_1(f(x)) [ x < 100 /\ x > -100 ]
+		(?, 1)    f(x) -> Com_1(f(x - 1)) [ x > 0 ]
+	start location:	start
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(start) = V_1
+	Pol(f) = V_1
+orients all transitions weakly and the transition
+	f(x) -> Com_1(f(x - 1)) [ x > 0 ]
+strictly and produces the following problem:
+2:	T:
+		(1, 1)    start(x) -> Com_1(f(x)) [ x < 100 /\ x > -100 ]
+		(x, 1)    f(x) -> Com_1(f(x - 1)) [ x > 0 ]
+	start location:	start
+	leaf cost:	0
+
+Complexity upper bound x
+
+Time: 0.273 sec (SMT: 0.270 sec)

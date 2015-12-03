@@ -1,0 +1,58 @@
+YES(?, 5*n + 4*i + 2*n^2 + 2*i*n + 2)
+
+Initial complexity problem:
+1:	T:
+		(1, 1)    start(n, i, j) -> Com_1(bb4(n, i, j))
+		(?, 1)    bb4(n, i, j) -> Com_1(bb2(n, i, 0)) [ i < n /\ n >= 0 ]
+		(?, 1)    bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ i < n /\ j < n /\ n >= 0 ]
+		(?, 1)    bb2(n, i, j) -> Com_1(bb4(n, i + 1, j)) [ i < n /\ j >= n /\ j <= n /\ n >= 0 ]
+	start location:	start
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(start) = 2*V_1 - 2*V_2 + 1
+	Pol(bb4) = 2*V_1 - 2*V_2 + 1
+	Pol(bb2) = 2*V_1 - 2*V_2
+orients all transitions weakly and the transitions
+	bb4(n, i, j) -> Com_1(bb2(n, i, 0)) [ i < n /\ n >= 0 ]
+	bb2(n, i, j) -> Com_1(bb4(n, i + 1, j)) [ i < n /\ j >= n /\ j <= n /\ n >= 0 ]
+strictly and produces the following problem:
+2:	T:
+		(1, 1)                start(n, i, j) -> Com_1(bb4(n, i, j))
+		(2*n + 2*i + 1, 1)    bb4(n, i, j) -> Com_1(bb2(n, i, 0)) [ i < n /\ n >= 0 ]
+		(?, 1)                bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ i < n /\ j < n /\ n >= 0 ]
+		(2*n + 2*i + 1, 1)    bb2(n, i, j) -> Com_1(bb4(n, i + 1, j)) [ i < n /\ j >= n /\ j <= n /\ n >= 0 ]
+	start location:	start
+	leaf cost:	0
+
+A polynomial rank function with
+	Pol(bb2) = V_1 - V_3
+and size complexities
+	S("bb2(n, i, j) -> Com_1(bb4(n, i + 1, j)) [ i < n /\\ j >= n /\\ j <= n /\\ n >= 0 ]", 0-0) = n
+	S("bb2(n, i, j) -> Com_1(bb4(n, i + 1, j)) [ i < n /\\ j >= n /\\ j <= n /\\ n >= 0 ]", 0-1) = 3*n + 3*i + 9
+	S("bb2(n, i, j) -> Com_1(bb4(n, i + 1, j)) [ i < n /\\ j >= n /\\ j <= n /\\ n >= 0 ]", 0-2) = ?
+	S("bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ i < n /\\ j < n /\\ n >= 0 ]", 0-0) = n
+	S("bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ i < n /\\ j < n /\\ n >= 0 ]", 0-1) = 3*n + 3*i + 9
+	S("bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ i < n /\\ j < n /\\ n >= 0 ]", 0-2) = ?
+	S("bb4(n, i, j) -> Com_1(bb2(n, i, 0)) [ i < n /\\ n >= 0 ]", 0-0) = n
+	S("bb4(n, i, j) -> Com_1(bb2(n, i, 0)) [ i < n /\\ n >= 0 ]", 0-1) = 3*n + 3*i + 9
+	S("bb4(n, i, j) -> Com_1(bb2(n, i, 0)) [ i < n /\\ n >= 0 ]", 0-2) = 0
+	S("start(n, i, j) -> Com_1(bb4(n, i, j))", 0-0) = n
+	S("start(n, i, j) -> Com_1(bb4(n, i, j))", 0-1) = i
+	S("start(n, i, j) -> Com_1(bb4(n, i, j))", 0-2) = j
+orients the transitions
+	bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ i < n /\ j < n /\ n >= 0 ]
+weakly and the transition
+	bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ i < n /\ j < n /\ n >= 0 ]
+strictly and produces the following problem:
+3:	T:
+		(1, 1)                    start(n, i, j) -> Com_1(bb4(n, i, j))
+		(2*n + 2*i + 1, 1)        bb4(n, i, j) -> Com_1(bb2(n, i, 0)) [ i < n /\ n >= 0 ]
+		(2*n^2 + 2*i*n + n, 1)    bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ i < n /\ j < n /\ n >= 0 ]
+		(2*n + 2*i + 1, 1)        bb2(n, i, j) -> Com_1(bb4(n, i + 1, j)) [ i < n /\ j >= n /\ j <= n /\ n >= 0 ]
+	start location:	start
+	leaf cost:	0
+
+Complexity upper bound 5*n + 4*i + 2*n^2 + 2*i*n + 2
+
+Time: 0.316 sec (SMT: 0.308 sec)
