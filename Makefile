@@ -63,8 +63,12 @@ koatFSTConv: force_look
 koatCESConv: force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koatCESConv.native
 
+test: force_look
+	cd tests; sh runExamples.sh; sh simpleTest.sh
+
 clean: force_look
 	ocamlbuild -clean
+	-rm -r test/out
 	rm -f git_sha1.ml
 	-rm -f *\~
 	-rm -f */*\~
