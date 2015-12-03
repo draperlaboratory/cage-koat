@@ -21,4 +21,3 @@ strictly and produces the following problem:
 
 Complexity upper bound n + j
 
-Time: 0.130 sec (SMT: 0.128 sec)

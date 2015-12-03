@@ -32,4 +32,3 @@ Repeatedly propagating knowledge in problem 2 produces the following problem:
 
 Complexity upper bound 2*x + 1
 
-Time: 0.537 sec (SMT: 0.531 sec)

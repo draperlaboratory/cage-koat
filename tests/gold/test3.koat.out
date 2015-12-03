@@ -90,4 +90,3 @@ strictly and produces the following problem:
 
 Complexity upper bound 84*x + 51*x^2 + 9*x^3 + 31
 
-Time: 1.096 sec (SMT: 1.081 sec)

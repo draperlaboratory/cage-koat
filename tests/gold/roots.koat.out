@@ -48,4 +48,3 @@ strictly and produces the following problem:
 
 Complexity upper bound x^3 + x^17 + 6
 
-Time: 0.252 sec (SMT: 0.247 sec)

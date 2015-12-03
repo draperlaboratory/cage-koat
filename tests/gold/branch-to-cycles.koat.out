@@ -110,4 +110,3 @@ strictly and produces the following problem:
 
 Complexity upper bound 2*a + 2*b + 11
 
-Time: 0.525 sec (SMT: 0.514 sec)

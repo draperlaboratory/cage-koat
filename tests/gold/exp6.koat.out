@@ -430,4 +430,3 @@ strictly and produces the following problem:
 
 Complexity upper bound 2 * pow(2, 14*x + x^2 + 2) + x + 9904729535394818209244909866
 
-Time: 18.062 sec (SMT: 17.370 sec)

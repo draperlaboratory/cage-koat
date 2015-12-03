@@ -55,4 +55,3 @@ strictly and produces the following problem:
 
 Complexity upper bound 5*n + 4*i + 2*n^2 + 2*i*n + 2
 
-Time: 0.316 sec (SMT: 0.308 sec)

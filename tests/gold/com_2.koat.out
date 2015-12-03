@@ -43,4 +43,3 @@ strictly and produces the following problem:
 
 Complexity upper bound x + x^2
 
-Time: 0.352 sec (SMT: 0.346 sec)

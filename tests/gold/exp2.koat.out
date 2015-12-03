@@ -122,4 +122,3 @@ strictly and produces the following problem:
 
 Complexity upper bound pow(2, x) * 2 + pow(2, pow(2, x) * 2) * 2 + x + 4
 
-Time: 1.296 sec (SMT: 1.274 sec)

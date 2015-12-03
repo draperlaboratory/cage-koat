@@ -44,4 +44,3 @@ strictly and produces the following problem:
 
 Complexity upper bound x^51 + 3
 
-Time: 0.219 sec (SMT: 0.215 sec)

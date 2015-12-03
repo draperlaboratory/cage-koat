@@ -76,4 +76,3 @@ strictly and produces the following problem:
 
 Complexity upper bound 870*x + 18*x^3 + 234*x^2 + 654
 
-Time: 0.333 sec (SMT: 0.325 sec)

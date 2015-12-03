@@ -79,4 +79,3 @@ strictly and produces the following problem:
 
 Complexity upper bound a + b + 13
 
-Time: 0.503 sec (SMT: 0.494 sec)

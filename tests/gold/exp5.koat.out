@@ -430,4 +430,3 @@ strictly and produces the following problem:
 
 Complexity upper bound 2 * pow(2, x + 30) + x + 65530
 
-Time: 10.916 sec (SMT: 10.537 sec)

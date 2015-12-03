@@ -202,4 +202,3 @@ strictly and produces the following problem:
 
 Complexity upper bound 50*a + 50*b + 33
 
-Time: 1.291 sec (SMT: 1.260 sec)

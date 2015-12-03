@@ -365,4 +365,3 @@ strictly and produces the following problem:
 
 Complexity upper bound 9*x + 3*x^2 + 21
 
-Time: 8.366 sec (SMT: 7.972 sec)

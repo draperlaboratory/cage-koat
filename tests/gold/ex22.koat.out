@@ -21,4 +21,3 @@ strictly and produces the following problem:
 
 Complexity upper bound 2*x
 
-Time: 0.399 sec (SMT: 0.394 sec)

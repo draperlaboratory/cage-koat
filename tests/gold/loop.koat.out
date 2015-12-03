@@ -184,4 +184,3 @@ Repeatedly propagating knowledge in problem 4 produces the following problem:
 
 Complexity upper bound 43452*a + 43596*b + 1512*a^2 + 3240*a*b + 1728*b^2 + 28267
 
-Time: 0.655 sec (SMT: 0.640 sec)

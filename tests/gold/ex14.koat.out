@@ -21,4 +21,3 @@ strictly and produces the following problem:
 
 Complexity upper bound n + i
 
-Time: 0.110 sec (SMT: 0.108 sec)

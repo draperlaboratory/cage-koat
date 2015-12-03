@@ -243,4 +243,3 @@ strictly and produces the following problem:
 
 Complexity upper bound y + 17
 
-Time: 5.428 sec (SMT: 5.257 sec)

@@ -51,4 +51,3 @@ strictly and produces the following problem:
 
 Complexity upper bound 5*x + 3*x^2 + x^3 + 3
 
-Time: 0.715 sec (SMT: 0.705 sec)

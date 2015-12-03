@@ -40,4 +40,3 @@ strictly and produces the following problem:
 
 Complexity upper bound x + 3
 
-Time: 0.211 sec (SMT: 0.207 sec)

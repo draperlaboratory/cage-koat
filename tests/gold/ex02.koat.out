@@ -56,4 +56,3 @@ strictly and produces the following problem:
 
 Complexity upper bound x + 3*y + 2
 
-Time: 0.413 sec (SMT: 0.405 sec)

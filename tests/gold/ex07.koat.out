@@ -25,4 +25,3 @@ strictly and produces the following problem:
 
 Complexity upper bound x^3
 
-Time: 0.170 sec (SMT: 0.167 sec)

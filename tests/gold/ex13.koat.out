@@ -65,4 +65,3 @@ strictly and produces the following problem:
 
 Complexity upper bound pow(2, y) * (x + y + y^2) + y + x + 1
 
-Time: 0.750 sec (SMT: 0.738 sec)

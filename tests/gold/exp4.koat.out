@@ -30,4 +30,3 @@ strictly and produces the following problem:
 
 Complexity upper bound pow(2, x + 1)
 
-Time: 0.820 sec (SMT: 0.794 sec)
