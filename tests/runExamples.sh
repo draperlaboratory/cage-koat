@@ -18,6 +18,7 @@ runDirectory()
             else
                 $KOAT $file > ${file}.out
                 head -n -1 ${file}.out > $OUTDIR/${filename}.out
+                rm ${file}.out
             fi
         fi
     done
