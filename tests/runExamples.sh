@@ -14,10 +14,10 @@ runDirectory()
             filename=$(basename $file)
             if $DEBUG; then
                 echo "./koat.native $file > ${file}.out"
-                echo "mv ${file}.out $filename"
+                echo "head -n -1 ${file}.out > $filename"
             else
                 $KOAT $file > ${file}.out
-                mv ${file}.out $OUTDIR/${filename}.out
+                head -n -1 ${file}.out > $OUTDIR/${filename}.out
             fi
         fi
     done
