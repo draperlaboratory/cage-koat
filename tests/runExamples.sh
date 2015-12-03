@@ -1,9 +1,9 @@
 #!/bin/bash
 ## Run KoaT against every instance in the test directory
 
-DEBUG=true
-KOAT=./koat.native
-OUTDIR=foo
+DEBUG=false
+KOAT=../koat.native
+OUTDIR=out
 
 
 runDirectory()
