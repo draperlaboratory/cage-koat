@@ -36,6 +36,9 @@ default: kittel koat
 
 all: kittel koat convert koatCConv koatFSTConv koatCESConv dep
 
+arity: arity.ml
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} arity.native
+
 kittel: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} kittel.native
 
