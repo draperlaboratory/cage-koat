@@ -284,3 +284,28 @@ let restrictArguments indexSet rule =
     lowerBound = rule.lowerBound;
     upperBound = rule.upperBound;
   }
+
+
+let rec maximumArity = function
+  | [] -> 0
+  | hd::tl -> max (Term.getArity hd.lhs) (maximumArity tl)
+
+let pad maxArity term =
+  let pel = Poly.fromVar "ArityPad" in
+  let rec makePad = function
+    | 0 -> []
+    | x -> pel::(makePad (x - 1)) in
+  let toAdd = Term.getArity term in
+  let padding = makePad toAdd in
+  { Term.fn = term.Term.fn;
+    Term.args = term.Term.args @ padding; }
+
+let padCR maxArity cr =
+  let p = pad maxArity in
+  { cr with
+    lhs = p cr.lhs;
+    rhss = List.map p cr.rhss ; }
+
+let fixArity cint =
+  let maxArity = maximumArity cint in
+  List.map (padCR maxArity) cint
