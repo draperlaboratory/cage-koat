@@ -329,7 +329,7 @@ let buildMapping (newArgs : Poly.var list) (cr : rule) =
     cr.rhss in
   {lhs; rhss; cond; (* punning *)
    lowerBound = Poly.instantiate cr.lowerBound sigma;
-   upperBound = Poly.instantiate cr.lowerBound sigma;}
+   upperBound = Poly.instantiate cr.upperBound sigma;}
 
 let maximumArity lst =
   let fixedArity = ref true
