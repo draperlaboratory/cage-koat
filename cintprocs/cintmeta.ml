@@ -71,6 +71,7 @@ and checkStartCondition tgraph trs startfun =
       raise (Cint_aux.ParseException (0, 0, "Error: Start nodes have incoming edges!"))
 
 let rec process cint maxchaining startfun ctype =
+  let cint = Comrule.fixArity cint in
   check cint;
   i := 1;
   proofs := [];
