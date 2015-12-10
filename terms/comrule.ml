@@ -335,11 +335,6 @@ let buildMapping (newArgs : Poly.var list) (cr : rule) =
    lowerBound = Poly.instantiate cr.lowerBound sigma;
    upperBound = Poly.instantiate cr.lowerBound sigma;}
 
-let padCR maxArity cr =
-  let p = pad maxArity in
-  { cr with
-    lhs = p cr.lhs;
-    rhss = List.map p cr.rhss ; }
 
 let fixArity cint =
   let maxArity = maximumArity cint in
