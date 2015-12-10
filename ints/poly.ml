@@ -420,3 +420,10 @@ and getMaxMonos (pol, c) (pol', c') =
     List.map (getMaxCoeff (pol, c) (pol', c')) monos
 and getMaxCoeff (pol, c) (pol', c') mon =
   (Big_int.max_big_int (getCoeff (pol, c) mon) (getCoeff (pol', c') mon), mon)
+
+let toVar = function
+  | ([ (coeff, [var, exp]) ], const) when
+      Big_int.eq_big_int coeff Big_int.unit_big_int
+      && exp = 1
+        && Big_int.eq_big_int const Big_int.zero_big_int -> var
+  | p -> failwith (Printf.sprintf "Not a variable: %s !" (toString p))

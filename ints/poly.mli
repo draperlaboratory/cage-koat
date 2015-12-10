@@ -67,3 +67,4 @@ val getDegree : poly -> int
 val getDegreeMono : monomial -> int
 
 val max : poly -> poly -> poly
+val toVar : poly -> var
