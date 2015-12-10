@@ -290,15 +290,50 @@ let rec maximumArity = function
   | [] -> 0
   | hd::tl -> max (Term.getArity hd.lhs) (maximumArity tl)
 
+let rec buildNewArgs = function
+  | 0 -> ["_x_0"]
+  | i -> (Printf.sprintf "_x_%i" i):: (buildNewArgs (i - 1))
+
+let rec firstN lst i =
+  if i == 0 then
+    []
+  else
+    match lst with
+    | [] -> failwith "Splitting list beyond its end!"
+    | hd::tl -> hd::(firstN tl (i - 1))
+
 let pad maxArity term =
   let pel = Poly.fromVar "ArityPad" in
   let rec makePad = function
     | 0 -> []
     | x -> pel::(makePad (x - 1)) in
-  let toAdd = Term.getArity term in
+  let toAdd = maxArity - (Term.getArity term) in
   let padding = makePad toAdd in
   { Term.fn = term.Term.fn;
     Term.args = term.Term.args @ padding; }
+
+let rec sigmaToString = function
+  | [] -> Printf.sprintf "\n"
+  | (s,p)::tl ->
+    Printf.sprintf "%s -> %s\n" s (Poly.toString p) ^ (sigmaToString tl)
+
+let buildMapping (newArgs : Poly.var list) (cr : rule) =
+  let maxArity = List.length newArgs
+  and lhs = cr.lhs in
+  let toMap = firstN newArgs (Term.getArity lhs) in
+  let sigma = List.map2 (fun var poly -> Poly.toVar poly, Poly.fromVar var)
+    toMap lhs.Term.args in
+  let cond = Pc.instantiate cr.cond sigma in
+  let lhs = { lhs with Term.args = List.map Poly.fromVar newArgs } in
+  let rhss = List.map
+    (fun rh ->
+      let rh' = Term.instantiate rh sigma in
+      let rh'' = pad maxArity rh' in
+      rh'')
+    cr.rhss in
+  {lhs; rhss; cond; (* punning *)
+   lowerBound = Poly.instantiate cr.lowerBound sigma;
+   upperBound = Poly.instantiate cr.lowerBound sigma;}
 
 let padCR maxArity cr =
   let p = pad maxArity in
@@ -308,4 +343,6 @@ let padCR maxArity cr =
 
 let fixArity cint =
   let maxArity = maximumArity cint in
-  List.map (padCR maxArity) cint
+  let newArgs = buildNewArgs maxArity in
+  let transform = buildMapping newArgs in
+  List.map transform cint
