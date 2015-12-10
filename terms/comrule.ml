@@ -286,10 +286,6 @@ let restrictArguments indexSet rule =
   }
 
 
-let rec maximumArity = function
-  | [] -> 0
-  | hd::tl -> max (Term.getArity hd.lhs) (maximumArity tl)
-
 let rec buildNewArgs = function
   | 0 -> ["_x_0"]
   | i -> (Printf.sprintf "_x_%i" i):: (buildNewArgs (i - 1))
@@ -335,9 +331,34 @@ let buildMapping (newArgs : Poly.var list) (cr : rule) =
    lowerBound = Poly.instantiate cr.lowerBound sigma;
    upperBound = Poly.instantiate cr.lowerBound sigma;}
 
+let maximumArity lst =
+  let fixedArity = ref true
+  and (iArity, tl) = match lst with
+    | [] -> 0, []
+    | hd::tl -> Term.getArity hd.lhs, tl in
+  let maxArity = ref iArity in
+  let rec rest = function
+    | [] -> !maxArity, !fixedArity
+    | hd::tl ->
+      begin
+        let ar = Term.getArity hd.lhs in
+        if ar > !maxArity then
+          begin
+            maxArity := ar;
+            fixedArity := false
+          end
+        else if ar <> !maxArity then
+          fixedArity := false;
+        rest tl
+      end in
+  rest tl
 
 let fixArity cint =
-  let maxArity = maximumArity cint in
-  let newArgs = buildNewArgs maxArity in
-  let transform = buildMapping newArgs in
-  List.map transform cint
+  let maxArity,fixedArity = maximumArity cint in
+  (* we don't have to fix the arity, just skip it. *)
+  if fixedArity then cint
+  else
+    (* not everything has the same arity, do a transform *)
+    let newArgs = buildNewArgs maxArity in
+    let transform = buildMapping newArgs in
+    List.map transform cint
