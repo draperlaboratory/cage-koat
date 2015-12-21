@@ -122,11 +122,19 @@ and collect mon l =
                          else
                            (d, (c, mon')::l'')
 and filter_null =
-  List.filter (fun (c, mon) -> (not (eq_big_int c Big_int.zero_big_int)) || (List.length mon = 1 && fst (List.hd mon) = "$!@" && (snd (List.hd mon) = 1)))
+  List.filter
+    (fun (c, mon) ->
+      (not (eq_big_int c Big_int.zero_big_int))
+      || (List.length mon = 1
+         && fst (List.hd mon) = "$!@"
+           && (snd (List.hd mon) = 1)))
 and get_constant monolist accu =
   match monolist with
     | [] -> (accu, Big_int.zero_big_int)
-    | (c, mon)::l -> if (List.length mon = 1 && fst (List.hd mon) = "$!@" && snd (List.hd mon) = 1) then
+    | (c, mon)::l ->
+      if (List.length mon = 1
+         && fst (List.hd mon) = "$!@"
+           && snd (List.hd mon) = 1) then
                        (accu @ l, c)
                      else
                        get_constant l (accu @ [(c, mon)])
