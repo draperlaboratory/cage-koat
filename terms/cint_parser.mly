@@ -67,17 +67,17 @@ rule :
 
 wrule :
 | term OPENWTO poly COMMA poly CLOSEWTO COM OPENPAR term_list CLOSEPAR
-    { Comrule.createWeightedRule $1 $9 (Pc.create []) ($3, Big_int.zero_big_int) ($5, Big_int.zero_big_int) }
+    { Comrule.createWeightedRule $1 $9 (Pc.create []) (Poly.construct_poly $3) (Poly.construct_poly $5) }
 | term OPENWTO poly COMMA poly CLOSEWTO term
-    { Comrule.createWeightedRule $1 [$7] (Pc.create []) ($3, Big_int.zero_big_int) ($5, Big_int.zero_big_int) }
+    { Comrule.createWeightedRule $1 [$7] (Pc.create []) (Poly.construct_poly $3) (Poly.construct_poly $5) }
 | term OPENWTO poly COMMA poly CLOSEWTO COM OPENPAR term_list CLOSEPAR CONSTRAINTSEP cond_list
-    { Comrule.createWeightedRule $1 $9 (Pc.create $12) ($3, Big_int.zero_big_int) ($5, Big_int.zero_big_int) }
+    { Comrule.createWeightedRule $1 $9 (Pc.create $12) (Poly.construct_poly $3) (Poly.construct_poly $5) }
 | term OPENWTO poly COMMA poly CLOSEWTO term CONSTRAINTSEP cond_list
-    { Comrule.createWeightedRule $1 [$7] (Pc.create $9) ($3, Big_int.zero_big_int) ($5, Big_int.zero_big_int) }
+    { Comrule.createWeightedRule $1 [$7] (Pc.create $9) (Poly.construct_poly $3) (Poly.construct_poly $5) }
 | term OPENWTO poly COMMA poly CLOSEWTO COM OPENPAR term_list CLOSEPAR OPENSQ cond_list CLOSESQ
-    { Comrule.createWeightedRule $1 $9 (Pc.create $12) ($3, Big_int.zero_big_int) ($5, Big_int.zero_big_int) }
+    { Comrule.createWeightedRule $1 $9 (Pc.create $12) (Poly.construct_poly $3) (Poly.construct_poly $5) }
 | term OPENWTO poly COMMA poly CLOSEWTO term OPENSQ cond_list CLOSESQ
-    { Comrule.createWeightedRule $1 [$7] (Pc.create $9) ($3, Big_int.zero_big_int) ($5, Big_int.zero_big_int) }
+    { Comrule.createWeightedRule $1 [$7] (Pc.create $9) (Poly.construct_poly $3) (Poly.construct_poly $5) }
 ;
 
 term :
