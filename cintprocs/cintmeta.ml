@@ -122,6 +122,16 @@ and getOverallCost tgraph globalSizeComplexities (ctrsobl, _, _, _) =
       res
     in
     let ruleComplexity = CTRSObl.getComplexity ctrsobl rule in
+    (**
+       JTT - 12/22/15
+
+       Rule cost still contains variables from the TRS as it was given in the
+       input file.  However, getCostForRule expects all variable names to be of
+       the form X_i, where i is the argument position of that particular
+       variable.  The mapping should hav happened early, but we compute and
+       apply it here.  Otherwise, we would end up with unknown complexity where
+       we can actually compute the proper value.
+    *)
     let ruleCost = Expexp.instantiate (CTRSObl.getCost ctrsobl rule) sigma in
     (* Printf.eprintf "RuleData: %s Comp: %s Cost: %s\n"
       (Comrule.toString rule)
