@@ -26,18 +26,26 @@ module RVG = Cfarkaspolo.RVG
 open CTRSObl
 open CTRS
 
+let constantCostFilter ctrsobl rule =
+  Expexp.isConst (CTRSObl.getCost ctrsobl rule)
+
+let getProof nctrsobl ini outi =
+  "Repeatedly removing leaves of the complexity graph in problem " ^
+  (string_of_int ini) ^ " produces the following problem:\n" ^
+  (CTRSObl.toStringNumber nctrsobl outi)
+
 (* Remove leaves *)
 let rec process ctrsobl tgraph rvgraph =
   if CTRSObl.isSolved ctrsobl then
     None
   else
-  (
+  begin
     Log.log "Trying leaf removal processor ...";
-    let leaves = TGraph.computeRulesInTwigs tgraph in
+    let leaves = TGraph.computeRulesInTwigs tgraph (constantCostFilter ctrsobl) in
     if (leaves = []) || (List.for_all (fun rule -> not(CTRSObl.hasUnknownComplexity ctrsobl rule)) leaves) then
       None
     else
-      (
+      begin
         Log.log (Printf.sprintf "Leaf removal processor successful, removing %i rules." (List.length leaves));
         let (removedRules, keptRules) = (leaves, Utils.removeAllC Rule.equal ctrsobl.ctrs.rules leaves) in
         let keptComplexities = CTRS.removeRulesFromMap ctrsobl.complexity leaves in
@@ -51,10 +59,6 @@ let rec process ctrsobl tgraph rvgraph =
           ; cost = keptCost
           ; leafCost = nl } in
         Some ((nctrsobl, ntgraph, nrvgraph), getProof nctrsobl)
-      )
-  )
+      end
+  end
 
-and getProof nctrsobl ini outi =
-  "Repeatedly removing leaves of the complexity graph in problem " ^
-  (string_of_int ini) ^ " produces the following problem:\n" ^
-  (CTRSObl.toStringNumber nctrsobl outi)

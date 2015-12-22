@@ -10,7 +10,7 @@ module G : Graph.Sig.P with type V.t = int
 
 module type S =
     sig
-      module CTRSObl : Ctrsobl.S 
+      module CTRSObl : Ctrsobl.S
       type r = CTRSObl.CTRS.RuleT.rule
       type tgraph
       val toDot : tgraph -> string
@@ -28,7 +28,7 @@ module type S =
       val getSuccs : tgraph -> r list -> r list
       exception Found of int
       val hasEdge : tgraph -> r -> r -> bool
-      val computeRulesInTwigs : tgraph -> r list
+      val computeRulesInTwigs : tgraph -> (r -> bool) -> r list
       val empty : unit -> tgraph
     end
 

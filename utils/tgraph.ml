@@ -326,27 +326,30 @@ module Make(CTRSObl : Ctrsobl.S) = struct
       | Found i -> i
 
   (* Compute rules in twigs *)
-  let rec computeRulesInTwigs (g, trsa) =
+  let rec computeRulesInTwigs (g, trsa) filter =
     let leaves = ref [] in
-      computeLeavesAux g trsa (Array.length trsa) leaves;
+      computeLeavesAux g trsa (Array.length trsa) filter leaves;
       getRules trsa !leaves
-  and computeLeavesAux g trsa len leaves =
-    if computeLeavesAuxStep g trsa len leaves then
-      computeLeavesAux g trsa len leaves
-  and computeLeavesAuxStep g trsa len leaves =
+  and computeLeavesAux g trsa len filter leaves =
+    if computeLeavesAuxStep g trsa len filter leaves then
+      computeLeavesAux g trsa len filter leaves
+  and computeLeavesAuxStep g trsa len filter leaves =
     let res = ref false in
       for i = 0 to (len - 1) do
         if not (Utils.contains !leaves i) then
-          let goodrow = ref true in
-            for j = 0 to (len - 1) do
-              if hasEdgeNums g trsa i j && not (Utils.contains !leaves j) then
-                goodrow := false
-            done;
-            if !goodrow then
-            (
-              leaves := i::!leaves;
-              res := true
-            )
+          if (filter (snd trsa.(i))) then
+            begin
+              let goodrow = ref true in
+              for j = 0 to (len - 1) do
+                if hasEdgeNums g trsa i j && not (Utils.contains !leaves j) then
+                  goodrow := false
+              done;
+              if !goodrow then
+                (
+                  leaves := i::!leaves;
+                  res := true
+                )
+            end
       done;
       !res
 
@@ -373,6 +376,6 @@ module type S =
       val getSuccs : tgraph -> r list -> r list
       exception Found of int
       val hasEdge : tgraph -> r -> r -> bool
-      val computeRulesInTwigs : tgraph -> r list
+      val computeRulesInTwigs : tgraph -> (r -> bool) -> r list
       val empty : unit -> tgraph
     end
