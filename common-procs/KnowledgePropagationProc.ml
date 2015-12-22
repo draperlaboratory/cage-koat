@@ -53,10 +53,7 @@ module Make (RVG : Rvgraph.S) = struct
       let preComplexitiesSum = Complexity.listAdd (List.map (fun r -> CTRS.RuleMap.find r complexities) pre) in
       CTRS.RuleMap.add rule preComplexitiesSum complexities
     in
-    { ctrs = ctrsobl.ctrs
-    ; cost = ctrsobl.cost
-    ; complexity = List.fold_left (updateOneSubsumedRule tgraph) ctrsobl.complexity subsumed
-    ; leafCost = ctrsobl.leafCost }
+    { ctrsobl with complexity = List.fold_left (updateOneSubsumedRule tgraph) ctrsobl.complexity subsumed }
 
   and getProof nctrsobl ini outi=
     "Repeatedly propagating knowledge in problem " ^

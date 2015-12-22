@@ -94,4 +94,4 @@ and annotate ctrsobl s polystrict boundconditions model d =
       ctrsobl.complexity
       (Utils.combine3 s polystrict boundconditions)
   in
-  { ctrs = ctrsobl.ctrs ; complexity = newComplexity ; cost = ctrsobl.cost; leafCost = ctrsobl.leafCost }
+  { ctrsobl with complexity = newComplexity }

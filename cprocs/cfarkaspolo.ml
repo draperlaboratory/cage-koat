@@ -278,7 +278,7 @@ and annotate ctrsobl strictAndBounded_with_rules model d =
       ctrsobl.complexity
       strictAndBounded_with_rules
   in
-  { ctrs = ctrsobl.ctrs ; cost = ctrsobl.cost ; complexity = newComplexity ; leafCost = ctrsobl.leafCost }
+  { ctrsobl with complexity = newComplexity }
 
 and annotateMinimal ctrsobl boundUseMinimal_with_rules strictAndNoMin_with_rules strictRhsMin_with_rules model d =
   let isStrictMinimal bound strict rhsminimal model =
@@ -295,7 +295,7 @@ and annotateMinimal ctrsobl boundUseMinimal_with_rules strictAndNoMin_with_rules
       ctrsobl.complexity
       (Utils.combine3 boundUseMinimal_with_rules strictAndNoMin_with_rules strictRhsMin_with_rules)
   in
-  { ctrs = ctrsobl.ctrs ; cost = ctrsobl.cost ; complexity = newComplexity ; leafCost = ctrsobl.leafCost }
+  { ctrsobl with complexity = newComplexity }
 
 
 and getProof oldctrsobl newctrsobl pol useSizeComplexities sizeComplexities toOrient ini outi =

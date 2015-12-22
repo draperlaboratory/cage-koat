@@ -206,7 +206,7 @@ and annotate ctrsobl boundedAndStrictConstraints_with_rules model d =
       ctrsobl.complexity
       boundedAndStrictConstraints_with_rules
   in
-  { ctrs = ctrsobl.ctrs ; cost = ctrsobl.cost ; complexity = newComplexity ; leafCost = ctrsobl.leafCost }
+  { ctrsobl with complexity = newComplexity }
 
 and getProof ini outi oldctrsobl newctrsobl pol useSizeComplexities sizeComplexities toOrient =
   let newlybound = List.filter (fun rule -> not (CTRSObl.hasUnknownComplexity newctrsobl rule)) (CTRSObl.getUnknownComplexityRules oldctrsobl) in
