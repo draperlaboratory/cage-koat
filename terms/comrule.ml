@@ -26,6 +26,17 @@ type rule = {
   upperBound : Poly.poly;
 }
 
+
+(* Create a string for a rule *)
+let rec toString r =
+  (Term.toString r.lhs) ^ " -> " ^ (toStringRhss r.rhss) ^
+  (if r.cond = [] then "" else " [ " ^ (Pc.toString r.cond) ^ " ]")
+and toStringRhss rs =
+  "Com_" ^ (string_of_int (List.length rs)) ^ "(" ^
+  String.concat ", " (List.map Term.toString rs) ^ ")"
+and listToStringPrefix prefix rules =
+  String.concat "\n" (List.map (fun r -> prefix ^ toString r) rules)
+
 (* Create a comrule. *)
 let createRule l rs c =
   { lhs = l;
@@ -37,22 +48,19 @@ let createRule l rs c =
 
 (* Create a comrule with bounds. *)
 let createWeightedRule l rs c lb ub =
+  let r =
   { lhs = l;
     rhss = rs;
     cond = c;
     lowerBound = lb;
     upperBound = ub;
-  }
+  } in
+(*
+  Printf.eprintf "%s: { %s , %s }\n"
+    (toString r) (Poly.toString lb) (Poly.toString ub);
+*)
+  r
 
-(* Create a string for a rule *)
-let rec toString r =
-  (Term.toString r.lhs) ^ " -> " ^ (toStringRhss r.rhss) ^
-  (if r.cond = [] then "" else " [ " ^ (Pc.toString r.cond) ^ " ]")
-and toStringRhss rs =
-  "Com_" ^ (string_of_int (List.length rs)) ^ "(" ^
-  String.concat ", " (List.map Term.toString rs) ^ ")"
-and listToStringPrefix prefix rules =
-  String.concat "\n" (List.map (fun r -> prefix ^ toString r) rules)
 
 let compare r1 r2 =
   let lComp = Term.compare r1.lhs r2.lhs in
@@ -174,8 +182,8 @@ let rec internalize r =
             rhss = List.map (fun r -> Term.instantiate r sigma) r.rhss;
             cond = newC;
             (* JTT 11-12-15 -- It isn't clear that I shouldn't instantiate these too. *)
-            lowerBound = r.lowerBound;
-            upperBound = r.upperBound;
+            lowerBound = Poly.instantiate r.lowerBound sigma;
+            upperBound = Poly.instantiate r.upperBound sigma;
           }
 and getSubstitution newVars c lvars =
   match newVars with
