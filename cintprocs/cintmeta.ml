@@ -114,7 +114,9 @@ and getOverallCost tgraph globalSizeComplexities (ctrsobl, _, _, _) =
     in
     let ruleComplexity = CTRSObl.getComplexity ctrsobl rule in
     let ruleCost = CTRSObl.getCost ctrsobl rule in
-    Complexity.mult ruleComplexity (Complexity.sup (List.map (getCostPerPreRule ruleCost globalSizeComplexities vars) preRules)) in
+    match preRules with
+    | [] -> Complexity.mult ruleComplexity (Complexity.P ruleCost)
+    | _ -> Complexity.mult ruleComplexity (Complexity.sup (List.map (getCostPerPreRule ruleCost globalSizeComplexities vars) preRules)) in
   Complexity.add
     (Complexity.listAdd (List.map (getCostForRule tgraph globalSizeComplexities vars) ctrsobl.ctrs.rules))
     (Complexity.P ctrsobl.leafCost)
