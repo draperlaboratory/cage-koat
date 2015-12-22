@@ -111,7 +111,7 @@ let rec process cint maxchaining startfun ctype =
 and getOverallCost tgraph globalSizeComplexities (ctrsobl, _, _, _) =
   let vars = CTRS.getVars ctrsobl.ctrs in
   let getCostForRule tgraph globalSizeComplexities vars rule =
-    let foo = List.mapi (fun i var -> Poly.toVar var, Expexp.fromVar (Printf.sprintf "X_%i" (i + 1))) rule.Comrule.lhs.Term.args in
+    let sigma = List.mapi (fun i var -> Poly.toVar var, Expexp.fromVar (Printf.sprintf "X_%i" (i + 1))) rule.Comrule.lhs.Term.args in
     let preRules = TGraph.getPreds tgraph [rule] in
     let getCostPerPreRule (ruleCost : Expexp.expexp) globalSizeComplexities vars preRule =
       let csmap = GSC.extractSizeMapForRule globalSizeComplexities preRule 0 vars in
@@ -122,7 +122,7 @@ and getOverallCost tgraph globalSizeComplexities (ctrsobl, _, _, _) =
       res
     in
     let ruleComplexity = CTRSObl.getComplexity ctrsobl rule in
-    let ruleCost = Expexp.instantiate (CTRSObl.getCost ctrsobl rule) foo in
+    let ruleCost = Expexp.instantiate (CTRSObl.getCost ctrsobl rule) sigma in
     (* Printf.eprintf "RuleData: %s Comp: %s Cost: %s\n"
       (Comrule.toString rule)
       (Complexity.toString ruleComplexity)
