@@ -46,29 +46,33 @@ let did_ai = ref false
 let todo = ref (CTRSObl.getInitialObl [] "" Complexity.Time,
                 TGraph.empty (), None, 0)
 
-let rec check trs =
-  if trs = [] then
-    raise (Cint_aux.ParseException (0, 0, "Error: Cannot handle empty CINT!"))
-  else
+let checkComrules arity lvars trs =
+  let rec internal = function
+  | [] -> ()
+  | rule::rest ->
+    let lhs = Comrule.getLeft rule in
+    if ((Term.getArity lhs) <> arity) || (Term.getVars lhs <> lvars) then
+      raise (Cint_aux.ParseException (0, 0, "Error: Not all rules have the same variables!"))
+    else if List.exists (fun r -> (Term.getArity r <> arity)) (Comrule.getRights rule) then
+      raise (Cint_aux.ParseException (0, 0, "Error: Not all function symbols have the same arity!"))
+    else
+      internal rest in
+  internal trs
+
+let check = function
+  | [] -> raise (Cint_aux.ParseException
+                   (0, 0, "Error: Cannot handle empty CINT!"))
+  | trs ->
     let first = List.hd trs in
     let arity = Term.getArity (Comrule.getLeft first)
     and lvars = Term.getVars (Comrule.getLeft first) in
     checkComrules arity lvars trs
-and checkComrules arity lvars trs =
-  match trs with
-    | [] -> ()
-    | rule::rest -> let lhs = Comrule.getLeft rule in
-                      if ((Term.getArity lhs) <> arity) || (Term.getVars lhs <> lvars) then
-                        raise (Cint_aux.ParseException (0, 0, "Error: Not all rules have the same variables!"))
-                      else if List.exists (fun r -> (Term.getArity r <> arity)) (Comrule.getRights rule) then
-                        raise (Cint_aux.ParseException (0, 0, "Error: Not all function symbols have the same arity!"))
-                      else
-                        checkComrules arity lvars rest
 
-and checkStartCondition tgraph trs startfun =
+let checkStartCondition tgraph trs startfun =
   let startComrules = List.filter (fun rule -> (Term.getFun (Comrule.getLeft rule)) = startfun) trs in
-    if (TGraph.getPreds tgraph startComrules) <> [] then
-      raise (Cint_aux.ParseException (0, 0, "Error: Start nodes have incoming edges!"))
+  match TGraph.getPreds tgraph startComrules with
+  | [] -> ()
+  | _ -> raise (Cint_aux.ParseException (0, 0, "Error: Start nodes have incoming edges!"))
 
 let rec process cint maxchaining startfun ctype =
   let cint = Comrule.fixArity cint in
@@ -107,16 +111,32 @@ let rec process cint maxchaining startfun ctype =
 and getOverallCost tgraph globalSizeComplexities (ctrsobl, _, _, _) =
   let vars = CTRS.getVars ctrsobl.ctrs in
   let getCostForRule tgraph globalSizeComplexities vars rule =
+    let foo = List.mapi (fun i var -> Poly.toVar var, Expexp.fromVar (Printf.sprintf "X_%i" (i + 1))) rule.Comrule.lhs.Term.args in
     let preRules = TGraph.getPreds tgraph [rule] in
-    let getCostPerPreRule ruleCost globalSizeComplexities vars preRule =
+    let getCostPerPreRule (ruleCost : Expexp.expexp) globalSizeComplexities vars preRule =
       let csmap = GSC.extractSizeMapForRule globalSizeComplexities preRule 0 vars in
-      Complexity.apply ruleCost csmap
+      (* List.iter (fun (p,c) -> Printf.eprintf "%s -> %s\n" p (Complexity.toString c)) csmap;*)
+      let res = Complexity.apply ruleCost csmap in
+      (* List.iter (fun v -> Printf.eprintf " %s" v) vars;
+         Printf.eprintf "\npreRuleComp: %s\n" (Complexity.toString res); *)
+      res
     in
     let ruleComplexity = CTRSObl.getComplexity ctrsobl rule in
-    let ruleCost = CTRSObl.getCost ctrsobl rule in
+    let ruleCost = Expexp.instantiate (CTRSObl.getCost ctrsobl rule) foo in
+    (* Printf.eprintf "RuleData: %s Comp: %s Cost: %s\n"
+      (Comrule.toString rule)
+      (Complexity.toString ruleComplexity)
+      (Expexp.toString ruleCost); *)
+    let result =
     match preRules with
     | [] -> Complexity.mult ruleComplexity (Complexity.P ruleCost)
-    | _ -> Complexity.mult ruleComplexity (Complexity.sup (List.map (getCostPerPreRule ruleCost globalSizeComplexities vars) preRules)) in
+    | _ -> Complexity.mult ruleComplexity
+              (Complexity.sup
+                 (List.map
+                    (getCostPerPreRule ruleCost globalSizeComplexities vars)
+                    preRules)) in
+    (* Printf.eprintf "Result: %s\n" (Complexity.toString result); *)
+    result in
   Complexity.add
     (Complexity.listAdd (List.map (getCostForRule tgraph globalSizeComplexities vars) ctrsobl.ctrs.rules))
     (Complexity.P ctrsobl.leafCost)
