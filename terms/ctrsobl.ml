@@ -37,25 +37,40 @@ module Make(CTRS : Ctrs.S) = struct
 
   let getComplexity obl rule =
     RuleMap.find rule obl.complexity
+
   let getCost obl rule =
     RuleMap.find rule obl.cost
 
+  let complCostRuleStrings obl =
+    let maxLen = ref 0 in
+    let asString r =
+      let (s, _) as tup = Printf.sprintf "(%s, %s)"
+      (Complexity.toString (getComplexity obl r))
+      (Expexp.toString (getCost obl r)), RuleT.toString r in
+      maxLen := max !maxLen (String.length s);
+      tup in
+    List.map asString obl.ctrs.CTRS.rules, !maxLen
+
   let toStringPrefix prefix obl =
-    let open Printf in
     let open CTRS in
-    let rulesString =
-      if obl.ctrs.rules = [] then
-        prefix ^ "\t(none)"
-      else
-        let complCostRuleStrings =
-          List.map (fun r -> (sprintf "(%s, %s)" (Complexity.toString (getComplexity obl r)) (Expexp.toString (getCost obl r)), RuleT.toString r)) obl.ctrs.rules in
-        let maxLen = List.fold_left (fun m (s, _) -> max m (String.length s)) 0 complCostRuleStrings in
+    let rulesString = match obl.ctrs.rules with
+      | [] -> prefix ^ "\t(none)"
+      | _ ->
+        let complCostRuleStrings, maxLen = complCostRuleStrings obl in
         let toStringPrefixOne prefix maxLen (ccS, rS) =
-          prefix ^ ccS ^ (String.make (maxLen + 4 - (String.length ccS)) ' ') ^ rS in
+          Printf.sprintf "%s%s%s%s" prefix ccS (String.make (maxLen + 4 - (String.length ccS)) ' ') rS in
         String.concat "\n" (List.map (toStringPrefixOne (prefix ^ "\t") maxLen) complCostRuleStrings) in
-    sprintf "%sT:\n%s\n%sstart location:\t%s\n%sleaf cost:\t%s" prefix rulesString prefix obl.ctrs.startFun prefix (Expexp.toString obl.leafCost)
+    Printf.sprintf "%sT:\n%s\n%sstart location:\t%s\n%sleaf cost:\t%s"
+      prefix
+      rulesString
+      prefix
+      obl.ctrs.startFun
+      prefix
+      (Expexp.toString obl.leafCost)
+
   let toString obl =
     toStringPrefix "\t" obl
+
   let toStringNumber obl i =
     (string_of_int i) ^ ":" ^ (toString obl)
 
@@ -75,7 +90,7 @@ module Make(CTRS : Ctrs.S) = struct
 
   (* Takes a rule and, if the head symbol is in specs, returns
      the assigned complexity, otherwise returns Unknown *)
-  let initComp rule start =
+  let initComp start rule =
     let f = RuleT.getLeftFun rule in
     if f = start then
       Complexity.P Expexp.one
@@ -84,19 +99,21 @@ module Make(CTRS : Ctrs.S) = struct
 
   let spaceOrTimeWeight rule =
     let p = RuleT.getUpperBound rule in
+    (*Printf.eprintf "ctrsobl %s : %s \n" (RuleT.toString rule) (Poly.toString p);*)
     Expexp.Pol p
 
 
   let getInitialObl rules start ctype =
     let open Expexp in
     let open CTRS in
+    let initComp = initComp start in
+    let folder (rules, costs, compl) rule =
+      let rules' = rule::rules
+      and costs' = RuleMap.add rule (spaceOrTimeWeight rule) costs
+      and compl' = RuleMap.add rule (initComp rule) compl in
+      (rules', costs', compl') in
     let (rules, initCost, initCompl) =
-      List.fold_left
-        (fun (rules, cost, compl) rule ->
-          (rule::rules,
-           RuleMap.add rule (spaceOrTimeWeight rule) cost,
-           RuleMap.add rule (initComp rule start) compl))
-        ([], RuleMap.empty, RuleMap.empty) rules in
+      List.fold_left folder ([], RuleMap.empty, RuleMap.empty) rules in
     {
       ctrs = { rules = rules ;
                startFun = start ;
@@ -108,7 +125,8 @@ module Make(CTRS : Ctrs.S) = struct
 
   let haveSameComplexities obl1 obl2 =
     RuleMap.cardinal obl1.complexity = RuleMap.cardinal obl2.complexity &&
-    RuleMap.for_all (fun rule compl1 -> RuleMap.mem rule obl2.complexity && Complexity.equal compl1 (RuleMap.find rule obl2.complexity)) obl1.complexity
+    RuleMap.for_all (fun rule compl1 -> RuleMap.mem rule obl2.complexity &&
+      Complexity.equal compl1 (RuleMap.find rule obl2.complexity)) obl1.complexity
 end
 
 module type S =
