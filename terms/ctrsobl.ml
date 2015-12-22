@@ -44,7 +44,7 @@ module Make(CTRS : Ctrs.S) = struct
   let complCostRuleStrings obl =
     let maxLen = ref 0 in
     let asString r =
-      let (s, _) as tup = Printf.sprintf "(%s, %s)"
+      let (s, _) as tup = Printf.sprintf "(Comp: %s, Cost: %s)"
       (Complexity.toString (getComplexity obl r))
       (Expexp.toString (getCost obl r)), RuleT.toString r in
       maxLen := max !maxLen (String.length s);
