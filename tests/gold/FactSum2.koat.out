@@ -1,10 +1,10 @@
-YES(?, x + x^2)
+YES(?, x + x^2 + 1)
 
 Initial complexity problem:
 1:	T:
-		(1, 1)    start(x) -> Com_1(facSum(x))
-		(?, 1)    facSum(x) -> Com_2(fac(x), facSum(x - 1)) [ x > 0 ]
-		(?, 1)    fac(x) -> Com_1(fac(x - 1)) [ x > 0 ]
+		(Comp: 1, Cost: 1)    start(x) -> Com_1(facSum(x))
+		(Comp: ?, Cost: 1)    facSum(x) -> Com_2(fac(x), facSum(x - 1)) [ x > 0 ]
+		(Comp: ?, Cost: 1)    fac(x) -> Com_1(fac(x - 1)) [ x > 0 ]
 	start location:	start
 	leaf cost:	0
 
@@ -16,9 +16,9 @@ orients all transitions weakly and the transition
 	facSum(x) -> Com_2(fac(x), facSum(x - 1)) [ x > 0 ]
 strictly and produces the following problem:
 2:	T:
-		(1, 1)    start(x) -> Com_1(facSum(x))
-		(x, 1)    facSum(x) -> Com_2(fac(x), facSum(x - 1)) [ x > 0 ]
-		(?, 1)    fac(x) -> Com_1(fac(x - 1)) [ x > 0 ]
+		(Comp: 1, Cost: 1)    start(x) -> Com_1(facSum(x))
+		(Comp: x, Cost: 1)    facSum(x) -> Com_2(fac(x), facSum(x - 1)) [ x > 0 ]
+		(Comp: ?, Cost: 1)    fac(x) -> Com_1(fac(x - 1)) [ x > 0 ]
 	start location:	start
 	leaf cost:	0
 
@@ -35,11 +35,11 @@ weakly and the transition
 	fac(x) -> Com_1(fac(x - 1)) [ x > 0 ]
 strictly and produces the following problem:
 3:	T:
-		(1, 1)      start(x) -> Com_1(facSum(x))
-		(x, 1)      facSum(x) -> Com_2(fac(x), facSum(x - 1)) [ x > 0 ]
-		(x^2, 1)    fac(x) -> Com_1(fac(x - 1)) [ x > 0 ]
+		(Comp: 1, Cost: 1)      start(x) -> Com_1(facSum(x))
+		(Comp: x, Cost: 1)      facSum(x) -> Com_2(fac(x), facSum(x - 1)) [ x > 0 ]
+		(Comp: x^2, Cost: 1)    fac(x) -> Com_1(fac(x - 1)) [ x > 0 ]
 	start location:	start
 	leaf cost:	0
 
-Complexity upper bound x + x^2
+Complexity upper bound x + x^2 + 1
 

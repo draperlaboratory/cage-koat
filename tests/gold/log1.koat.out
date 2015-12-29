@@ -1,9 +1,9 @@
-YES(?, 2*x)
+YES(?, 2*x + 1)
 
 Initial complexity problem:
 1:	T:
-		(1, 1)    l0(x, r) -> Com_1(l1(x, -1))
-		(?, 1)    l1(x, r) -> Com_1(l1(x', r + 1)) [ x > 1 /\ 2*x' + mod = x /\ mod >= 0 /\ mod < 2 ]
+		(Comp: 1, Cost: 1)    l0(x, r) -> Com_1(l1(x, -1))
+		(Comp: ?, Cost: 1)    l1(x, r) -> Com_1(l1(x', r + 1)) [ x > 1 /\ 2*x' + mod = x /\ mod >= 0 /\ mod < 2 ]
 	start location:	l0
 	leaf cost:	0
 
@@ -14,10 +14,10 @@ orients all transitions weakly and the transition
 	l1(x, r) -> Com_1(l1(x', r + 1)) [ x > 1 /\ 2*x' + mod = x /\ mod >= 0 /\ mod < 2 ]
 strictly and produces the following problem:
 2:	T:
-		(1, 1)      l0(x, r) -> Com_1(l1(x, -1))
-		(2*x, 1)    l1(x, r) -> Com_1(l1(x', r + 1)) [ x > 1 /\ 2*x' + mod = x /\ mod >= 0 /\ mod < 2 ]
+		(Comp: 1, Cost: 1)      l0(x, r) -> Com_1(l1(x, -1))
+		(Comp: 2*x, Cost: 1)    l1(x, r) -> Com_1(l1(x', r + 1)) [ x > 1 /\ 2*x' + mod = x /\ mod >= 0 /\ mod < 2 ]
 	start location:	l0
 	leaf cost:	0
 
-Complexity upper bound 2*x
+Complexity upper bound 2*x + 1
 

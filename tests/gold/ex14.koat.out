@@ -1,9 +1,9 @@
-YES(?, n + i)
+YES(?, n + i + 1)
 
 Initial complexity problem:
 1:	T:
-		(1, 1)    start(n, i) -> Com_1(bb4(n, i))
-		(?, 1)    bb4(n, i) -> Com_1(bb4(n, i + 1)) [ i < n /\ n >= 0 ]
+		(Comp: 1, Cost: 1)    start(n, i) -> Com_1(bb4(n, i))
+		(Comp: ?, Cost: 1)    bb4(n, i) -> Com_1(bb4(n, i + 1)) [ i < n /\ n >= 0 ]
 	start location:	start
 	leaf cost:	0
 
@@ -14,10 +14,10 @@ orients all transitions weakly and the transition
 	bb4(n, i) -> Com_1(bb4(n, i + 1)) [ i < n /\ n >= 0 ]
 strictly and produces the following problem:
 2:	T:
-		(1, 1)        start(n, i) -> Com_1(bb4(n, i))
-		(n + i, 1)    bb4(n, i) -> Com_1(bb4(n, i + 1)) [ i < n /\ n >= 0 ]
+		(Comp: 1, Cost: 1)        start(n, i) -> Com_1(bb4(n, i))
+		(Comp: n + i, Cost: 1)    bb4(n, i) -> Com_1(bb4(n, i + 1)) [ i < n /\ n >= 0 ]
 	start location:	start
 	leaf cost:	0
 
-Complexity upper bound n + i
+Complexity upper bound n + i + 1
 

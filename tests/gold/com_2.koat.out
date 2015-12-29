@@ -1,10 +1,10 @@
-YES(?, x + x^2)
+YES(?, x + x^2 + 1)
 
 Initial complexity problem:
 1:	T:
-		(1, 1)    start(x) -> Com_1(f(x))
-		(?, 1)    f(x) -> Com_2(f(x - 1), g(x)) [ x > 0 ]
-		(?, 1)    g(x) -> Com_1(g(x - 1)) [ x > 0 ]
+		(Comp: 1, Cost: 1)    start(x) -> Com_1(f(x))
+		(Comp: ?, Cost: 1)    f(x) -> Com_2(f(x - 1), g(x)) [ x > 0 ]
+		(Comp: ?, Cost: 1)    g(x) -> Com_1(g(x - 1)) [ x > 0 ]
 	start location:	start
 	leaf cost:	0
 
@@ -16,9 +16,9 @@ orients all transitions weakly and the transition
 	f(x) -> Com_2(f(x - 1), g(x)) [ x > 0 ]
 strictly and produces the following problem:
 2:	T:
-		(1, 1)    start(x) -> Com_1(f(x))
-		(x, 1)    f(x) -> Com_2(f(x - 1), g(x)) [ x > 0 ]
-		(?, 1)    g(x) -> Com_1(g(x - 1)) [ x > 0 ]
+		(Comp: 1, Cost: 1)    start(x) -> Com_1(f(x))
+		(Comp: x, Cost: 1)    f(x) -> Com_2(f(x - 1), g(x)) [ x > 0 ]
+		(Comp: ?, Cost: 1)    g(x) -> Com_1(g(x - 1)) [ x > 0 ]
 	start location:	start
 	leaf cost:	0
 
@@ -35,11 +35,11 @@ weakly and the transition
 	g(x) -> Com_1(g(x - 1)) [ x > 0 ]
 strictly and produces the following problem:
 3:	T:
-		(1, 1)      start(x) -> Com_1(f(x))
-		(x, 1)      f(x) -> Com_2(f(x - 1), g(x)) [ x > 0 ]
-		(x^2, 1)    g(x) -> Com_1(g(x - 1)) [ x > 0 ]
+		(Comp: 1, Cost: 1)      start(x) -> Com_1(f(x))
+		(Comp: x, Cost: 1)      f(x) -> Com_2(f(x - 1), g(x)) [ x > 0 ]
+		(Comp: x^2, Cost: 1)    g(x) -> Com_1(g(x - 1)) [ x > 0 ]
 	start location:	start
 	leaf cost:	0
 
-Complexity upper bound x + x^2
+Complexity upper bound x + x^2 + 1
 

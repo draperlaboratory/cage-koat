@@ -1,24 +1,24 @@
-YES(?, x^3 + x^17 + 6)
+YES(?, x^3 + x^17 + 7)
 
 Initial complexity problem:
 1:	T:
-		(1, 1)    f(x) -> Com_1(g(x))
-		(?, 1)    g(x) -> Com_1(h1(x)) [ x >= 0 ]
-		(?, 1)    g(x) -> Com_1(h2(x)) [ x < 0 ]
-		(?, 1)    h1(x) -> Com_1(h(x^17))
-		(?, 1)    h2(x) -> Com_1(h(x^3))
-		(?, 1)    h(x) -> Com_1(h(x - 1)) [ x >= 0 ]
+		(Comp: 1, Cost: 1)    f(x) -> Com_1(g(x))
+		(Comp: ?, Cost: 1)    g(x) -> Com_1(h1(x)) [ x >= 0 ]
+		(Comp: ?, Cost: 1)    g(x) -> Com_1(h2(x)) [ x < 0 ]
+		(Comp: ?, Cost: 1)    h1(x) -> Com_1(h(x^17))
+		(Comp: ?, Cost: 1)    h2(x) -> Com_1(h(x^3))
+		(Comp: ?, Cost: 1)    h(x) -> Com_1(h(x - 1)) [ x >= 0 ]
 	start location:	f
 	leaf cost:	0
 
 Repeatedly propagating knowledge in problem 1 produces the following problem:
 2:	T:
-		(1, 1)    f(x) -> Com_1(g(x))
-		(1, 1)    g(x) -> Com_1(h1(x)) [ x >= 0 ]
-		(1, 1)    g(x) -> Com_1(h2(x)) [ x < 0 ]
-		(1, 1)    h1(x) -> Com_1(h(x^17))
-		(1, 1)    h2(x) -> Com_1(h(x^3))
-		(?, 1)    h(x) -> Com_1(h(x - 1)) [ x >= 0 ]
+		(Comp: 1, Cost: 1)    f(x) -> Com_1(g(x))
+		(Comp: 1, Cost: 1)    g(x) -> Com_1(h1(x)) [ x >= 0 ]
+		(Comp: 1, Cost: 1)    g(x) -> Com_1(h2(x)) [ x < 0 ]
+		(Comp: 1, Cost: 1)    h1(x) -> Com_1(h(x^17))
+		(Comp: 1, Cost: 1)    h2(x) -> Com_1(h(x^3))
+		(Comp: ?, Cost: 1)    h(x) -> Com_1(h(x - 1)) [ x >= 0 ]
 	start location:	f
 	leaf cost:	0
 
@@ -37,14 +37,14 @@ weakly and the transition
 	h(x) -> Com_1(h(x - 1)) [ x >= 0 ]
 strictly and produces the following problem:
 3:	T:
-		(1, 1)                 f(x) -> Com_1(g(x))
-		(1, 1)                 g(x) -> Com_1(h1(x)) [ x >= 0 ]
-		(1, 1)                 g(x) -> Com_1(h2(x)) [ x < 0 ]
-		(1, 1)                 h1(x) -> Com_1(h(x^17))
-		(1, 1)                 h2(x) -> Com_1(h(x^3))
-		(x^3 + x^17 + 2, 1)    h(x) -> Com_1(h(x - 1)) [ x >= 0 ]
+		(Comp: 1, Cost: 1)                 f(x) -> Com_1(g(x))
+		(Comp: 1, Cost: 1)                 g(x) -> Com_1(h1(x)) [ x >= 0 ]
+		(Comp: 1, Cost: 1)                 g(x) -> Com_1(h2(x)) [ x < 0 ]
+		(Comp: 1, Cost: 1)                 h1(x) -> Com_1(h(x^17))
+		(Comp: 1, Cost: 1)                 h2(x) -> Com_1(h(x^3))
+		(Comp: x^3 + x^17 + 2, Cost: 1)    h(x) -> Com_1(h(x - 1)) [ x >= 0 ]
 	start location:	f
 	leaf cost:	0
 
-Complexity upper bound x^3 + x^17 + 6
+Complexity upper bound x^3 + x^17 + 7
 

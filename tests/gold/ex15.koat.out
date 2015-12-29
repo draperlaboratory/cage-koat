@@ -1,9 +1,9 @@
-YES(?, n + j)
+YES(?, n + j + 1)
 
 Initial complexity problem:
 1:	T:
-		(1, 1)    start(n, i, j) -> Com_1(bb2(n, i, j))
-		(?, 1)    bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ j < n /\ n >= 0 ]
+		(Comp: 1, Cost: 1)    start(n, i, j) -> Com_1(bb2(n, i, j))
+		(Comp: ?, Cost: 1)    bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ j < n /\ n >= 0 ]
 	start location:	start
 	leaf cost:	0
 
@@ -14,10 +14,10 @@ orients all transitions weakly and the transition
 	bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ j < n /\ n >= 0 ]
 strictly and produces the following problem:
 2:	T:
-		(1, 1)        start(n, i, j) -> Com_1(bb2(n, i, j))
-		(n + j, 1)    bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ j < n /\ n >= 0 ]
+		(Comp: 1, Cost: 1)        start(n, i, j) -> Com_1(bb2(n, i, j))
+		(Comp: n + j, Cost: 1)    bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ j < n /\ n >= 0 ]
 	start location:	start
 	leaf cost:	0
 
-Complexity upper bound n + j
+Complexity upper bound n + j + 1
 

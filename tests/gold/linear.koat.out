@@ -1,22 +1,22 @@
-YES(?, 3)
+YES(?, 4)
 
 Initial complexity problem:
 1:	T:
-		(1, 1)    start(a) -> Com_1(one(a))
-		(?, 1)    one(a) -> Com_1(two(a))
-		(?, 1)    two(a) -> Com_1(three(a))
-		(?, 1)    three(a) -> Com_1(four(a))
+		(Comp: 1, Cost: 1)    start(a) -> Com_1(one(a))
+		(Comp: ?, Cost: 1)    one(a) -> Com_1(two(a))
+		(Comp: ?, Cost: 1)    two(a) -> Com_1(three(a))
+		(Comp: ?, Cost: 1)    three(a) -> Com_1(four(a))
 	start location:	start
 	leaf cost:	0
 
 Repeatedly propagating knowledge in problem 1 produces the following problem:
 2:	T:
-		(1, 1)    start(a) -> Com_1(one(a))
-		(1, 1)    one(a) -> Com_1(two(a))
-		(1, 1)    two(a) -> Com_1(three(a))
-		(1, 1)    three(a) -> Com_1(four(a))
+		(Comp: 1, Cost: 1)    start(a) -> Com_1(one(a))
+		(Comp: 1, Cost: 1)    one(a) -> Com_1(two(a))
+		(Comp: 1, Cost: 1)    two(a) -> Com_1(three(a))
+		(Comp: 1, Cost: 1)    three(a) -> Com_1(four(a))
 	start location:	start
 	leaf cost:	0
 
-Complexity upper bound 3
+Complexity upper bound 4
 

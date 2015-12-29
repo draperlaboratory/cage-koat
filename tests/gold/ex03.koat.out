@@ -1,10 +1,10 @@
-YES(?, 4*x)
+YES(?, 4*x + 1)
 
 Initial complexity problem:
 1:	T:
-		(1, 1)    start(x) -> Com_1(f(x))
-		(?, 1)    f(x) -> Com_1(g(x - 1)) [ x > 0 ]
-		(?, 1)    g(x) -> Com_1(f(x))
+		(Comp: 1, Cost: 1)    start(x) -> Com_1(f(x))
+		(Comp: ?, Cost: 1)    f(x) -> Com_1(g(x - 1)) [ x > 0 ]
+		(Comp: ?, Cost: 1)    g(x) -> Com_1(f(x))
 	start location:	start
 	leaf cost:	0
 
@@ -16,19 +16,19 @@ orients all transitions weakly and the transition
 	f(x) -> Com_1(g(x - 1)) [ x > 0 ]
 strictly and produces the following problem:
 2:	T:
-		(1, 1)      start(x) -> Com_1(f(x))
-		(2*x, 1)    f(x) -> Com_1(g(x - 1)) [ x > 0 ]
-		(?, 1)      g(x) -> Com_1(f(x))
+		(Comp: 1, Cost: 1)      start(x) -> Com_1(f(x))
+		(Comp: 2*x, Cost: 1)    f(x) -> Com_1(g(x - 1)) [ x > 0 ]
+		(Comp: ?, Cost: 1)      g(x) -> Com_1(f(x))
 	start location:	start
 	leaf cost:	0
 
 Repeatedly propagating knowledge in problem 2 produces the following problem:
 3:	T:
-		(1, 1)      start(x) -> Com_1(f(x))
-		(2*x, 1)    f(x) -> Com_1(g(x - 1)) [ x > 0 ]
-		(2*x, 1)    g(x) -> Com_1(f(x))
+		(Comp: 1, Cost: 1)      start(x) -> Com_1(f(x))
+		(Comp: 2*x, Cost: 1)    f(x) -> Com_1(g(x - 1)) [ x > 0 ]
+		(Comp: 2*x, Cost: 1)    g(x) -> Com_1(f(x))
 	start location:	start
 	leaf cost:	0
 
-Complexity upper bound 4*x
+Complexity upper bound 4*x + 1
 

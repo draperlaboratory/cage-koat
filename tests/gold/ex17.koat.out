@@ -1,11 +1,11 @@
-YES(?, 6*i + 2*i*n + 3*n + 8)
+YES(?, 6*i + 2*i*n + 3*n + 9)
 
 Initial complexity problem:
 1:	T:
-		(1, 1)    start(n, i, j) -> Com_1(bb4(n, i, j))
-		(?, 1)    bb4(n, i, j) -> Com_1(bb2(n, i, n)) [ n >= 0 /\ i >= 0 /\ i > 0 ]
-		(?, 1)    bb2(n, i, j) -> Com_1(bb2(n, i, j - 1)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j > 0 ]
-		(?, 1)    bb2(n, i, j) -> Com_1(bb4(n, i - 1, j)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j <= 0 ]
+		(Comp: 1, Cost: 1)    start(n, i, j) -> Com_1(bb4(n, i, j))
+		(Comp: ?, Cost: 1)    bb4(n, i, j) -> Com_1(bb2(n, i, n)) [ n >= 0 /\ i >= 0 /\ i > 0 ]
+		(Comp: ?, Cost: 1)    bb2(n, i, j) -> Com_1(bb2(n, i, j - 1)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j > 0 ]
+		(Comp: ?, Cost: 1)    bb2(n, i, j) -> Com_1(bb4(n, i - 1, j)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j <= 0 ]
 	start location:	start
 	leaf cost:	0
 
@@ -17,19 +17,19 @@ orients all transitions weakly and the transition
 	bb2(n, i, j) -> Com_1(bb4(n, i - 1, j)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j <= 0 ]
 strictly and produces the following problem:
 2:	T:
-		(1, 1)          start(n, i, j) -> Com_1(bb4(n, i, j))
-		(?, 1)          bb4(n, i, j) -> Com_1(bb2(n, i, n)) [ n >= 0 /\ i >= 0 /\ i > 0 ]
-		(?, 1)          bb2(n, i, j) -> Com_1(bb2(n, i, j - 1)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j > 0 ]
-		(2*i + 2, 1)    bb2(n, i, j) -> Com_1(bb4(n, i - 1, j)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j <= 0 ]
+		(Comp: 1, Cost: 1)          start(n, i, j) -> Com_1(bb4(n, i, j))
+		(Comp: ?, Cost: 1)          bb4(n, i, j) -> Com_1(bb2(n, i, n)) [ n >= 0 /\ i >= 0 /\ i > 0 ]
+		(Comp: ?, Cost: 1)          bb2(n, i, j) -> Com_1(bb2(n, i, j - 1)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j > 0 ]
+		(Comp: 2*i + 2, Cost: 1)    bb2(n, i, j) -> Com_1(bb4(n, i - 1, j)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j <= 0 ]
 	start location:	start
 	leaf cost:	0
 
 Repeatedly propagating knowledge in problem 2 produces the following problem:
 3:	T:
-		(1, 1)          start(n, i, j) -> Com_1(bb4(n, i, j))
-		(2*i + 3, 1)    bb4(n, i, j) -> Com_1(bb2(n, i, n)) [ n >= 0 /\ i >= 0 /\ i > 0 ]
-		(?, 1)          bb2(n, i, j) -> Com_1(bb2(n, i, j - 1)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j > 0 ]
-		(2*i + 2, 1)    bb2(n, i, j) -> Com_1(bb4(n, i - 1, j)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j <= 0 ]
+		(Comp: 1, Cost: 1)          start(n, i, j) -> Com_1(bb4(n, i, j))
+		(Comp: 2*i + 3, Cost: 1)    bb4(n, i, j) -> Com_1(bb2(n, i, n)) [ n >= 0 /\ i >= 0 /\ i > 0 ]
+		(Comp: ?, Cost: 1)          bb2(n, i, j) -> Com_1(bb2(n, i, j - 1)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j > 0 ]
+		(Comp: 2*i + 2, Cost: 1)    bb2(n, i, j) -> Com_1(bb4(n, i - 1, j)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j <= 0 ]
 	start location:	start
 	leaf cost:	0
 
@@ -54,12 +54,12 @@ weakly and the transition
 	bb2(n, i, j) -> Com_1(bb2(n, i, j - 1)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j > 0 ]
 strictly and produces the following problem:
 4:	T:
-		(1, 1)                        start(n, i, j) -> Com_1(bb4(n, i, j))
-		(2*i + 3, 1)                  bb4(n, i, j) -> Com_1(bb2(n, i, n)) [ n >= 0 /\ i >= 0 /\ i > 0 ]
-		(2*i*n + 3*n + 2*i + 3, 1)    bb2(n, i, j) -> Com_1(bb2(n, i, j - 1)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j > 0 ]
-		(2*i + 2, 1)                  bb2(n, i, j) -> Com_1(bb4(n, i - 1, j)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j <= 0 ]
+		(Comp: 1, Cost: 1)                        start(n, i, j) -> Com_1(bb4(n, i, j))
+		(Comp: 2*i + 3, Cost: 1)                  bb4(n, i, j) -> Com_1(bb2(n, i, n)) [ n >= 0 /\ i >= 0 /\ i > 0 ]
+		(Comp: 2*i*n + 3*n + 2*i + 3, Cost: 1)    bb2(n, i, j) -> Com_1(bb2(n, i, j - 1)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j > 0 ]
+		(Comp: 2*i + 2, Cost: 1)                  bb2(n, i, j) -> Com_1(bb4(n, i - 1, j)) [ n >= 0 /\ i >= 0 /\ j >= 0 /\ j <= 0 ]
 	start location:	start
 	leaf cost:	0
 
-Complexity upper bound 6*i + 2*i*n + 3*n + 8
+Complexity upper bound 6*i + 2*i*n + 3*n + 9
 

@@ -1,20 +1,20 @@
-YES(?, 43452*a + 43596*b + 1512*a^2 + 3240*a*b + 1728*b^2 + 28267)
+YES(?, 43452*a + 43596*b + 1512*a^2 + 3240*a*b + 1728*b^2 + 28268)
 
 Initial complexity problem:
 1:	T:
-		(1, 1)    start(a, b) -> Com_1(a(a, b))
-		(?, 1)    a(a, b) -> Com_1(b(a - 1, b)) [ a > b ]
-		(?, 1)    a(a, b) -> Com_1(f(a, b - 1)) [ a < b ]
-		(?, 1)    b(a, b) -> Com_1(c(a, b)) [ a > b ]
-		(?, 1)    b(a, b) -> Com_1(a(a, b)) [ a <= b ]
-		(?, 1)    c(a, b) -> Com_1(d(a, b)) [ a > b ]
-		(?, 1)    c(a, b) -> Com_1(b(a, b)) [ a <= b ]
-		(?, 1)    d(a, b) -> Com_1(e(a, b)) [ a > b ]
-		(?, 1)    d(a, b) -> Com_1(c(a, b)) [ a <= b ]
-		(?, 1)    e(a, b) -> Com_1(f(a, b)) [ a > b ]
-		(?, 1)    e(a, b) -> Com_1(d(a, b)) [ a <= b ]
-		(?, 1)    f(a, b) -> Com_1(a(a, b)) [ a > b ]
-		(?, 1)    f(a, b) -> Com_1(e(a, b)) [ a <= b ]
+		(Comp: 1, Cost: 1)    start(a, b) -> Com_1(a(a, b))
+		(Comp: ?, Cost: 1)    a(a, b) -> Com_1(b(a - 1, b)) [ a > b ]
+		(Comp: ?, Cost: 1)    a(a, b) -> Com_1(f(a, b - 1)) [ a < b ]
+		(Comp: ?, Cost: 1)    b(a, b) -> Com_1(c(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)    b(a, b) -> Com_1(a(a, b)) [ a <= b ]
+		(Comp: ?, Cost: 1)    c(a, b) -> Com_1(d(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)    c(a, b) -> Com_1(b(a, b)) [ a <= b ]
+		(Comp: ?, Cost: 1)    d(a, b) -> Com_1(e(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)    d(a, b) -> Com_1(c(a, b)) [ a <= b ]
+		(Comp: ?, Cost: 1)    e(a, b) -> Com_1(f(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)    e(a, b) -> Com_1(d(a, b)) [ a <= b ]
+		(Comp: ?, Cost: 1)    f(a, b) -> Com_1(a(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)    f(a, b) -> Com_1(e(a, b)) [ a <= b ]
 	start location:	start
 	leaf cost:	0
 
@@ -66,37 +66,37 @@ weakly and the transitions
 	b(a, b) -> Com_1(c(a, b)) [ a > b ]
 strictly and produces the following problem:
 2:	T:
-		(1, 1)                start(a, b) -> Com_1(a(a, b))
-		(?, 1)                a(a, b) -> Com_1(b(a - 1, b)) [ a > b ]
-		(?, 1)                a(a, b) -> Com_1(f(a, b - 1)) [ a < b ]
-		(6*a + 6*b + 3, 1)    b(a, b) -> Com_1(c(a, b)) [ a > b ]
-		(?, 1)                b(a, b) -> Com_1(a(a, b)) [ a <= b ]
-		(?, 1)                c(a, b) -> Com_1(d(a, b)) [ a > b ]
-		(?, 1)                c(a, b) -> Com_1(b(a, b)) [ a <= b ]
-		(6*a + 6*b + 3, 1)    d(a, b) -> Com_1(e(a, b)) [ a > b ]
-		(?, 1)                d(a, b) -> Com_1(c(a, b)) [ a <= b ]
-		(6*a + 6*b + 3, 1)    e(a, b) -> Com_1(f(a, b)) [ a > b ]
-		(?, 1)                e(a, b) -> Com_1(d(a, b)) [ a <= b ]
-		(6*a + 6*b + 3, 1)    f(a, b) -> Com_1(a(a, b)) [ a > b ]
-		(?, 1)                f(a, b) -> Com_1(e(a, b)) [ a <= b ]
+		(Comp: 1, Cost: 1)                start(a, b) -> Com_1(a(a, b))
+		(Comp: ?, Cost: 1)                a(a, b) -> Com_1(b(a - 1, b)) [ a > b ]
+		(Comp: ?, Cost: 1)                a(a, b) -> Com_1(f(a, b - 1)) [ a < b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)    b(a, b) -> Com_1(c(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)                b(a, b) -> Com_1(a(a, b)) [ a <= b ]
+		(Comp: ?, Cost: 1)                c(a, b) -> Com_1(d(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)                c(a, b) -> Com_1(b(a, b)) [ a <= b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)    d(a, b) -> Com_1(e(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)                d(a, b) -> Com_1(c(a, b)) [ a <= b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)    e(a, b) -> Com_1(f(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)                e(a, b) -> Com_1(d(a, b)) [ a <= b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)    f(a, b) -> Com_1(a(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)                f(a, b) -> Com_1(e(a, b)) [ a <= b ]
 	start location:	start
 	leaf cost:	0
 
 Repeatedly propagating knowledge in problem 2 produces the following problem:
 3:	T:
-		(1, 1)                start(a, b) -> Com_1(a(a, b))
-		(6*a + 6*b + 4, 1)    a(a, b) -> Com_1(b(a - 1, b)) [ a > b ]
-		(?, 1)                a(a, b) -> Com_1(f(a, b - 1)) [ a < b ]
-		(6*a + 6*b + 3, 1)    b(a, b) -> Com_1(c(a, b)) [ a > b ]
-		(?, 1)                b(a, b) -> Com_1(a(a, b)) [ a <= b ]
-		(6*a + 6*b + 3, 1)    c(a, b) -> Com_1(d(a, b)) [ a > b ]
-		(?, 1)                c(a, b) -> Com_1(b(a, b)) [ a <= b ]
-		(6*a + 6*b + 3, 1)    d(a, b) -> Com_1(e(a, b)) [ a > b ]
-		(?, 1)                d(a, b) -> Com_1(c(a, b)) [ a <= b ]
-		(6*a + 6*b + 3, 1)    e(a, b) -> Com_1(f(a, b)) [ a > b ]
-		(?, 1)                e(a, b) -> Com_1(d(a, b)) [ a <= b ]
-		(6*a + 6*b + 3, 1)    f(a, b) -> Com_1(a(a, b)) [ a > b ]
-		(?, 1)                f(a, b) -> Com_1(e(a, b)) [ a <= b ]
+		(Comp: 1, Cost: 1)                start(a, b) -> Com_1(a(a, b))
+		(Comp: 6*a + 6*b + 4, Cost: 1)    a(a, b) -> Com_1(b(a - 1, b)) [ a > b ]
+		(Comp: ?, Cost: 1)                a(a, b) -> Com_1(f(a, b - 1)) [ a < b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)    b(a, b) -> Com_1(c(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)                b(a, b) -> Com_1(a(a, b)) [ a <= b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)    c(a, b) -> Com_1(d(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)                c(a, b) -> Com_1(b(a, b)) [ a <= b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)    d(a, b) -> Com_1(e(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)                d(a, b) -> Com_1(c(a, b)) [ a <= b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)    e(a, b) -> Com_1(f(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)                e(a, b) -> Com_1(d(a, b)) [ a <= b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)    f(a, b) -> Com_1(a(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)                f(a, b) -> Com_1(e(a, b)) [ a <= b ]
 	start location:	start
 	leaf cost:	0
 
@@ -148,39 +148,39 @@ weakly and the transitions
 	a(a, b) -> Com_1(f(a, b - 1)) [ a < b ]
 strictly and produces the following problem:
 4:	T:
-		(1, 1)                                                       start(a, b) -> Com_1(a(a, b))
-		(6*a + 6*b + 4, 1)                                           a(a, b) -> Com_1(b(a - 1, b)) [ a > b ]
-		(252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, 1)    a(a, b) -> Com_1(f(a, b - 1)) [ a < b ]
-		(6*a + 6*b + 3, 1)                                           b(a, b) -> Com_1(c(a, b)) [ a > b ]
-		(252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, 1)    b(a, b) -> Com_1(a(a, b)) [ a <= b ]
-		(6*a + 6*b + 3, 1)                                           c(a, b) -> Com_1(d(a, b)) [ a > b ]
-		(252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, 1)    c(a, b) -> Com_1(b(a, b)) [ a <= b ]
-		(6*a + 6*b + 3, 1)                                           d(a, b) -> Com_1(e(a, b)) [ a > b ]
-		(?, 1)                                                       d(a, b) -> Com_1(c(a, b)) [ a <= b ]
-		(6*a + 6*b + 3, 1)                                           e(a, b) -> Com_1(f(a, b)) [ a > b ]
-		(252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, 1)    e(a, b) -> Com_1(d(a, b)) [ a <= b ]
-		(6*a + 6*b + 3, 1)                                           f(a, b) -> Com_1(a(a, b)) [ a > b ]
-		(?, 1)                                                       f(a, b) -> Com_1(e(a, b)) [ a <= b ]
+		(Comp: 1, Cost: 1)                                                       start(a, b) -> Com_1(a(a, b))
+		(Comp: 6*a + 6*b + 4, Cost: 1)                                           a(a, b) -> Com_1(b(a - 1, b)) [ a > b ]
+		(Comp: 252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, Cost: 1)    a(a, b) -> Com_1(f(a, b - 1)) [ a < b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)                                           b(a, b) -> Com_1(c(a, b)) [ a > b ]
+		(Comp: 252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, Cost: 1)    b(a, b) -> Com_1(a(a, b)) [ a <= b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)                                           c(a, b) -> Com_1(d(a, b)) [ a > b ]
+		(Comp: 252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, Cost: 1)    c(a, b) -> Com_1(b(a, b)) [ a <= b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)                                           d(a, b) -> Com_1(e(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)                                                       d(a, b) -> Com_1(c(a, b)) [ a <= b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)                                           e(a, b) -> Com_1(f(a, b)) [ a > b ]
+		(Comp: 252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, Cost: 1)    e(a, b) -> Com_1(d(a, b)) [ a <= b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)                                           f(a, b) -> Com_1(a(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)                                                       f(a, b) -> Com_1(e(a, b)) [ a <= b ]
 	start location:	start
 	leaf cost:	0
 
 Repeatedly propagating knowledge in problem 4 produces the following problem:
 5:	T:
-		(1, 1)                                                       start(a, b) -> Com_1(a(a, b))
-		(6*a + 6*b + 4, 1)                                           a(a, b) -> Com_1(b(a - 1, b)) [ a > b ]
-		(252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, 1)    a(a, b) -> Com_1(f(a, b - 1)) [ a < b ]
-		(6*a + 6*b + 3, 1)                                           b(a, b) -> Com_1(c(a, b)) [ a > b ]
-		(252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, 1)    b(a, b) -> Com_1(a(a, b)) [ a <= b ]
-		(6*a + 6*b + 3, 1)                                           c(a, b) -> Com_1(d(a, b)) [ a > b ]
-		(252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, 1)    c(a, b) -> Com_1(b(a, b)) [ a <= b ]
-		(6*a + 6*b + 3, 1)                                           d(a, b) -> Com_1(e(a, b)) [ a > b ]
-		(252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, 1)    d(a, b) -> Com_1(c(a, b)) [ a <= b ]
-		(6*a + 6*b + 3, 1)                                           e(a, b) -> Com_1(f(a, b)) [ a > b ]
-		(252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, 1)    e(a, b) -> Com_1(d(a, b)) [ a <= b ]
-		(6*a + 6*b + 3, 1)                                           f(a, b) -> Com_1(a(a, b)) [ a > b ]
-		(252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, 1)    f(a, b) -> Com_1(e(a, b)) [ a <= b ]
+		(Comp: 1, Cost: 1)                                                       start(a, b) -> Com_1(a(a, b))
+		(Comp: 6*a + 6*b + 4, Cost: 1)                                           a(a, b) -> Com_1(b(a - 1, b)) [ a > b ]
+		(Comp: 252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, Cost: 1)    a(a, b) -> Com_1(f(a, b - 1)) [ a < b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)                                           b(a, b) -> Com_1(c(a, b)) [ a > b ]
+		(Comp: 252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, Cost: 1)    b(a, b) -> Com_1(a(a, b)) [ a <= b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)                                           c(a, b) -> Com_1(d(a, b)) [ a > b ]
+		(Comp: 252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, Cost: 1)    c(a, b) -> Com_1(b(a, b)) [ a <= b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)                                           d(a, b) -> Com_1(e(a, b)) [ a > b ]
+		(Comp: 252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, Cost: 1)    d(a, b) -> Com_1(c(a, b)) [ a <= b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)                                           e(a, b) -> Com_1(f(a, b)) [ a > b ]
+		(Comp: 252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, Cost: 1)    e(a, b) -> Com_1(d(a, b)) [ a <= b ]
+		(Comp: 6*a + 6*b + 3, Cost: 1)                                           f(a, b) -> Com_1(a(a, b)) [ a > b ]
+		(Comp: 252*a^2 + 540*a*b + 288*b^2 + 7236*a + 7260*b + 4708, Cost: 1)    f(a, b) -> Com_1(e(a, b)) [ a <= b ]
 	start location:	start
 	leaf cost:	0
 
-Complexity upper bound 43452*a + 43596*b + 1512*a^2 + 3240*a*b + 1728*b^2 + 28267
+Complexity upper bound 43452*a + 43596*b + 1512*a^2 + 3240*a*b + 1728*b^2 + 28268
 

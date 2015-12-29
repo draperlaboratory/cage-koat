@@ -1,9 +1,9 @@
-YES(?, a + b)
+YES(?, a + b + 1)
 
 Initial complexity problem:
 1:	T:
-		(1, 1)    start(a, b) -> Com_1(one(a, b))
-		(?, 1)    one(a, b) -> Com_1(one(a - 1, b)) [ a > b ]
+		(Comp: 1, Cost: 1)    start(a, b) -> Com_1(one(a, b))
+		(Comp: ?, Cost: 1)    one(a, b) -> Com_1(one(a - 1, b)) [ a > b ]
 	start location:	start
 	leaf cost:	0
 
@@ -14,10 +14,10 @@ orients all transitions weakly and the transition
 	one(a, b) -> Com_1(one(a - 1, b)) [ a > b ]
 strictly and produces the following problem:
 2:	T:
-		(1, 1)        start(a, b) -> Com_1(one(a, b))
-		(a + b, 1)    one(a, b) -> Com_1(one(a - 1, b)) [ a > b ]
+		(Comp: 1, Cost: 1)        start(a, b) -> Com_1(one(a, b))
+		(Comp: a + b, Cost: 1)    one(a, b) -> Com_1(one(a - 1, b)) [ a > b ]
 	start location:	start
 	leaf cost:	0
 
-Complexity upper bound a + b
+Complexity upper bound a + b + 1
 

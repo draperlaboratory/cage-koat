@@ -1,11 +1,11 @@
-YES(?, 5*n + 4*i + 2*n^2 + 2*i*n + 2)
+YES(?, 5*n + 4*i + 2*n^2 + 2*i*n + 3)
 
 Initial complexity problem:
 1:	T:
-		(1, 1)    start(n, i, j) -> Com_1(bb4(n, i, j))
-		(?, 1)    bb4(n, i, j) -> Com_1(bb2(n, i, 0)) [ i < n /\ n >= 0 ]
-		(?, 1)    bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ i < n /\ j < n /\ n >= 0 ]
-		(?, 1)    bb2(n, i, j) -> Com_1(bb4(n, i + 1, j)) [ i < n /\ j >= n /\ j <= n /\ n >= 0 ]
+		(Comp: 1, Cost: 1)    start(n, i, j) -> Com_1(bb4(n, i, j))
+		(Comp: ?, Cost: 1)    bb4(n, i, j) -> Com_1(bb2(n, i, 0)) [ i < n /\ n >= 0 ]
+		(Comp: ?, Cost: 1)    bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ i < n /\ j < n /\ n >= 0 ]
+		(Comp: ?, Cost: 1)    bb2(n, i, j) -> Com_1(bb4(n, i + 1, j)) [ i < n /\ j >= n /\ j <= n /\ n >= 0 ]
 	start location:	start
 	leaf cost:	0
 
@@ -18,10 +18,10 @@ orients all transitions weakly and the transitions
 	bb2(n, i, j) -> Com_1(bb4(n, i + 1, j)) [ i < n /\ j >= n /\ j <= n /\ n >= 0 ]
 strictly and produces the following problem:
 2:	T:
-		(1, 1)                start(n, i, j) -> Com_1(bb4(n, i, j))
-		(2*n + 2*i + 1, 1)    bb4(n, i, j) -> Com_1(bb2(n, i, 0)) [ i < n /\ n >= 0 ]
-		(?, 1)                bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ i < n /\ j < n /\ n >= 0 ]
-		(2*n + 2*i + 1, 1)    bb2(n, i, j) -> Com_1(bb4(n, i + 1, j)) [ i < n /\ j >= n /\ j <= n /\ n >= 0 ]
+		(Comp: 1, Cost: 1)                start(n, i, j) -> Com_1(bb4(n, i, j))
+		(Comp: 2*n + 2*i + 1, Cost: 1)    bb4(n, i, j) -> Com_1(bb2(n, i, 0)) [ i < n /\ n >= 0 ]
+		(Comp: ?, Cost: 1)                bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ i < n /\ j < n /\ n >= 0 ]
+		(Comp: 2*n + 2*i + 1, Cost: 1)    bb2(n, i, j) -> Com_1(bb4(n, i + 1, j)) [ i < n /\ j >= n /\ j <= n /\ n >= 0 ]
 	start location:	start
 	leaf cost:	0
 
@@ -46,12 +46,12 @@ weakly and the transition
 	bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ i < n /\ j < n /\ n >= 0 ]
 strictly and produces the following problem:
 3:	T:
-		(1, 1)                    start(n, i, j) -> Com_1(bb4(n, i, j))
-		(2*n + 2*i + 1, 1)        bb4(n, i, j) -> Com_1(bb2(n, i, 0)) [ i < n /\ n >= 0 ]
-		(2*n^2 + 2*i*n + n, 1)    bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ i < n /\ j < n /\ n >= 0 ]
-		(2*n + 2*i + 1, 1)        bb2(n, i, j) -> Com_1(bb4(n, i + 1, j)) [ i < n /\ j >= n /\ j <= n /\ n >= 0 ]
+		(Comp: 1, Cost: 1)                    start(n, i, j) -> Com_1(bb4(n, i, j))
+		(Comp: 2*n + 2*i + 1, Cost: 1)        bb4(n, i, j) -> Com_1(bb2(n, i, 0)) [ i < n /\ n >= 0 ]
+		(Comp: 2*n^2 + 2*i*n + n, Cost: 1)    bb2(n, i, j) -> Com_1(bb2(n, i, j + 1)) [ i < n /\ j < n /\ n >= 0 ]
+		(Comp: 2*n + 2*i + 1, Cost: 1)        bb2(n, i, j) -> Com_1(bb4(n, i + 1, j)) [ i < n /\ j >= n /\ j <= n /\ n >= 0 ]
 	start location:	start
 	leaf cost:	0
 
-Complexity upper bound 5*n + 4*i + 2*n^2 + 2*i*n + 2
+Complexity upper bound 5*n + 4*i + 2*n^2 + 2*i*n + 3
 

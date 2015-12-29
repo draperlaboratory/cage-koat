@@ -1,11 +1,11 @@
-YES(?, 6*x + 3*x^2 + 11)
+YES(?, 6*x + 3*x^2 + 12)
 
 Initial complexity problem:
 1:	T:
-		(1, 1)    l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
-		(?, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ x > 0 ]
-		(?, 1)    l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ i < x ]
-		(?, 1)    l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ i >= x ]
+		(Comp: 1, Cost: 1)    l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+		(Comp: ?, Cost: 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ x > 0 ]
+		(Comp: ?, Cost: 1)    l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ i < x ]
+		(Comp: ?, Cost: 1)    l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ i >= x ]
 	start location:	l0
 	leaf cost:	0
 
@@ -17,10 +17,10 @@ orients all transitions weakly and the transition
 	l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ x > 0 ]
 strictly and produces the following problem:
 2:	T:
-		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
-		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ x > 0 ]
-		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ i < x ]
-		(?, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ i >= x ]
+		(Comp: 1, Cost: 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+		(Comp: 3*x + 2, Cost: 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ x > 0 ]
+		(Comp: ?, Cost: 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ i < x ]
+		(Comp: ?, Cost: 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ i >= x ]
 	start location:	l0
 	leaf cost:	0
 
@@ -31,10 +31,10 @@ Applied AI with 'oct' on problem 2 to obtain the following invariants:
 
 This yielded the following problem:
 3:	T:
-		(?, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
-		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
-		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
-		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+		(Comp: ?, Cost: 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(Comp: ?, Cost: 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(Comp: 3*x + 2, Cost: 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(Comp: 1, Cost: 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
 	start location:	l0
 	leaf cost:	0
 
@@ -46,10 +46,10 @@ orients all transitions weakly and the transition
 	l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
 strictly and produces the following problem:
 4:	T:
-		(x + 9, 1)      l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
-		(?, 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
-		(3*x + 2, 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
-		(1, 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+		(Comp: x + 9, Cost: 1)      l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(Comp: ?, Cost: 1)          l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(Comp: 3*x + 2, Cost: 1)    l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(Comp: 1, Cost: 1)          l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
 	start location:	l0
 	leaf cost:	0
 
@@ -78,12 +78,12 @@ weakly and the transition
 	l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
 strictly and produces the following problem:
 5:	T:
-		(x + 9, 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
-		(3*x^2 + 2*x, 1)    l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
-		(3*x + 2, 1)        l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
-		(1, 1)              l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
+		(Comp: x + 9, Cost: 1)          l2(r, x, i, s) -> Com_1(l1(r + s, x - 1, i, s)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i >= x ]
+		(Comp: 3*x^2 + 2*x, Cost: 1)    l2(r, x, i, s) -> Com_1(l2(r, x, i + 1, s + i)) [ s >= 0 /\ i + s >= 0 /\ x + s - 1 >= 0 /\ r + s >= 0 /\ i >= 0 /\ x + i - 1 >= 0 /\ r + i >= 0 /\ x - 1 >= 0 /\ r + x - 1 >= 0 /\ r >= 0 /\ i < x ]
+		(Comp: 3*x + 2, Cost: 1)        l1(r, x, i, s) -> Com_1(l2(r, x, 0, 0)) [ r >= 0 /\ x > 0 ]
+		(Comp: 1, Cost: 1)              l0(r, x, i, s) -> Com_1(l1(0, x, i, s))
 	start location:	l0
 	leaf cost:	0
 
-Complexity upper bound 6*x + 3*x^2 + 11
+Complexity upper bound 6*x + 3*x^2 + 12
 

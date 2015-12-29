@@ -1,40 +1,40 @@
-YES(?, 50*a + 50*b + 33)
+YES(?, 50*a + 50*b + 34)
 
 Initial complexity problem:
 1:	T:
-		(1, 1)    start(a, b) -> Com_1(one(a, b))
-		(?, 1)    one(a, b) -> Com_1(two(a, b))
-		(?, 1)    two(a, b) -> Com_1(three(a, b))
-		(?, 1)    three(a, b) -> Com_1(four(a, b))
-		(?, 1)    four(a, b) -> Com_1(leftOne(a, b)) [ a > b ]
-		(?, 1)    four(a, b) -> Com_1(rightOne(a, b)) [ a < b ]
-		(?, 1)    leftOne(a, b) -> Com_1(leftTwo(a, b))
-		(?, 1)    leftTwo(a, b) -> Com_1(leftThree(a, b))
-		(?, 1)    leftThree(a, b) -> Com_1(leftFour(a, b))
-		(?, 1)    rightOne(a, b) -> Com_1(rightTwo(a, b))
-		(?, 1)    rightTwo(a, b) -> Com_1(rightThree(a, b))
-		(?, 1)    rightThree(a, b) -> Com_1(rightFour(a, b))
-		(?, 1)    leftFour(a, b) -> Com_1(four(a - 1, b))
-		(?, 1)    rightFour(a, b) -> Com_1(four(a, b - 1))
+		(Comp: 1, Cost: 1)    start(a, b) -> Com_1(one(a, b))
+		(Comp: ?, Cost: 1)    one(a, b) -> Com_1(two(a, b))
+		(Comp: ?, Cost: 1)    two(a, b) -> Com_1(three(a, b))
+		(Comp: ?, Cost: 1)    three(a, b) -> Com_1(four(a, b))
+		(Comp: ?, Cost: 1)    four(a, b) -> Com_1(leftOne(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)    four(a, b) -> Com_1(rightOne(a, b)) [ a < b ]
+		(Comp: ?, Cost: 1)    leftOne(a, b) -> Com_1(leftTwo(a, b))
+		(Comp: ?, Cost: 1)    leftTwo(a, b) -> Com_1(leftThree(a, b))
+		(Comp: ?, Cost: 1)    leftThree(a, b) -> Com_1(leftFour(a, b))
+		(Comp: ?, Cost: 1)    rightOne(a, b) -> Com_1(rightTwo(a, b))
+		(Comp: ?, Cost: 1)    rightTwo(a, b) -> Com_1(rightThree(a, b))
+		(Comp: ?, Cost: 1)    rightThree(a, b) -> Com_1(rightFour(a, b))
+		(Comp: ?, Cost: 1)    leftFour(a, b) -> Com_1(four(a - 1, b))
+		(Comp: ?, Cost: 1)    rightFour(a, b) -> Com_1(four(a, b - 1))
 	start location:	start
 	leaf cost:	0
 
 Repeatedly propagating knowledge in problem 1 produces the following problem:
 2:	T:
-		(1, 1)    start(a, b) -> Com_1(one(a, b))
-		(1, 1)    one(a, b) -> Com_1(two(a, b))
-		(1, 1)    two(a, b) -> Com_1(three(a, b))
-		(1, 1)    three(a, b) -> Com_1(four(a, b))
-		(?, 1)    four(a, b) -> Com_1(leftOne(a, b)) [ a > b ]
-		(?, 1)    four(a, b) -> Com_1(rightOne(a, b)) [ a < b ]
-		(?, 1)    leftOne(a, b) -> Com_1(leftTwo(a, b))
-		(?, 1)    leftTwo(a, b) -> Com_1(leftThree(a, b))
-		(?, 1)    leftThree(a, b) -> Com_1(leftFour(a, b))
-		(?, 1)    rightOne(a, b) -> Com_1(rightTwo(a, b))
-		(?, 1)    rightTwo(a, b) -> Com_1(rightThree(a, b))
-		(?, 1)    rightThree(a, b) -> Com_1(rightFour(a, b))
-		(?, 1)    leftFour(a, b) -> Com_1(four(a - 1, b))
-		(?, 1)    rightFour(a, b) -> Com_1(four(a, b - 1))
+		(Comp: 1, Cost: 1)    start(a, b) -> Com_1(one(a, b))
+		(Comp: 1, Cost: 1)    one(a, b) -> Com_1(two(a, b))
+		(Comp: 1, Cost: 1)    two(a, b) -> Com_1(three(a, b))
+		(Comp: 1, Cost: 1)    three(a, b) -> Com_1(four(a, b))
+		(Comp: ?, Cost: 1)    four(a, b) -> Com_1(leftOne(a, b)) [ a > b ]
+		(Comp: ?, Cost: 1)    four(a, b) -> Com_1(rightOne(a, b)) [ a < b ]
+		(Comp: ?, Cost: 1)    leftOne(a, b) -> Com_1(leftTwo(a, b))
+		(Comp: ?, Cost: 1)    leftTwo(a, b) -> Com_1(leftThree(a, b))
+		(Comp: ?, Cost: 1)    leftThree(a, b) -> Com_1(leftFour(a, b))
+		(Comp: ?, Cost: 1)    rightOne(a, b) -> Com_1(rightTwo(a, b))
+		(Comp: ?, Cost: 1)    rightTwo(a, b) -> Com_1(rightThree(a, b))
+		(Comp: ?, Cost: 1)    rightThree(a, b) -> Com_1(rightFour(a, b))
+		(Comp: ?, Cost: 1)    leftFour(a, b) -> Com_1(four(a - 1, b))
+		(Comp: ?, Cost: 1)    rightFour(a, b) -> Com_1(four(a, b - 1))
 	start location:	start
 	leaf cost:	0
 
@@ -51,20 +51,20 @@ Applied AI with 'oct' on problem 2 to obtain the following invariants:
 
 This yielded the following problem:
 3:	T:
-		(?, 1)    rightFour(a, b) -> Com_1(four(a, b - 1)) [ -a + b - 1 >= 0 ]
-		(?, 1)    leftFour(a, b) -> Com_1(four(a - 1, b)) [ a - b - 1 >= 0 ]
-		(?, 1)    rightThree(a, b) -> Com_1(rightFour(a, b)) [ -a + b - 1 >= 0 ]
-		(?, 1)    rightTwo(a, b) -> Com_1(rightThree(a, b)) [ -a + b - 1 >= 0 ]
-		(?, 1)    rightOne(a, b) -> Com_1(rightTwo(a, b)) [ -a + b - 1 >= 0 ]
-		(?, 1)    leftThree(a, b) -> Com_1(leftFour(a, b)) [ a - b - 1 >= 0 ]
-		(?, 1)    leftTwo(a, b) -> Com_1(leftThree(a, b)) [ a - b - 1 >= 0 ]
-		(?, 1)    leftOne(a, b) -> Com_1(leftTwo(a, b)) [ a - b - 1 >= 0 ]
-		(?, 1)    four(a, b) -> Com_1(rightOne(a, b)) [ a < b ]
-		(?, 1)    four(a, b) -> Com_1(leftOne(a, b)) [ a > b ]
-		(1, 1)    three(a, b) -> Com_1(four(a, b))
-		(1, 1)    two(a, b) -> Com_1(three(a, b))
-		(1, 1)    one(a, b) -> Com_1(two(a, b))
-		(1, 1)    start(a, b) -> Com_1(one(a, b))
+		(Comp: ?, Cost: 1)    rightFour(a, b) -> Com_1(four(a, b - 1)) [ -a + b - 1 >= 0 ]
+		(Comp: ?, Cost: 1)    leftFour(a, b) -> Com_1(four(a - 1, b)) [ a - b - 1 >= 0 ]
+		(Comp: ?, Cost: 1)    rightThree(a, b) -> Com_1(rightFour(a, b)) [ -a + b - 1 >= 0 ]
+		(Comp: ?, Cost: 1)    rightTwo(a, b) -> Com_1(rightThree(a, b)) [ -a + b - 1 >= 0 ]
+		(Comp: ?, Cost: 1)    rightOne(a, b) -> Com_1(rightTwo(a, b)) [ -a + b - 1 >= 0 ]
+		(Comp: ?, Cost: 1)    leftThree(a, b) -> Com_1(leftFour(a, b)) [ a - b - 1 >= 0 ]
+		(Comp: ?, Cost: 1)    leftTwo(a, b) -> Com_1(leftThree(a, b)) [ a - b - 1 >= 0 ]
+		(Comp: ?, Cost: 1)    leftOne(a, b) -> Com_1(leftTwo(a, b)) [ a - b - 1 >= 0 ]
+		(Comp: ?, Cost: 1)    four(a, b) -> Com_1(rightOne(a, b)) [ a < b ]
+		(Comp: ?, Cost: 1)    four(a, b) -> Com_1(leftOne(a, b)) [ a > b ]
+		(Comp: 1, Cost: 1)    three(a, b) -> Com_1(four(a, b))
+		(Comp: 1, Cost: 1)    two(a, b) -> Com_1(three(a, b))
+		(Comp: 1, Cost: 1)    one(a, b) -> Com_1(two(a, b))
+		(Comp: 1, Cost: 1)    start(a, b) -> Com_1(one(a, b))
 	start location:	start
 	leaf cost:	0
 
@@ -117,20 +117,20 @@ weakly and the transitions
 	four(a, b) -> Com_1(rightOne(a, b)) [ a < b ]
 strictly and produces the following problem:
 4:	T:
-		(5*a + 5*b + 4, 1)    rightFour(a, b) -> Com_1(four(a, b - 1)) [ -a + b - 1 >= 0 ]
-		(?, 1)                leftFour(a, b) -> Com_1(four(a - 1, b)) [ a - b - 1 >= 0 ]
-		(5*a + 5*b + 4, 1)    rightThree(a, b) -> Com_1(rightFour(a, b)) [ -a + b - 1 >= 0 ]
-		(5*a + 5*b + 4, 1)    rightTwo(a, b) -> Com_1(rightThree(a, b)) [ -a + b - 1 >= 0 ]
-		(5*a + 5*b + 4, 1)    rightOne(a, b) -> Com_1(rightTwo(a, b)) [ -a + b - 1 >= 0 ]
-		(?, 1)                leftThree(a, b) -> Com_1(leftFour(a, b)) [ a - b - 1 >= 0 ]
-		(?, 1)                leftTwo(a, b) -> Com_1(leftThree(a, b)) [ a - b - 1 >= 0 ]
-		(?, 1)                leftOne(a, b) -> Com_1(leftTwo(a, b)) [ a - b - 1 >= 0 ]
-		(5*a + 5*b + 4, 1)    four(a, b) -> Com_1(rightOne(a, b)) [ a < b ]
-		(?, 1)                four(a, b) -> Com_1(leftOne(a, b)) [ a > b ]
-		(1, 1)                three(a, b) -> Com_1(four(a, b))
-		(1, 1)                two(a, b) -> Com_1(three(a, b))
-		(1, 1)                one(a, b) -> Com_1(two(a, b))
-		(1, 1)                start(a, b) -> Com_1(one(a, b))
+		(Comp: 5*a + 5*b + 4, Cost: 1)    rightFour(a, b) -> Com_1(four(a, b - 1)) [ -a + b - 1 >= 0 ]
+		(Comp: ?, Cost: 1)                leftFour(a, b) -> Com_1(four(a - 1, b)) [ a - b - 1 >= 0 ]
+		(Comp: 5*a + 5*b + 4, Cost: 1)    rightThree(a, b) -> Com_1(rightFour(a, b)) [ -a + b - 1 >= 0 ]
+		(Comp: 5*a + 5*b + 4, Cost: 1)    rightTwo(a, b) -> Com_1(rightThree(a, b)) [ -a + b - 1 >= 0 ]
+		(Comp: 5*a + 5*b + 4, Cost: 1)    rightOne(a, b) -> Com_1(rightTwo(a, b)) [ -a + b - 1 >= 0 ]
+		(Comp: ?, Cost: 1)                leftThree(a, b) -> Com_1(leftFour(a, b)) [ a - b - 1 >= 0 ]
+		(Comp: ?, Cost: 1)                leftTwo(a, b) -> Com_1(leftThree(a, b)) [ a - b - 1 >= 0 ]
+		(Comp: ?, Cost: 1)                leftOne(a, b) -> Com_1(leftTwo(a, b)) [ a - b - 1 >= 0 ]
+		(Comp: 5*a + 5*b + 4, Cost: 1)    four(a, b) -> Com_1(rightOne(a, b)) [ a < b ]
+		(Comp: ?, Cost: 1)                four(a, b) -> Com_1(leftOne(a, b)) [ a > b ]
+		(Comp: 1, Cost: 1)                three(a, b) -> Com_1(four(a, b))
+		(Comp: 1, Cost: 1)                two(a, b) -> Com_1(three(a, b))
+		(Comp: 1, Cost: 1)                one(a, b) -> Com_1(two(a, b))
+		(Comp: 1, Cost: 1)                start(a, b) -> Com_1(one(a, b))
 	start location:	start
 	leaf cost:	0
 
@@ -183,22 +183,22 @@ weakly and the transitions
 	four(a, b) -> Com_1(leftOne(a, b)) [ a > b ]
 strictly and produces the following problem:
 5:	T:
-		(5*a + 5*b + 4, 1)    rightFour(a, b) -> Com_1(four(a, b - 1)) [ -a + b - 1 >= 0 ]
-		(5*a + 5*b + 2, 1)    leftFour(a, b) -> Com_1(four(a - 1, b)) [ a - b - 1 >= 0 ]
-		(5*a + 5*b + 4, 1)    rightThree(a, b) -> Com_1(rightFour(a, b)) [ -a + b - 1 >= 0 ]
-		(5*a + 5*b + 4, 1)    rightTwo(a, b) -> Com_1(rightThree(a, b)) [ -a + b - 1 >= 0 ]
-		(5*a + 5*b + 4, 1)    rightOne(a, b) -> Com_1(rightTwo(a, b)) [ -a + b - 1 >= 0 ]
-		(5*a + 5*b + 2, 1)    leftThree(a, b) -> Com_1(leftFour(a, b)) [ a - b - 1 >= 0 ]
-		(5*a + 5*b + 2, 1)    leftTwo(a, b) -> Com_1(leftThree(a, b)) [ a - b - 1 >= 0 ]
-		(5*a + 5*b + 2, 1)    leftOne(a, b) -> Com_1(leftTwo(a, b)) [ a - b - 1 >= 0 ]
-		(5*a + 5*b + 4, 1)    four(a, b) -> Com_1(rightOne(a, b)) [ a < b ]
-		(5*a + 5*b + 2, 1)    four(a, b) -> Com_1(leftOne(a, b)) [ a > b ]
-		(1, 1)                three(a, b) -> Com_1(four(a, b))
-		(1, 1)                two(a, b) -> Com_1(three(a, b))
-		(1, 1)                one(a, b) -> Com_1(two(a, b))
-		(1, 1)                start(a, b) -> Com_1(one(a, b))
+		(Comp: 5*a + 5*b + 4, Cost: 1)    rightFour(a, b) -> Com_1(four(a, b - 1)) [ -a + b - 1 >= 0 ]
+		(Comp: 5*a + 5*b + 2, Cost: 1)    leftFour(a, b) -> Com_1(four(a - 1, b)) [ a - b - 1 >= 0 ]
+		(Comp: 5*a + 5*b + 4, Cost: 1)    rightThree(a, b) -> Com_1(rightFour(a, b)) [ -a + b - 1 >= 0 ]
+		(Comp: 5*a + 5*b + 4, Cost: 1)    rightTwo(a, b) -> Com_1(rightThree(a, b)) [ -a + b - 1 >= 0 ]
+		(Comp: 5*a + 5*b + 4, Cost: 1)    rightOne(a, b) -> Com_1(rightTwo(a, b)) [ -a + b - 1 >= 0 ]
+		(Comp: 5*a + 5*b + 2, Cost: 1)    leftThree(a, b) -> Com_1(leftFour(a, b)) [ a - b - 1 >= 0 ]
+		(Comp: 5*a + 5*b + 2, Cost: 1)    leftTwo(a, b) -> Com_1(leftThree(a, b)) [ a - b - 1 >= 0 ]
+		(Comp: 5*a + 5*b + 2, Cost: 1)    leftOne(a, b) -> Com_1(leftTwo(a, b)) [ a - b - 1 >= 0 ]
+		(Comp: 5*a + 5*b + 4, Cost: 1)    four(a, b) -> Com_1(rightOne(a, b)) [ a < b ]
+		(Comp: 5*a + 5*b + 2, Cost: 1)    four(a, b) -> Com_1(leftOne(a, b)) [ a > b ]
+		(Comp: 1, Cost: 1)                three(a, b) -> Com_1(four(a, b))
+		(Comp: 1, Cost: 1)                two(a, b) -> Com_1(three(a, b))
+		(Comp: 1, Cost: 1)                one(a, b) -> Com_1(two(a, b))
+		(Comp: 1, Cost: 1)                start(a, b) -> Com_1(one(a, b))
 	start location:	start
 	leaf cost:	0
 
-Complexity upper bound 50*a + 50*b + 33
+Complexity upper bound 50*a + 50*b + 34
 

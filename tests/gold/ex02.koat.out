@@ -1,11 +1,11 @@
-YES(?, x + 3*y + 2)
+YES(?, x + 3*y + 3)
 
 Initial complexity problem:
 1:	T:
-		(1, 1)    start(x, y) -> Com_1(f(x, y))
-		(?, 1)    f(x, y) -> Com_1(f(x - 1, y)) [ x > 0 ]
-		(?, 1)    f(x, y) -> Com_1(g(x, y)) [ x <= 0 ]
-		(?, 1)    g(x, y) -> Com_1(g(x, y - 1)) [ y > 0 ]
+		(Comp: 1, Cost: 1)    start(x, y) -> Com_1(f(x, y))
+		(Comp: ?, Cost: 1)    f(x, y) -> Com_1(f(x - 1, y)) [ x > 0 ]
+		(Comp: ?, Cost: 1)    f(x, y) -> Com_1(g(x, y)) [ x <= 0 ]
+		(Comp: ?, Cost: 1)    g(x, y) -> Com_1(g(x, y - 1)) [ y > 0 ]
 	start location:	start
 	leaf cost:	0
 
@@ -17,10 +17,10 @@ orients all transitions weakly and the transition
 	g(x, y) -> Com_1(g(x, y - 1)) [ y > 0 ]
 strictly and produces the following problem:
 2:	T:
-		(1, 1)          start(x, y) -> Com_1(f(x, y))
-		(?, 1)          f(x, y) -> Com_1(f(x - 1, y)) [ x > 0 ]
-		(?, 1)          f(x, y) -> Com_1(g(x, y)) [ x <= 0 ]
-		(3*y + 1, 1)    g(x, y) -> Com_1(g(x, y - 1)) [ y > 0 ]
+		(Comp: 1, Cost: 1)          start(x, y) -> Com_1(f(x, y))
+		(Comp: ?, Cost: 1)          f(x, y) -> Com_1(f(x - 1, y)) [ x > 0 ]
+		(Comp: ?, Cost: 1)          f(x, y) -> Com_1(g(x, y)) [ x <= 0 ]
+		(Comp: 3*y + 1, Cost: 1)    g(x, y) -> Com_1(g(x, y - 1)) [ y > 0 ]
 	start location:	start
 	leaf cost:	0
 
@@ -32,10 +32,10 @@ orients all transitions weakly and the transition
 	f(x, y) -> Com_1(g(x, y)) [ x <= 0 ]
 strictly and produces the following problem:
 3:	T:
-		(1, 1)          start(x, y) -> Com_1(f(x, y))
-		(?, 1)          f(x, y) -> Com_1(f(x - 1, y)) [ x > 0 ]
-		(1, 1)          f(x, y) -> Com_1(g(x, y)) [ x <= 0 ]
-		(3*y + 1, 1)    g(x, y) -> Com_1(g(x, y - 1)) [ y > 0 ]
+		(Comp: 1, Cost: 1)          start(x, y) -> Com_1(f(x, y))
+		(Comp: ?, Cost: 1)          f(x, y) -> Com_1(f(x - 1, y)) [ x > 0 ]
+		(Comp: 1, Cost: 1)          f(x, y) -> Com_1(g(x, y)) [ x <= 0 ]
+		(Comp: 3*y + 1, Cost: 1)    g(x, y) -> Com_1(g(x, y - 1)) [ y > 0 ]
 	start location:	start
 	leaf cost:	0
 
@@ -47,12 +47,12 @@ orients all transitions weakly and the transition
 	f(x, y) -> Com_1(f(x - 1, y)) [ x > 0 ]
 strictly and produces the following problem:
 4:	T:
-		(1, 1)          start(x, y) -> Com_1(f(x, y))
-		(x, 1)          f(x, y) -> Com_1(f(x - 1, y)) [ x > 0 ]
-		(1, 1)          f(x, y) -> Com_1(g(x, y)) [ x <= 0 ]
-		(3*y + 1, 1)    g(x, y) -> Com_1(g(x, y - 1)) [ y > 0 ]
+		(Comp: 1, Cost: 1)          start(x, y) -> Com_1(f(x, y))
+		(Comp: x, Cost: 1)          f(x, y) -> Com_1(f(x - 1, y)) [ x > 0 ]
+		(Comp: 1, Cost: 1)          f(x, y) -> Com_1(g(x, y)) [ x <= 0 ]
+		(Comp: 3*y + 1, Cost: 1)    g(x, y) -> Com_1(g(x, y - 1)) [ y > 0 ]
 	start location:	start
 	leaf cost:	0
 
-Complexity upper bound x + 3*y + 2
+Complexity upper bound x + 3*y + 3
 

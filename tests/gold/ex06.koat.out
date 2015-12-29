@@ -1,9 +1,9 @@
-YES(?, x)
+YES(?, x + 1)
 
 Initial complexity problem:
 1:	T:
-		(1, 1)    f(x) -> Com_1(g(x))
-		(?, 1)    g(x) -> Com_1(g(x - 1)) [ x > 0 ]
+		(Comp: 1, Cost: 1)    f(x) -> Com_1(g(x))
+		(Comp: ?, Cost: 1)    g(x) -> Com_1(g(x - 1)) [ x > 0 ]
 	start location:	f
 	leaf cost:	0
 
@@ -14,10 +14,10 @@ orients all transitions weakly and the transition
 	g(x) -> Com_1(g(x - 1)) [ x > 0 ]
 strictly and produces the following problem:
 2:	T:
-		(1, 1)    f(x) -> Com_1(g(x))
-		(x, 1)    g(x) -> Com_1(g(x - 1)) [ x > 0 ]
+		(Comp: 1, Cost: 1)    f(x) -> Com_1(g(x))
+		(Comp: x, Cost: 1)    g(x) -> Com_1(g(x - 1)) [ x > 0 ]
 	start location:	f
 	leaf cost:	0
 
-Complexity upper bound x
+Complexity upper bound x + 1
 

@@ -1,9 +1,9 @@
-YES(?, x)
+YES(?, x + 1)
 
 Initial complexity problem:
 1:	T:
-		(1, 1)    start(x) -> Com_1(f(x)) [ x < 100 /\ x > -100 ]
-		(?, 1)    f(x) -> Com_1(f(x - 1)) [ x > 0 ]
+		(Comp: 1, Cost: 1)    start(x) -> Com_1(f(x)) [ x < 100 /\ x > -100 ]
+		(Comp: ?, Cost: 1)    f(x) -> Com_1(f(x - 1)) [ x > 0 ]
 	start location:	start
 	leaf cost:	0
 
@@ -14,10 +14,10 @@ orients all transitions weakly and the transition
 	f(x) -> Com_1(f(x - 1)) [ x > 0 ]
 strictly and produces the following problem:
 2:	T:
-		(1, 1)    start(x) -> Com_1(f(x)) [ x < 100 /\ x > -100 ]
-		(x, 1)    f(x) -> Com_1(f(x - 1)) [ x > 0 ]
+		(Comp: 1, Cost: 1)    start(x) -> Com_1(f(x)) [ x < 100 /\ x > -100 ]
+		(Comp: x, Cost: 1)    f(x) -> Com_1(f(x - 1)) [ x > 0 ]
 	start location:	start
 	leaf cost:	0
 
-Complexity upper bound x
+Complexity upper bound x + 1
 
