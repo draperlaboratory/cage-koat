@@ -63,9 +63,12 @@ main()
 {
     legalKoat
     legalOutDir $OUTDIR
-    for dir in inputs/*; do
-        runDirectory $dir
+    ## Simple non-nested directories
+    for dir in cexamples debugExamples weightedExamples/*; do
+	echo "runDirectory inputs/$dir"
+        runDirectory inputs/$dir
     done
+    ## Nested Directory
 }
 
 main
