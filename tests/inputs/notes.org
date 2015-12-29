@@ -12,5 +12,14 @@
   of various kittel / koat components, such as the parser, the visualizer, etc.
 
 * weightedExamples
-  Examples meant to put the weigth code through it's paces, check extreme situations for
-  correct behavior, etc.
+  Examples meant to put the weigth code through it's paces, check
+  extreme situations for correct behavior, etc.
+
+** badExamples
+   These exmples should all crash for some reason or another.
+
+** constantWeights
+   All weights are constant integers.
+
+** simplePolyWeights
+   Weights are simple polynomials, e.g. one unknown such as x^2 + x, rather than x * y.
