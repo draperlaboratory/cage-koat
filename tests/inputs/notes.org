@@ -1,0 +1,16 @@
+* cexamples
+  originally shipped with the master branch of kittel / koat.   Example systems of the sort
+  kittel is able to handle.
+
+* examples
+  originally shipped with the master branch of kittel / koat.   Example systems of the sort
+  kittel is able to handle.
+
+* debugExamples
+
+  Meant to provide simple test cases for the most basic functionailty
+  of various kittel / koat components, such as the parser, the visualizer, etc.
+
+* weightedExamples
+  Examples meant to put the weigth code through it's paces, check extreme situations for
+  correct behavior, etc.
