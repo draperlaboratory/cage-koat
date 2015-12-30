@@ -1,3 +1,9 @@
+* Testing Notes
+** APRON, Z3
+   Outputs differ measurably depending on if Z3, apron, or both are enabled in
+   the makefile.  Currently the golden outputs rely on both of them being
+   turned on.
+
 * cexamples
   originally shipped with the master branch of kittel / koat.   Example systems of the sort
   kittel is able to handle.
