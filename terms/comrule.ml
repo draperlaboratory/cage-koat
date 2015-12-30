@@ -41,7 +41,7 @@ and listToStringPrefix prefix rules =
 let createRule l rs c =
   { lhs = l;
     rhss = rs;
-    cond = c;
+    cond = Utils.remdupC Pc.equalAtom c;
     lowerBound = Poly.one;
     upperBound = Poly.one;
   }
@@ -74,7 +74,7 @@ let createWeightedRule l rs c lb ub =
     begin
       Printf.eprintf "Constraining lower bound <= upper bound for rule %s\n"
         (toString r);
-      { r with cond = ineq::c }
+      { r with cond = Utils.remdupC Pc.equalAtom (ineq::c) }
     end
 
 
