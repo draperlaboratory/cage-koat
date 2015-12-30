@@ -139,7 +139,16 @@ let getRightVars r =
 
 (* Return the variables of a rule *)
 let getVars r =
-  Utils.remdup ((Term.getVars r.lhs) @ (getRightVars r) @ (Pc.getVars r.cond))
+  Utils.remdup ((Term.getVars r.lhs)
+                @ (getRightVars r)
+                @ (Pc.getVars r.cond)
+                @ (Poly.getVars r.lowerBound)
+                @ (Poly.getVars r.upperBound))
+
+let getSlicingVars r =
+  Utils.remdup ((Pc.getVars r.cond)
+                @ (Poly.getVars r.lowerBound)
+                @ (Poly.getVars r.upperBound))
 
 (* Renames the variables in a rule *)
 let rec renameVars badvars r =

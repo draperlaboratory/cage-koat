@@ -93,6 +93,9 @@ let getRightFuns r =
 let getVars r =
   Utils.remdup ((Term.getVars r.lhs) @ (Term.getVars r.rhs) @ (Pc.getVars r.cond))
 
+let getSlicingVars r =
+  Utils.remdup (Pc.getVars r.cond)
+
 (* Renames the variables in a rule *)
 let rec renameVars badvars r =
   let vars = getVars r in

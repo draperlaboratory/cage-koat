@@ -16,6 +16,7 @@ module type AbstractRule =
 
     (** Get all used variables (in lhs, rhs, cond) *)
     val getVars: rule -> string list
+    val getSlicingVars: rule -> string list
 
     (** Rename rule variables such that no variables listed in first parameter are used. *)
     val renameVars: string list -> rule -> rule

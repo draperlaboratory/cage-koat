@@ -63,7 +63,8 @@ module Make (RVG : Rvgraph.S) = struct
             else
               newNeededIdxs
           in
-          let varsInConds = Utils.remdup (Utils.concatMap (fun r -> Pc.getVars (RuleT.getCond r)) rules) in
+          let varsInConds = Utils.remdup (Utils.concatMap RuleT.getSlicingVars rules) in
+          (* let varsInConds = Utils.remdup (Utils.concatMap (fun r -> Pc.getVars (RuleT.getCond r)) rules) in *)
           let initNeededIdxs = Utils.concatMap varToIdxSet varsInConds in
           propagate initNeededIdxs rules
         in

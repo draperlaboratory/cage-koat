@@ -22,6 +22,7 @@ val getLeftFun : rule -> Term.funSym
 val getRightFuns : rule -> Term.funSym list
 val getRightVars : rule -> Poly.var list
 val getVars : rule -> Poly.var list
+val getSlicingVars : rule -> Poly.var list
 val renameVars : Poly.var list -> rule -> rule
 val createVarMapping : Poly.var list -> Poly.var list -> Poly.mapping list
 val getNewVarName : Poly.var list -> Poly.var -> Poly.var
