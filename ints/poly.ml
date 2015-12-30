@@ -317,6 +317,11 @@ let rec getVars (poly, _) =
 and getVarsMonomial mon =
   List.map (fun (x, _) -> x) mon
 
+let hasVars p =
+  match getVars p with
+  | [] -> false
+  | _ -> true
+
 let shareVars p1 p2 =
   let v1 = getVars p1
   and v2 = getVars p2 in

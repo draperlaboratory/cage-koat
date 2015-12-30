@@ -48,6 +48,7 @@ val const_to_string : Big_int.big_int -> string
 val renameVars : (var * var) list -> poly -> poly
 val renameMonomial : (var * var) list -> monomial -> monomial
 val getVars : poly -> var list
+val hasVars : poly -> bool
 val shareVars : poly -> poly -> bool
 val getVarsMonomial : monomial -> var list
 val constmult : poly -> Big_int.big_int -> poly

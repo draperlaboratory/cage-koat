@@ -49,17 +49,26 @@ let createRule l rs c =
 (* Create a comrule with bounds. *)
 let createWeightedRule l rs c lb ub =
   let r =
-  { lhs = l;
-    rhss = rs;
-    cond = c;
-    lowerBound = lb;
-    upperBound = ub;
-  } in
-(*
-  Printf.eprintf "%s: { %s , %s }\n"
-    (toString r) (Poly.toString lb) (Poly.toString ub);
-*)
-  r
+    { lhs = l;
+      rhss = rs;
+      cond = c;
+      lowerBound = lb;
+      upperBound = ub; }
+  and varsInLB = Poly.hasVars lb
+  and varsInUB = Poly.hasVars ub in
+  (* JTT - We would want to ensure lb <= ub using PC where possible.
+     Unfortunately, we can't always know -- especially where conditionals force
+     values onto variables. *)
+  if (not varsInLB) && (not varsInUB) then
+    begin
+      let ineq = Pc.Geq (ub, lb) in
+      if Pc.isTrueAtom Poly.VarMap.empty ineq then
+        r else
+        failwith (Printf.sprintf
+                    "Weighted rule has lower bound larger than upper bound: %s"
+                    (toString r))
+    end else
+    r
 
 
 let compare r1 r2 =
