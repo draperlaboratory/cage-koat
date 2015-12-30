@@ -55,20 +55,27 @@ let createWeightedRule l rs c lb ub =
       lowerBound = lb;
       upperBound = ub; }
   and varsInLB = Poly.hasVars lb
-  and varsInUB = Poly.hasVars ub in
+  and varsInUB = Poly.hasVars ub
+  and ineq = Pc.Geq (ub, lb) in
   (* JTT - We would want to ensure lb <= ub using PC where possible.
      Unfortunately, we can't always know -- especially where conditionals force
      values onto variables. *)
   if (not varsInLB) && (not varsInUB) then
     begin
-      let ineq = Pc.Geq (ub, lb) in
       if Pc.isTrueAtom Poly.VarMap.empty ineq then
         r else
         failwith (Printf.sprintf
                     "Weighted rule has lower bound larger than upper bound: %s"
                     (toString r))
-    end else
+    end
+  else if Poly.equal lb ub then
     r
+  else
+    begin
+      Printf.eprintf "Constraining lower bound <= upper bound for rule %s\n"
+        (toString r);
+      { r with cond = ineq::c }
+    end
 
 
 let compare r1 r2 =
