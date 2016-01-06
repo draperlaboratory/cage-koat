@@ -24,6 +24,15 @@ exception ParseException of int * int * string
 let isBad v =
   (v.[0] = '$') || (v.[0] = '_') || (v.[0] >= 'A' && v.[0] <= 'Z')
 
+let rec check_distinct args seen =
+  match args with
+    | [] -> true
+    | a::l -> let varname = List.hd (Poly.getVars a) in
+                if (Utils.contains seen varname) then
+                  false
+                else
+                  check_distinct l (varname::seen)
+
 let removeNeq trs =
   Utils.concatMap Comrule.removeNeq trs
 
@@ -69,7 +78,6 @@ let rec createFunMapping funs used =
                  else
                    (f, f)::(createFunMapping ff used)
 
-
 let applyFunMappingTerm mapping { Term.fn = f; Term.args = args } =
   Term.create' (List.assoc f mapping, args)
 
@@ -82,6 +90,11 @@ let applyFunMapping mapping r =
     (Comrule.getUpperBound r)
 
 
+let sanitizeFuns trs startFun =
+  let funs = Cint.getFuns trs in
+    let mapping = createFunMapping funs funs in
+      (List.map (applyFunMapping mapping) trs, List.assoc startFun mapping)
+
 let rec createVarMapping vars used =
   match vars with
     | [] -> []
@@ -91,7 +104,63 @@ let rec createVarMapping vars used =
                else
                  createVarMapping vv used
 
-let rec getCint chan =
+let sanitizeRule r =
+  let vars = Comrule.getVars r in
+    let varmapping = createVarMapping vars vars in
+      Comrule.createWeightedRule
+        (Term.renameVars varmapping (Comrule.getLeft r))
+        (List.map (fun rhs -> Term.renameVars varmapping rhs) (Comrule.getRights r))
+        (Pc.renameVars varmapping (Comrule.getCond r))
+        (Poly.renameVars varmapping (Comrule.getLowerBound r))
+        (Poly.renameVars varmapping (Comrule.getUpperBound r))
+
+let sanitize trs startFun =
+  let (newtrs, newstart) = sanitizeFuns trs startFun in
+    (newstart, List.map sanitizeRule newtrs)
+
+let check_lhs_rule r =
+  let args = Term.getArgs (Comrule.getLeft r) in
+    (List.for_all Poly.isVar args) && (check_distinct args [])
+
+let rec check_lhs cint =
+  match cint with
+    | [] -> []
+    | r::rr -> if check_lhs_rule r then
+                 r::(check_lhs rr)
+               else
+                 raise (ParseException (0, 0, "Arguments on lhs need to be distinct variables!"))
+
+let getAritiesOne { Term.fn = f; Term.args = args } g =
+  if f = g then
+    [ List.length args ]
+  else
+    []
+
+let rec getArities cint f =
+  match cint with
+    | [] -> []
+    | r::rr -> (getAritiesOne (Comrule.getLeft r) f) @ (Utils.concatMap (fun r -> getAritiesOne r f) (Comrule.getRights r)) @ (getArities rr f)
+
+let check_arity_fun cint f =
+  let arities = Utils.remdup (getArities cint f) in
+    if List.length arities > 1 then
+      raise (ParseException (0, 0, "All occurrences of function symbol " ^ f ^ " need to have the same arity!"))
+
+let check_arity cint =
+  let funs = Utils.remdup (List.flatten (List.map (fun rule -> (Comrule.getFuns rule)) cint)) in
+    List.iter (check_arity_fun cint) funs;
+    cint
+
+let check cint =
+  match cint with
+  | [] -> raise (ParseException (0, 0, "A CINT cannot be empty!"))
+  | _ -> check_lhs (check_arity cint)
+
+
+
+
+
+let getCint chan =
   try
     Cint_lexer.pos := 1;
     Cint_lexer.line := 1;
@@ -124,67 +193,6 @@ let rec getCint chan =
                 Printf.sprintf "Error: Unknown token in line %d at position %d." !Cint_lexer.line !Cint_lexer.pos
               )
           )
-
-
-and check cint =
-  match cint with
-    | [] -> raise (ParseException (0, 0, "A CINT cannot be empty!"))
-    | _ -> check_lhs (check_arity cint)
-and check_arity cint =
-  let funs = Utils.remdup (List.flatten (List.map (fun rule -> (Comrule.getFuns rule)) cint)) in
-    List.iter (check_arity_fun cint) funs;
-    cint;
-and check_arity_fun cint f =
-  let arities = Utils.remdup (getArities cint f) in
-    if List.length arities > 1 then
-      raise (ParseException (0, 0, "All occurrences of function symbol " ^ f ^ " need to have the same arity!"))
-and getArities cint f =
-  match cint with
-    | [] -> []
-    | r::rr -> (getAritiesOne (Comrule.getLeft r) f) @ (Utils.concatMap (fun r -> getAritiesOne r f) (Comrule.getRights r)) @ (getArities rr f)
-and getAritiesOne { Term.fn = f; Term.args = args } g =
-  if f = g then
-    [ List.length args ]
-  else
-    []
-and check_lhs cint =
-  match cint with
-    | [] -> []
-    | r::rr -> if check_lhs_rule r then
-                 r::(check_lhs rr)
-               else
-                 raise (ParseException (0, 0, "Arguments on lhs need to be distinct variables!"))
-and check_lhs_rule r =
-  let args = Term.getArgs (Comrule.getLeft r) in
-    (List.for_all Poly.isVar args) && (check_distinct args [])
-
-and check_distinct args seen =
-  match args with
-    | [] -> true
-    | a::l -> let varname = List.hd (Poly.getVars a) in
-                if (Utils.contains seen varname) then
-                  false
-                else
-                  check_distinct l (varname::seen)
-
-and sanitize trs startFun =
-  let (newtrs, newstart) = sanitizeFuns trs startFun in
-    (newstart, List.map sanitizeRule newtrs)
-and sanitizeFuns trs startFun =
-  let funs = Cint.getFuns trs in
-    let mapping = createFunMapping funs funs in
-      (List.map (applyFunMapping mapping) trs, List.assoc startFun mapping)
-
-
-and sanitizeRule r =
-  let vars = Comrule.getVars r in
-    let varmapping = createVarMapping vars vars in
-      Comrule.createWeightedRule
-        (Term.renameVars varmapping (Comrule.getLeft r))
-        (List.map (fun rhs -> Term.renameVars varmapping rhs) (Comrule.getRights r))
-        (Pc.renameVars varmapping (Comrule.getCond r))
-        (Poly.renameVars varmapping (Comrule.getLowerBound r))
-        (Poly.renameVars varmapping (Comrule.getUpperBound r))
 
 (* Parses a cint from a filename *)
 let parse filename =
