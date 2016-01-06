@@ -21,30 +21,37 @@
 (* General parse exception. *)
 exception ParseException of int * int * string
 
+(********* Helpers, filters, and such **********)
+
+(* is the character disallowed *)
 let isBad v =
   (v.[0] = '$') || (v.[0] = '_') || (v.[0] >= 'A' && v.[0] <= 'Z')
 
-let rec check_distinct args seen =
-  match args with
-    | [] -> true
-    | a::l -> let varname = List.hd (Poly.getVars a) in
-                if (Utils.contains seen varname) then
-                  false
-                else
-                  check_distinct l (varname::seen)
 
+let rec check_distinct seen = function
+  | [] -> true
+  | a::l -> let varname = List.hd (Poly.getVars a) in
+            if (Utils.contains seen varname) then
+              false
+            else
+              check_distinct (varname::seen) l
+(* takes every comrule with a <> constrain in the conditional, and produces
+   a list of rules with disjoint constraints covering the original rule *)
 let removeNeq trs =
   Utils.concatMap Comrule.removeNeq trs
 
+(* rewrites rhss so that they don't contain the same variables that exist on the lhs? *)
 let internalize cint =
   List.map Comrule.internalize cint
 
+(* attaches primes to a variable name until it is unique *)
 let rec attachPrimes cand used =
   if (Utils.contains used cand) then
     attachPrimes (cand ^ "'") used
   else
     cand
 
+(* remove duplicate constraints from a rule*)
 let remdupComrule r =
   Comrule.createWeightedRule
     (Comrule.getLeft r)
@@ -56,6 +63,7 @@ let remdupComrule r =
 let remdup cint =
   List.map remdupComrule cint
 
+(* remove bad characters from a variable *)
 let getCand v =
   let rest = (String.sub v 1 ((String.length v) - 1)) in
     if v.[0] = '$' then
@@ -65,22 +73,25 @@ let getCand v =
     else
       String.uncapitalize v
 
+(* remove illegal chars and attach primes until v is unique in used *)
 let getNewName v used =
   let cand = getCand v in
     attachPrimes cand used
 
-let rec createFunMapping funs used =
-  match funs with
-    | [] -> []
-    | f::ff -> if isBad f then
-                 let fnew = getNewName f used in
-                   (f, fnew)::(createFunMapping ff (fnew::used))
-                 else
-                   (f, f)::(createFunMapping ff used)
+(* rename functions so that their arguments obey rules *)
+let rec createFunMapping used = function
+  | [] -> []
+  | f::ff -> if isBad f then
+      let fnew = getNewName f used in
+      (f, fnew)::(createFunMapping (fnew::used) ff)
+    else
+      (f, f)::(createFunMapping used ff)
 
+(* apply a mappting to a term *)
 let applyFunMappingTerm mapping { Term.fn = f; Term.args = args } =
-  Term.create' (List.assoc f mapping, args)
+  { Term.fn = List.assoc f mapping; Term.args = args }
 
+(* apply a mapping to a comrule *)
 let applyFunMapping mapping r =
   Comrule.createWeightedRule
     (applyFunMappingTerm mapping (Comrule.getLeft r))
@@ -93,7 +104,8 @@ let applyFunMapping mapping r =
 let sanitizeFuns trs startFun =
   let funs = Cint.getFuns trs in
     let mapping = createFunMapping funs funs in
-      (List.map (applyFunMapping mapping) trs, List.assoc startFun mapping)
+    (List.map (applyFunMapping mapping) trs,
+     List.assoc startFun mapping)
 
 let rec createVarMapping vars used =
   match vars with
@@ -114,51 +126,61 @@ let sanitizeRule r =
         (Poly.renameVars varmapping (Comrule.getLowerBound r))
         (Poly.renameVars varmapping (Comrule.getUpperBound r))
 
+
 let sanitize trs startFun =
   let (newtrs, newstart) = sanitizeFuns trs startFun in
     (newstart, List.map sanitizeRule newtrs)
 
+(**************** Verifying Correctness *******************)
+
 let check_lhs_rule r =
   let args = Term.getArgs (Comrule.getLeft r) in
-    (List.for_all Poly.isVar args) && (check_distinct args [])
+    (List.for_all Poly.isVar args) && (check_distinct [] args)
 
-let rec check_lhs cint =
-  match cint with
-    | [] -> []
-    | r::rr -> if check_lhs_rule r then
-                 r::(check_lhs rr)
-               else
-                 raise (ParseException (0, 0, "Arguments on lhs need to be distinct variables!"))
+let rec check_lhs = function
+  | [] -> []
+  | r::rr -> if check_lhs_rule r then
+      r::(check_lhs rr)
+    else
+      raise (ParseException (0, 0, "Arguments on lhs need to be distinct variables!"))
 
+(* returns the arity of a term so long as the function names agree *)
 let getAritiesOne { Term.fn = f; Term.args = args } g =
   if f = g then
     [ List.length args ]
   else
     []
 
-let rec getArities cint f =
-  match cint with
-    | [] -> []
-    | r::rr -> (getAritiesOne (Comrule.getLeft r) f) @ (Utils.concatMap (fun r -> getAritiesOne r f) (Comrule.getRights r)) @ (getArities rr f)
+(* produces a list of all arities that the function symbol f appears with in a cint *)
+let rec getArities f = function
+  | [] -> []
+  | r::rr ->
+    (getAritiesOne (Comrule.getLeft r) f)
+    @ (Utils.concatMap (fun r -> getAritiesOne r f) (Comrule.getRights r))
+    @ (getArities f rr)
 
+(* makes sure that every occurance of the function symbol f have the same arity *)
 let check_arity_fun cint f =
-  let arities = Utils.remdup (getArities cint f) in
+  let arities = Utils.remdup (getArities f cint) in
     if List.length arities > 1 then
       raise (ParseException (0, 0, "All occurrences of function symbol " ^ f ^ " need to have the same arity!"))
 
+(* makes sure that check_arity_fun holds for every function in cint *)
 let check_arity cint =
   let funs = Utils.remdup (List.flatten (List.map (fun rule -> (Comrule.getFuns rule)) cint)) in
-    List.iter (check_arity_fun cint) funs;
-    cint
+  List.iter (check_arity_fun cint) funs
 
-let check cint =
-  match cint with
+(* raise a parse exception if the cint is empty *)
+let checkEmpty = function
   | [] -> raise (ParseException (0, 0, "A CINT cannot be empty!"))
-  | _ -> check_lhs (check_arity cint)
+  | _ -> ()
 
 
-
-
+(* perform all important tests on the cint *)
+let check cint =
+  checkEmpty cint;
+  check_arity cint;
+  check_lhs cint
 
 let getCint chan =
   try
