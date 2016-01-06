@@ -364,34 +364,37 @@ let buildMapping (newArgs : Poly.var list) (cr : rule) =
    lowerBound = Poly.instantiate cr.lowerBound sigma;
    upperBound = Poly.instantiate cr.upperBound sigma;}
 
-let maximumArity lst =
-  let fixedArity = ref true
-  and (iArity, tl) = match lst with
-    | [] -> 0, []
-    | hd::tl -> Term.getArity hd.lhs, tl in
-  let maxArity = ref iArity in
-  let rec rest = function
-    | [] -> !maxArity, !fixedArity
-    | hd::tl ->
-      begin
-        let ar = Term.getArity hd.lhs in
-        if ar > !maxArity then
-          begin
-            maxArity := ar;
-            fixedArity := false
-          end
-        else if ar <> !maxArity then
-          fixedArity := false;
-        rest tl
-      end in
-  rest tl
+let crArity cr =
+  let lhsAr = Term.getArity cr.lhs in
+  List.fold_left (fun (maxArity, fixedArity) rhs ->
+    let thisArity = Term.getArity rhs in
+    if thisArity > maxArity
+    then thisArity, false
+    else if thisArity = maxArity
+    then maxArity, fixedArity
+    else maxArity, false) (lhsAr, true) cr.rhss
+
+let maximumArity cint =
+  let init,rst = match cint with
+      [] -> (0,true), []
+    | hd::tl -> crArity hd, tl in
+  let folder (maxArity, fixedArity) cr =
+    let crArity, selfFixed = crArity cr in
+    if crArity > maxArity
+    then crArity, false
+    else if crArity = maxArity
+    then maxArity, (fixedArity && selfFixed)
+    else maxArity, false in
+  List.fold_left folder init rst
+
 
 let fixArity cint =
   let maxArity,fixedArity = maximumArity cint in
+  Printf.eprintf "%i %b\n" maxArity fixedArity;
   (* we don't have to fix the arity, just skip it. *)
   if fixedArity then cint
   else
     (* not everything has the same arity, do a transform *)
-    let newArgs = buildNewArgs maxArity in
+    let newArgs = List.rev (buildNewArgs maxArity) in
     let transform = buildMapping newArgs in
     List.map transform cint
