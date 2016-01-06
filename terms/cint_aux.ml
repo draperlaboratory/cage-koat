@@ -32,10 +32,13 @@ and getCint chan =
     Cint_lexer.pos := 1;
     Cint_lexer.line := 1;
     let lexbuf = Lexing.from_channel chan in
-      let (startFun, tmp) = Cint_parser.cint_eol Cint_lexer.token lexbuf in
-        let tmp1 = check (remdup tmp) in
-          let (startFun', tmp2) = sanitize tmp1 startFun in
-            (startFun', internalize (removeNeq tmp2))
+    let (startFun, tmp) = Cint_parser.cint_eol Cint_lexer.token lexbuf in
+    (* remove duplicate rules *)
+    let noDups = check (remdup tmp) in
+    (* fix functions arity *)
+    let fixedArity = Comrule.fixArity noDups in
+    let (startFun', tmp2) = sanitize fixedArity startFun in
+    (startFun', internalize (removeNeq tmp2))
   with
     | Parsing.Parse_error ->
         raise

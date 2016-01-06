@@ -74,8 +74,53 @@ let checkStartCondition tgraph trs startfun =
   | [] -> ()
   | _ -> raise (Cint_aux.ParseException (0, 0, "Error: Start nodes have incoming edges!"))
 
+
+let doNothing () = ()
+
+let getOverallCost tgraph globalSizeComplexities (ctrsobl, _, _, _) =
+  let vars = CTRS.getVars ctrsobl.ctrs in
+  let getCostForRule tgraph globalSizeComplexities vars rule =
+    let sigma = List.mapi (fun i var -> Poly.toVar var, Expexp.fromVar (Printf.sprintf "X_%i" (i + 1))) rule.Comrule.lhs.Term.args in
+    let preRules = TGraph.getPreds tgraph [rule] in
+    let getCostPerPreRule (ruleCost : Expexp.expexp) globalSizeComplexities vars preRule =
+      let csmap = GSC.extractSizeMapForRule globalSizeComplexities preRule 0 vars in
+      (* List.iter (fun (p,c) -> Printf.eprintf "%s -> %s\n" p (Complexity.toString c)) csmap;*)
+      let res = Complexity.apply ruleCost csmap in
+      (* List.iter (fun v -> Printf.eprintf " %s" v) vars;
+         Printf.eprintf "\npreRuleComp: %s\n" (Complexity.toString res); *)
+      res
+    in
+    let ruleComplexity = CTRSObl.getComplexity ctrsobl rule in
+    (**
+       JTT - 12/22/15
+
+       Rule cost still contains variables from the TRS as it was given in the
+       input file.  However, getCostForRule expects all variable names to be of
+       the form X_i, where i is the argument position of that particular
+       variable.  The mapping should hav happened early, but we compute and
+       apply it here.  Otherwise, we would end up with unknown complexity where
+       we can actually compute the proper value.
+    *)
+    let ruleCost = Expexp.instantiate (CTRSObl.getCost ctrsobl rule) sigma in
+    (* Printf.eprintf "RuleData: %s Comp: %s Cost: %s\n"
+      (Comrule.toString rule)
+      (Complexity.toString ruleComplexity)
+      (Expexp.toString ruleCost); *)
+    let result =
+      match preRules with
+      | [] -> Complexity.mult ruleComplexity (Complexity.P ruleCost)
+      | _ -> Complexity.mult ruleComplexity
+              (Complexity.sup
+                 (List.map
+                    (getCostPerPreRule ruleCost globalSizeComplexities vars)
+                    preRules)) in
+    (* Printf.eprintf "Result: %s\n" (Complexity.toString result); *)
+    result in
+  Complexity.add
+    (Complexity.listAdd (List.map (getCostForRule tgraph globalSizeComplexities vars) ctrsobl.ctrs.rules))
+    (Complexity.P ctrsobl.leafCost)
+
 let rec process cint maxchaining startfun ctype =
-  let cint = Comrule.fixArity cint in
   check cint;
   i := 1;
   proofs := [];
@@ -108,48 +153,7 @@ let rec process cint maxchaining startfun ctype =
   Some (getOverallCost tgraph globalSizeComplexities !todo,
         (* Why is initObl passed to getProof and not ctrsobl? *)
         getProof (initObl, tgraph, rvgraph, 1) !input_nums !output_nums !proofs)
-and getOverallCost tgraph globalSizeComplexities (ctrsobl, _, _, _) =
-  let vars = CTRS.getVars ctrsobl.ctrs in
-  let getCostForRule tgraph globalSizeComplexities vars rule =
-    let sigma = List.mapi (fun i var -> Poly.toVar var, Expexp.fromVar (Printf.sprintf "X_%i" (i + 1))) rule.Comrule.lhs.Term.args in
-    let preRules = TGraph.getPreds tgraph [rule] in
-    let getCostPerPreRule (ruleCost : Expexp.expexp) globalSizeComplexities vars preRule =
-      let csmap = GSC.extractSizeMapForRule globalSizeComplexities preRule 0 vars in
-      (* List.iter (fun (p,c) -> Printf.eprintf "%s -> %s\n" p (Complexity.toString c)) csmap;*)
-      let res = Complexity.apply ruleCost csmap in
-      (* List.iter (fun v -> Printf.eprintf " %s" v) vars;
-         Printf.eprintf "\npreRuleComp: %s\n" (Complexity.toString res); *)
-      res
-    in
-    let ruleComplexity = CTRSObl.getComplexity ctrsobl rule in
-    (**
-       JTT - 12/22/15
 
-       Rule cost still contains variables from the TRS as it was given in the
-       input file.  However, getCostForRule expects all variable names to be of
-       the form X_i, where i is the argument position of that particular
-       variable.  The mapping should hav happened early, but we compute and
-       apply it here.  Otherwise, we would end up with unknown complexity where
-       we can actually compute the proper value.
-    *)
-    let ruleCost = Expexp.instantiate (CTRSObl.getCost ctrsobl rule) sigma in
-    (* Printf.eprintf "RuleData: %s Comp: %s Cost: %s\n"
-      (Comrule.toString rule)
-      (Complexity.toString ruleComplexity)
-      (Expexp.toString ruleCost); *)
-    let result =
-    match preRules with
-    | [] -> Complexity.mult ruleComplexity (Complexity.P ruleCost)
-    | _ -> Complexity.mult ruleComplexity
-              (Complexity.sup
-                 (List.map
-                    (getCostPerPreRule ruleCost globalSizeComplexities vars)
-                    preRules)) in
-    (* Printf.eprintf "Result: %s\n" (Complexity.toString result); *)
-    result in
-  Complexity.add
-    (Complexity.listAdd (List.map (getCostForRule tgraph globalSizeComplexities vars) ctrsobl.ctrs.rules))
-    (Complexity.P ctrsobl.leafCost)
 and getProof (ctrsobl, _, _, _) inums onums theproofs =
   fun () -> "Initial complexity problem:\n1:" ^
             (CTRSObl.toString ctrsobl) ^
@@ -245,5 +249,4 @@ and doExpFarkas () =
   run_ite (Cintexpfarkaspolo.process false) doLoop doExpFarkasSizeBound
 and doExpFarkasSizeBound () =
   run_ite (Cintexpfarkaspolo.process true) doLoop doNothing
-and doNothing () =
-  ()
+
