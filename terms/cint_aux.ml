@@ -21,13 +21,77 @@
 (* General parse exception. *)
 exception ParseException of int * int * string
 
-(* Parses a cint from a filename *)
-let rec parse filename =
-  let inchan = open_in filename in
-    let res = getCint inchan in
-      close_in inchan;
-      res
-and getCint chan =
+let isBad v =
+  (v.[0] = '$') || (v.[0] = '_') || (v.[0] >= 'A' && v.[0] <= 'Z')
+
+let removeNeq trs =
+  Utils.concatMap Comrule.removeNeq trs
+
+let internalize cint =
+  List.map Comrule.internalize cint
+
+let rec attachPrimes cand used =
+  if (Utils.contains used cand) then
+    attachPrimes (cand ^ "'") used
+  else
+    cand
+
+let remdupComrule r =
+  Comrule.createWeightedRule
+    (Comrule.getLeft r)
+    (Comrule.getRights r)
+    (Utils.remdupC Pc.equalAtom (Comrule.getCond r))
+    (Comrule.getLowerBound r)
+    (Comrule.getUpperBound r)
+
+let remdup cint =
+  List.map remdupComrule cint
+
+let getCand v =
+  let rest = (String.sub v 1 ((String.length v) - 1)) in
+    if v.[0] = '$' then
+      "dollar" ^ rest
+    else if v.[0] = '_' then
+      "underscore" ^ rest
+    else
+      String.uncapitalize v
+
+let getNewName v used =
+  let cand = getCand v in
+    attachPrimes cand used
+
+let rec createFunMapping funs used =
+  match funs with
+    | [] -> []
+    | f::ff -> if isBad f then
+                 let fnew = getNewName f used in
+                   (f, fnew)::(createFunMapping ff (fnew::used))
+                 else
+                   (f, f)::(createFunMapping ff used)
+
+
+let applyFunMappingTerm mapping { Term.fn = f; Term.args = args } =
+  Term.create' (List.assoc f mapping, args)
+
+let applyFunMapping mapping r =
+  Comrule.createWeightedRule
+    (applyFunMappingTerm mapping (Comrule.getLeft r))
+    (List.map (applyFunMappingTerm mapping) (Comrule.getRights r))
+    (Comrule.getCond r)
+    (Comrule.getLowerBound r)
+    (Comrule.getUpperBound r)
+
+
+let rec createVarMapping vars used =
+  match vars with
+    | [] -> []
+    | v::vv -> if isBad v then
+                 let vnew = getNewName v used in
+                   (v, vnew)::(createVarMapping vv (vnew::used))
+               else
+                 createVarMapping vv used
+
+let rec getCint chan =
   try
     Cint_lexer.pos := 1;
     Cint_lexer.line := 1;
@@ -61,15 +125,6 @@ and getCint chan =
               )
           )
 
-and remdup cint =
-  List.map remdupComrule cint
-and remdupComrule r =
-  Comrule.createWeightedRule
-    (Comrule.getLeft r)
-    (Comrule.getRights r)
-    (Utils.remdupC Pc.equalAtom (Comrule.getCond r))
-    (Comrule.getLowerBound r)
-    (Comrule.getUpperBound r)
 
 and check cint =
   match cint with
@@ -102,6 +157,7 @@ and check_lhs cint =
 and check_lhs_rule r =
   let args = Term.getArgs (Comrule.getLeft r) in
     (List.for_all Poly.isVar args) && (check_distinct args [])
+
 and check_distinct args seen =
   match args with
     | [] -> true
@@ -118,23 +174,8 @@ and sanitizeFuns trs startFun =
   let funs = Cint.getFuns trs in
     let mapping = createFunMapping funs funs in
       (List.map (applyFunMapping mapping) trs, List.assoc startFun mapping)
-and createFunMapping funs used =
-  match funs with
-    | [] -> []
-    | f::ff -> if isBad f then
-                 let fnew = getNewName f used in
-                   (f, fnew)::(createFunMapping ff (fnew::used))
-                 else
-                   (f, f)::(createFunMapping ff used)
-and applyFunMapping mapping r =
-  Comrule.createWeightedRule
-    (applyFunMappingTerm mapping (Comrule.getLeft r))
-    (List.map (applyFunMappingTerm mapping) (Comrule.getRights r))
-    (Comrule.getCond r)
-    (Comrule.getLowerBound r)
-    (Comrule.getUpperBound r)
-and applyFunMappingTerm mapping { Term.fn = f; Term.args = args } =
-  Term.create' (List.assoc f mapping, args)
+
+
 and sanitizeRule r =
   let vars = Comrule.getVars r in
     let varmapping = createVarMapping vars vars in
@@ -144,35 +185,10 @@ and sanitizeRule r =
         (Pc.renameVars varmapping (Comrule.getCond r))
         (Poly.renameVars varmapping (Comrule.getLowerBound r))
         (Poly.renameVars varmapping (Comrule.getUpperBound r))
-and createVarMapping vars used =
-  match vars with
-    | [] -> []
-    | v::vv -> if isBad v then
-                 let vnew = getNewName v used in
-                   (v, vnew)::(createVarMapping vv (vnew::used))
-               else
-                 createVarMapping vv used
-and isBad v =
-  (v.[0] = '$') || (v.[0] = '_') || (v.[0] >= 'A' && v.[0] <= 'Z')
-and getNewName v used =
-  let cand = getCand v in
-    attachPrimes cand used
-and getCand v =
-  let rest = (String.sub v 1 ((String.length v) - 1)) in
-    if v.[0] = '$' then
-      "dollar" ^ rest
-    else if v.[0] = '_' then
-      "underscore" ^ rest
-    else
-      String.uncapitalize v
-and attachPrimes cand used =
-  if (Utils.contains used cand) then
-    attachPrimes (cand ^ "'") used
-  else
-    cand
 
-and removeNeq trs =
-  Utils.concatMap Comrule.removeNeq trs
-
-and internalize cint =
-  List.map Comrule.internalize cint
+(* Parses a cint from a filename *)
+let parse filename =
+  let inchan = open_in filename in
+    let res = getCint inchan in
+      close_in inchan;
+      res
