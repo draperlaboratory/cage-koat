@@ -32,7 +32,7 @@ let parseTrs filename combine =
     let res = if (endsWith filename ".simple") then
                 SimpleToTRS.createTrs combine (Simple_aux.getProgram inchan)
               else if (endsWith filename ".koat") then
-                let cint = Cint_aux.getCint inchan in
+                let cint = Cint_aux.getCint filename in
                   Cint.separate (snd cint)
               else
                 Trs_aux.getTrs inchan
@@ -45,7 +45,7 @@ let parseCint filename combine =
     let res = if (endsWith filename ".simple") then
                 SimpleToCInt.createCint combine (Simple_aux.getProgram inchan)
               else
-                Cint_aux.getCint inchan
+                Cint_aux.getCint filename
               in
       close_in inchan;
       res

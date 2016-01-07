@@ -182,18 +182,15 @@ let check cint =
   check_arity cint;
   check_lhs cint
 
-let getCint chan =
+let readIn filename =
+  let inchan = open_in filename in
   try
     Cint_lexer.pos := 1;
     Cint_lexer.line := 1;
-    let lexbuf = Lexing.from_channel chan in
-    let (startFun, tmp) = Cint_parser.cint_eol Cint_lexer.token lexbuf in
-    (* remove duplicate rules *)
-    let noDups = check (remdup tmp) in
-    (* fix functions arity *)
-    let fixedArity = Comrule.fixArity noDups in
-    let (startFun', tmp2) = sanitize fixedArity startFun in
-    (startFun', internalize (removeNeq tmp2))
+    let lexbuf = Lexing.from_channel inchan in
+    let res = Cint_parser.cint_eol Cint_lexer.token lexbuf in
+    close_in inchan;
+    res
   with
     | Parsing.Parse_error ->
         raise
@@ -216,9 +213,18 @@ let getCint chan =
               )
           )
 
+
+let getCint fileName =
+    let (startFun, tmp) = readIn fileName in
+    (* remove duplicate rules *)
+    let noDups = check (remdup tmp) in
+    (* fix functions arity *)
+    let fixedArity = Comrule.fixArity noDups in
+    let (startFun', tmp2) = sanitize fixedArity startFun in
+    (startFun', internalize (removeNeq tmp2))
+
+
 (* Parses a cint from a filename *)
 let parse filename =
-  let inchan = open_in filename in
-    let res = getCint inchan in
-      close_in inchan;
-      res
+  getCint filename
+

@@ -39,6 +39,9 @@ all: kittel koat convert koatCConv koatFSTConv koatCESConv dep
 arity: arity.ml
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} arity.native
 
+fixArity: fixArity.ml
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} fixArity.native
+
 kittel: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} kittel.native
 
@@ -65,6 +68,7 @@ koatFSTConv: force_look
 
 koatCESConv: force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koatCESConv.native
+
 
 test: force_look
 	cd tests; sh runExamples.sh; sh simpleTest.sh

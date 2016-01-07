@@ -47,3 +47,4 @@ val restrictArguments : int list -> rule -> rule
 val getLowerBound : rule -> Poly.poly
 val getUpperBound : rule -> Poly.poly
 val fixArity : rule list -> rule list
+val getArgs : rule list -> Poly.var list

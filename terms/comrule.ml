@@ -26,6 +26,12 @@ type rule = {
   upperBound : Poly.poly;
 }
 
+type cint = rule list
+type system = {
+  startSym : Term.term;
+  cint : cint;
+}
+
 
 (* Create a string for a rule *)
 let rec toString r =
@@ -318,10 +324,9 @@ let restrictArguments indexSet rule =
     upperBound = rule.upperBound;
   }
 
-
 let rec buildNewArgs = function
-  | 0 -> ["_x_0"]
-  | i -> (Printf.sprintf "_x_%i" i):: (buildNewArgs (i - 1))
+  | 0 -> ["Ar_0"]
+  | i -> (Printf.sprintf "Ar_%i" i):: (buildNewArgs (i - 1))
 
 let rec firstN lst i =
   if i == 0 then
@@ -347,8 +352,8 @@ let rec sigmaToString = function
     Printf.sprintf "%s -> %s\n" s (Poly.toString p) ^ (sigmaToString tl)
 
 let buildMapping (newArgs : Poly.var list) (cr : rule) =
-  let maxArity = List.length newArgs
-  and lhs = cr.lhs in
+  let maxArity = List.length newArgs in
+  let lhs = cr.lhs in
   let toMap = firstN newArgs (Term.getArity lhs) in
   let sigma = List.map2 (fun var poly -> Poly.toVar poly, Poly.fromVar var)
     toMap lhs.Term.args in
@@ -360,9 +365,12 @@ let buildMapping (newArgs : Poly.var list) (cr : rule) =
       let rh'' = pad maxArity rh' in
       rh'')
     cr.rhss in
+  let ret =
   {lhs; rhss; cond; (* punning *)
    lowerBound = Poly.instantiate cr.lowerBound sigma;
-   upperBound = Poly.instantiate cr.upperBound sigma;}
+   upperBound = Poly.instantiate cr.upperBound sigma;} in
+ (* Printf.eprintf "%s\n\nbecomes\n\n%s\n\n" (toString cr) (toString ret); *)
+  ret
 
 let crArity cr =
   let lhsAr = Term.getArity cr.lhs in
@@ -387,14 +395,17 @@ let maximumArity cint =
     else maxArity, false in
   List.fold_left folder init rst
 
+let getArgs = function
+  | [] -> []
+  | hd::_ -> List.map Poly.toVar hd.lhs.Term.args
 
 let fixArity cint =
   let maxArity,fixedArity = maximumArity cint in
-  Printf.eprintf "%i %b\n" maxArity fixedArity;
   (* we don't have to fix the arity, just skip it. *)
   if fixedArity then cint
   else
     (* not everything has the same arity, do a transform *)
-    let newArgs = List.rev (buildNewArgs maxArity) in
+    let newArgs = List.rev (buildNewArgs (maxArity - 1)) in
     let transform = buildMapping newArgs in
     List.map transform cint
+
