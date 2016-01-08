@@ -156,6 +156,8 @@ mult_monomial:
         (Big_int.minus_big_int Big_int.unit_big_int, $2) }
 | INT TIMES monomial
     { (Big_int.big_int_of_string $1, $3) }
+| var_power TIMES INT
+    { (Big_int.big_int_of_string $3, [$1]) }
 | INFIX INT TIMES monomial
     { if $1 = "+" then
         (Big_int.big_int_of_string $2, $4)
