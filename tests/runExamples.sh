@@ -13,7 +13,7 @@ runDirectory()
         if [ -e $file ]; then
             filename=$(basename $file)
             if $DEBUG; then
-                echo "./koat.native $file > ${file}.out"
+                echo "${KOAT} $file > ${file}.out"
                 echo "head -n -1 ${file}.out > $filename"
             else
                 $KOAT $file > ${file}.out
