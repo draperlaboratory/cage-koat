@@ -22,10 +22,16 @@ compareFile(){
 }
 
 wrong=0
+if [ -e different ]; then
+    rm different
+fi
 
 for file in $GOLDEN/*.out; do
     compareFile $file
-    wrong=$(($wrong + $?))
+    if [ $? -ne 0 ]; then
+        wrong=$(($wrong + 1))
+        echo "$file" >> different
+    fi
 done
 
 if [ $wrong -ne 0 ]; then
