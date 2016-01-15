@@ -100,7 +100,8 @@ and convert_rule_to_leqs rule abs =
 and getNewBound useSizeComplexities tgraph concretePoly ctrsobl toOrient globalSizeComplexities =
   let vars = CTRS.getVars ctrsobl.ctrs in
   let b = get_max_rhs_arity toOrient in
-  if useSizeComplexities then
+  if b < 2 then Complexity.Unknown
+  else if useSizeComplexities then
     let funs_toOrient = Utils.remdup (List.map (fun rule -> Term.getFun (Comrule.getLeft rule)) toOrient) in
     let pre_toOrient = Utils.notInP Comrule.equal toOrient (TGraph.getPreds tgraph toOrient) in
     Complexity.listAdd (List.map (getTerm concretePoly b ctrsobl pre_toOrient globalSizeComplexities vars) funs_toOrient)
