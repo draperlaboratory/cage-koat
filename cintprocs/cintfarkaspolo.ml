@@ -26,7 +26,7 @@ module RVG = Rvgraph.Make(TGraph)
 module GSC = GlobalSizeComplexity.Make(RVG)
 module LSC = GSC.LSC
 module VarMap = Poly.VarMap
-	       
+
 open CTRSObl
 open CTRS
 
@@ -56,11 +56,13 @@ let getRuleSubsetsToOrient tgraph ctrsobl useSizeComplexities =
   let sccContainsSomeUnknown unknowns scc =
     List.exists (fun r -> Utils.containsP Comrule.equal unknowns r) scc in
   let unknowns = CTRSObl.getUnknownComplexityRules ctrsobl in
+  let ret =
   if useSizeComplexities then
     let nonTrivialSCCs = TGraph.getNontrivialSccs tgraph in
     unknowns :: (List.filter (fun scc -> (sccContainsSomeUnknown unknowns scc) && not(sccHasUnknownPreds tgraph unknowns scc)) nonTrivialSCCs)
   else
-    [unknowns]
+    [unknowns] in
+  ret
 
 (* Find a polynomial interpretation *)
 let rec process useSizeComplexities degree ctrsobl tgraph rvgraph =
@@ -73,6 +75,7 @@ let rec process useSizeComplexities degree ctrsobl tgraph rvgraph =
     let allCandidates = getRuleSubsetsToOrient tgraph ctrsobl useSizeComplexities in
     Cfarkaspolo.findFirst (tryOneS useSizeComplexities degree ctrsobl tgraph rvgraph globalSizeComplexities) allCandidates
   )
+
 and tryOneS useSizeComplexities degree ctrsobl tgraph rvgraph globalSizeComplexities s =
   Farkaspolo.lambda_count := 0;
   Farkaspolo.all_lambdas := [];
@@ -116,9 +119,11 @@ and tryOneS useSizeComplexities degree ctrsobl tgraph rvgraph globalSizeComplexi
 
 (* set up parametric polynomials *)
 and create_poly_map cint =
+  (* string list *)
   let funs = Utils.remdup (List.flatten (List.map (fun rule -> (Comrule.getFuns rule)) cint)) in
-    let abs = List.map (create_poly_map_one cint) funs in
-      (abs, Polo.getParams abs)
+  let abs = List.map (create_poly_map_one cint) funs in
+  let params = Polo.getParams abs in
+  (abs, params)
 and create_poly_map_one cint f =
   (f, Polo.getPoly 1 (Cint.getArityOf f cint) f)
 
@@ -167,6 +172,7 @@ and getAllStrict (r, ws)  =
 
 and getC useSizeComplexities tgraph conc ctrsobl toOrient globalSizeComplexities =
   let vars = CTRS.getVars ctrsobl.ctrs in
+  let res =
   if useSizeComplexities then
     let funs_toOrient = Utils.remdup (List.map (fun rule -> Term.getFun (Comrule.getLeft rule)) toOrient) in
     let pre_toOrient = Utils.notInP Comrule.equal toOrient (TGraph.getPreds tgraph toOrient) in
@@ -174,7 +180,9 @@ and getC useSizeComplexities tgraph conc ctrsobl toOrient globalSizeComplexities
   else
     let pol_start = List.assoc ctrsobl.ctrs.startFun conc in
     let varBindings = Utils.mapi (fun i v -> ("X_" ^ (string_of_int (i + 1)), Expexp.fromVar v)) vars in
-    Complexity.P (Expexp.abs (Expexp.instantiate (Expexp.fromPoly pol_start) varBindings))
+    Complexity.P (Expexp.abs (Expexp.instantiate (Expexp.fromPoly pol_start) varBindings)) in
+  res
+
 and getTerm conc ctrsobl pre_toOrient globalSizeComplexities vars f =
   let getTermForPreComrule f pol_f ctrsobl globalSizeComplexities vars prerule =
     let getAppliedSum f pol_f globalSizeComplexities prerule vars =

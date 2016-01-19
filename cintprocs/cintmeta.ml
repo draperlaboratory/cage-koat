@@ -46,6 +46,12 @@ let did_ai = ref false
 let todo = ref (CTRSObl.getInitialObl [] "" Complexity.Time,
                 TGraph.empty (), None, 0)
 
+let printState prefix =
+(*  let (obl, tgraph, rvgraph, outi) = !todo in*)
+  let (obl, _, _, _) = !todo in
+  Printf.eprintf "\n%s Obligations: %s\n" prefix (CTRSObl.toString obl)
+
+(** Pre run validation **)
 let checkComrules arity lvars trs =
   let rec internal = function
   | [] -> ()
@@ -74,8 +80,7 @@ let checkStartCondition tgraph trs startfun =
   | [] -> ()
   | _ -> raise (Cint_aux.ParseException (0, 0, "Error: Start nodes have incoming edges!"))
 
-
-let doNothing () = ()
+(** Output **)
 
 let getOverallCost tgraph globalSizeComplexities (ctrsobl, _, _, _) =
   let vars = CTRS.getVars ctrsobl.ctrs in
@@ -120,6 +125,68 @@ let getOverallCost tgraph globalSizeComplexities (ctrsobl, _, _, _) =
     (Complexity.listAdd (List.map (getCostForRule tgraph globalSizeComplexities vars) ctrsobl.ctrs.rules))
     (Complexity.P ctrsobl.leafCost)
 
+let rec attachProofs inums onums tproofs =
+  match inums with
+  | [] -> ""
+  | i::is -> ((List.hd tproofs) i (List.hd onums)) ^ "\n\n" ^ (attachProofs is (List.tl onums) (List.tl tproofs))
+
+let getProof (ctrsobl, _, _, _) inums onums theproofs =
+  fun () -> "Initial complexity problem:\n1:" ^
+            (CTRSObl.toString ctrsobl) ^
+            "\n\n" ^
+            (attachProofs inums onums theproofs)
+
+(** Solver loop / control flow **)
+let insertRVGraphIfNeeded () =
+  match !todo with
+    | (_, _, Some _, _) -> ()
+    | (ctrsobl, tgraph, None, ini) ->
+      let lscs = LSC.computeLocalSizeComplexities ctrsobl.ctrs.rules in
+      todo := (ctrsobl, tgraph, Some (RVG.compute lscs tgraph), ini)
+
+
+
+let update (newctrsobl, newTGraph, newRVGraph) proof ini =
+  let outi = !i + 1 in
+  todo := (newctrsobl, newTGraph, newRVGraph, outi);
+  i := outi;
+  proofs := proof::!proofs;
+  input_nums := ini::!input_nums;
+  output_nums := outi::!output_nums
+
+let run proc =
+  let (ctrsobl, tgraph, rvgraph, ini) = !todo in
+  if CTRSObl.isSolved ctrsobl then ()
+  else
+    match (proc ctrsobl tgraph rvgraph) with
+    | None -> ()
+    | Some (newData, p) -> update newData p ini
+
+let run_ite proc1 proc2 proc3 =
+  (* if proc1 succeeds, run proc2, else run proc3 *)
+  match !todo with
+    | (ctrsobl, tgraph, rvgraph, ini) ->
+      (
+        if CTRSObl.isSolved ctrsobl then
+          ()
+        else
+          match (proc1 ctrsobl tgraph rvgraph) with
+            | None -> proc3 ()
+            | Some (newData, p) ->
+              begin
+                update newData p ini;
+                proc2 ()
+              end
+      )
+
+let doNothing () = ()
+
+let doUnreachableRemoval () =
+  run UnreachableProc.process
+
+let doKnowledgePropagation () =
+  run KnowledgeProc.process
+
 let rec process cint maxchaining startfun ctype =
   check cint;
   i := 1;
@@ -154,72 +221,24 @@ let rec process cint maxchaining startfun ctype =
         (* Why is initObl passed to getProof and not ctrsobl? *)
         getProof (initObl, tgraph, rvgraph, 1) !input_nums !output_nums !proofs)
 
-and getProof (ctrsobl, _, _, _) inums onums theproofs =
-  fun () -> "Initial complexity problem:\n1:" ^
-            (CTRSObl.toString ctrsobl) ^
-            "\n\n" ^
-            (attachProofs inums onums theproofs)
-and attachProofs inums onums tproofs =
-  match inums with
-  | [] -> ""
-  | i::is -> ((List.hd tproofs) i (List.hd onums)) ^ "\n\n" ^ (attachProofs is (List.tl onums) (List.tl tproofs))
-and update (newctrsobl, newTGraph, newRVGraph) proof ini =
-  let outi = !i + 1 in
-  todo := (newctrsobl, newTGraph, newRVGraph, outi);
-  i := outi;
-  proofs := proof::!proofs;
-  input_nums := ini::!input_nums;
-  output_nums := outi::!output_nums
-and run proc =
-  match !todo with
-    | (ctrsobl, tgraph, rvgraph, ini) ->
-      (
-        if CTRSObl.isSolved ctrsobl then
-          ()
-        else
-          match (proc ctrsobl tgraph rvgraph) with
-            | None -> ()
-            | Some (newData, p) -> update newData p ini
-      )
-
-and run_ite proc1 proc2 proc3 =
-  match !todo with
-    | (ctrsobl, tgraph, rvgraph, ini) ->
-      (
-        if CTRSObl.isSolved ctrsobl then
-          ()
-        else
-          match (proc1 ctrsobl tgraph rvgraph) with
-            | None -> proc3 ()
-            | Some (newData, p) ->
-              update newData p ini;
-              proc2 ()
-      )
-
-and insertRVGraphIfNeeded () =
-  match !todo with
-    | (_, _, Some _, _) -> ()
-    | (ctrsobl, tgraph, None, ini) ->
-      let lscs = LSC.computeLocalSizeComplexities ctrsobl.ctrs.rules in
-      todo := (ctrsobl, tgraph, Some (RVG.compute lscs tgraph), ini)
-
 and doLoop () =
   doUnreachableRemoval ();
   doKnowledgePropagation ();
   doFarkasConstant ()
-and doUnreachableRemoval () =
-  run UnreachableProc.process
-and doKnowledgePropagation () =
-  run KnowledgeProc.process
+
 and doFarkasConstant () =
   run_ite (Cintfarkaspolo.process false 0) doLoop doFarkasConstantSizeBound
+
 and doFarkasConstantSizeBound () =
   insertRVGraphIfNeeded ();
   run_ite (Cintfarkaspolo.process true 0) doLoop doFarkas
+
 and doFarkas () =
   run_ite (Cintfarkaspolo.process false 1) doLoop doFarkasSizeBound
+
 and doFarkasSizeBound () =
   run_ite (Cintfarkaspolo.process true 1) doLoop doDesperateMeasures
+
 and doDesperateMeasures () =
 IFDEF HAVE_APRON THEN
   if not(!did_ai) then
@@ -234,6 +253,7 @@ IFDEF HAVE_APRON THEN
 ELSE
   doChain1 ()
 END
+
 and doApronInvariants () =
   did_ai := true;
 IFDEF HAVE_APRON THEN
@@ -241,12 +261,16 @@ IFDEF HAVE_APRON THEN
 ELSE
   ()
 END
+
 and doChain1 () =
   run_ite (ChainProc.process 1) doLoop doChain2
+
 and doChain2 () =
   run_ite (ChainProc.process 2) doLoop doExpFarkas
+
 and doExpFarkas () =
   run_ite (Cintexpfarkaspolo.process false) doLoop doExpFarkasSizeBound
+
 and doExpFarkasSizeBound () =
   run_ite (Cintexpfarkaspolo.process true) doLoop doNothing
 
