@@ -1,4 +1,4 @@
-YES(?, y + 18)
+MAYBE
 
 Initial complexity problem:
 1:	T:
@@ -217,29 +217,5 @@ We thus obtain the following problem:
 	start location:	start
 	leaf cost:	0
 
-A separated polynomial rank function for exponential bounds with
-	Pol(g) = V_1
-and size complexities
-	S("start(x, y) -> Com_1(f(x, y))", 0-0) = x
-	S("start(x, y) -> Com_1(f(x, y))", 0-1) = y
-	S("f(x, y) -> Com_1(f(x^2, y - 1)) [ y > 0 ]", 0-0) = ?
-	S("f(x, y) -> Com_1(f(x^2, y - 1)) [ y > 0 ]", 0-1) = y
-	S("g(x, y) -> Com_1(g(x - 1, y)) [ -y >= 0 /\\ x > 0 ]", 0-0) = ?
-	S("g(x, y) -> Com_1(g(x - 1, y)) [ -y >= 0 /\\ x > 0 ]", 0-1) = y
-	S("f(x, y) -> Com_1(g(x - 15, y)) [ y <= 0 /\\ -y >= 0 /\\ x > 0 /\\ x - 1 > 0 /\\ x - 2 > 0 /\\ x - 3 > 0 /\\ x - 4 > 0 /\\ x - 5 > 0 /\\ x - 6 > 0 /\\ x - 7 > 0 /\\ x - 8 > 0 /\\ x - 9 > 0 /\\ x - 10 > 0 /\\ x - 11 > 0 /\\ x - 12 > 0 /\\ x - 13 > 0 /\\ x - 14 > 0 ]", 0-0) = ?
-	S("f(x, y) -> Com_1(g(x - 15, y)) [ y <= 0 /\\ -y >= 0 /\\ x > 0 /\\ x - 1 > 0 /\\ x - 2 > 0 /\\ x - 3 > 0 /\\ x - 4 > 0 /\\ x - 5 > 0 /\\ x - 6 > 0 /\\ x - 7 > 0 /\\ x - 8 > 0 /\\ x - 9 > 0 /\\ x - 10 > 0 /\\ x - 11 > 0 /\\ x - 12 > 0 /\\ x - 13 > 0 /\\ x - 14 > 0 ]", 0-1) = y
-orients the transitions
-	g(x, y) -> Com_1(g(x - 1, y)) [ -y >= 0 /\ x > 0 ]
-weakly and the transition
-	g(x, y) -> Com_1(g(x - 1, y)) [ -y >= 0 /\ x > 0 ]
-strictly and produces the following problem:
-20:	T:
-		(Comp: 1, Cost: 16)    f(x, y) -> Com_1(g(x - 15, y)) [ y <= 0 /\ -y >= 0 /\ x > 0 /\ x - 1 > 0 /\ x - 2 > 0 /\ x - 3 > 0 /\ x - 4 > 0 /\ x - 5 > 0 /\ x - 6 > 0 /\ x - 7 > 0 /\ x - 8 > 0 /\ x - 9 > 0 /\ x - 10 > 0 /\ x - 11 > 0 /\ x - 12 > 0 /\ x - 13 > 0 /\ x - 14 > 0 ]
-		(Comp: 1, Cost: 1)     g(x, y) -> Com_1(g(x - 1, y)) [ -y >= 0 /\ x > 0 ]
-		(Comp: y, Cost: 1)     f(x, y) -> Com_1(f(x^2, y - 1)) [ y > 0 ]
-		(Comp: 1, Cost: 1)     start(x, y) -> Com_1(f(x, y))
-	start location:	start
-	leaf cost:	0
-
-Complexity upper bound y + 18
+Complexity upper bound ?
 
