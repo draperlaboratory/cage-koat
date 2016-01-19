@@ -29,7 +29,6 @@ module LSC = Cfarkaspolo.LSC
 open CTRSObl
 open CTRS
 
-module FMap = Annot.FMap
 module KnowledgeProc = KnowledgePropagationProc.Make(RVG)
 module UnreachableProc = DeleteUnreachableProc.Make(RVG)
 module UnsatProc = DeleteUnsatProc.Make(RVG)
