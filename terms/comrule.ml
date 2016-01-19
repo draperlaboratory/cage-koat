@@ -77,11 +77,7 @@ let createWeightedRule l rs c lb ub =
   else if Poly.equal lb ub then
     r
   else
-    begin
-      Printf.eprintf "Constraining lower bound <= upper bound for rule %s\n"
-        (toString r);
-      { r with cond = Utils.remdupC Pc.equalAtom (ineq::c) }
-    end
+    r
 
 
 let compare r1 r2 =
@@ -201,6 +197,59 @@ and equalInternal rule1 rule2 =
 let satisfiesVarCond r =
   Utils.containsAll (Term.getVars r.lhs) (Utils.remdup (List.flatten (List.map Term.getVars r.rhss)))
 
+
+let hasDefinition x = function
+  | Pc.Equ (s, t) ->
+    let sub = Poly.minus s t in
+    let coeff = Poly.getCoeff sub [(x, 1)] in
+    if Poly.eq_big_int (Big_int.abs_big_int coeff) Big_int.unit_big_int then
+      let sub' = Poly.minus sub (Poly.constmult (Poly.fromVar x) coeff) in
+      not (Utils.contains (Poly.getVars sub') x)
+    else
+      false
+  | _ -> false
+
+let rec findDefinition x lvars c cand =
+  match c with
+    | [] -> cand
+    | d::rest -> let dvars = Pc.getVarsAtom d in
+                   if Utils.contains dvars x then
+                     if (hasDefinition x d) && (Utils.containsAll (x::lvars) dvars) then
+                       if cand = None then
+                         findDefinition x lvars rest (Some d)
+                       else
+                         None
+                     else
+                       None
+                   else
+                     findDefinition x lvars rest cand
+
+let extract x = function
+  | Pc.Equ (s, t) -> let sub = Poly.minus s t in
+                     let coeff = Poly.getCoeff sub [(x, 1)] in
+                     if Poly.eq_big_int coeff Big_int.unit_big_int then
+                       Poly.constmult (Poly.minus sub (Poly.fromVar x)) (Big_int.minus_big_int Big_int.unit_big_int)
+                     else
+                       Poly.minus sub (Poly.fromVar x)
+  | _ -> failwith "Internal error in Rule.extract"
+
+
+(* filters (first) equivalent atoms from the list of conditions *)
+let rec remove d = function
+  | [] -> []
+  | d'::rest -> if Pc.equalAtom d d' then
+      rest
+    else
+      d'::(remove d rest)
+
+let rec getSubstitution newVars c lvars =
+  match newVars with
+    | [] -> ([], c)
+    | x::rest -> match findDefinition x lvars c None with
+                   | None -> getSubstitution rest c lvars
+                   | Some d -> let (sigma, newc) = getSubstitution rest (remove d c) lvars in
+                                 ((x, extract x d)::sigma, newc)
+
 let rec internalize r =
   let lvars = Term.getVars r.lhs
   and rvars = getRightVars r in
@@ -216,58 +265,7 @@ let rec internalize r =
             lowerBound = Poly.instantiate r.lowerBound sigma;
             upperBound = Poly.instantiate r.upperBound sigma;
           }
-and getSubstitution newVars c lvars =
-  match newVars with
-    | [] -> ([], c)
-    | x::rest -> match findDefinition x lvars c None with
-                   | None -> getSubstitution rest c lvars
-                   | Some d -> let (sigma, newc) = getSubstitution rest (remove c d) lvars in
-                                 ((x, extract x d)::sigma, newc)
-and findDefinition x lvars c cand =
-  match c with
-    | [] -> cand
-    | d::rest -> let dvars = Pc.getVarsAtom d in
-                   if Utils.contains dvars x then
-                     if (isEqu d) && (hasUnitCoeff d x) && (Utils.containsAll (x::lvars) dvars) then
-                       if cand = None then
-                         findDefinition x lvars rest (Some d)
-                       else
-                         None
-                     else
-                       None
-                   else
-                     findDefinition x lvars rest cand
-and isEqu c =
-  match c with
-    | Pc.Equ _ -> true
-    | _ -> false
-and hasUnitCoeff c x =
-  match c with
-    | Pc.Equ (s, t) -> let sub = Poly.minus s t in
-                         let coeff = Poly.getCoeff sub [(x, 1)] in
-                           if Poly.eq_big_int (Big_int.abs_big_int coeff) Big_int.unit_big_int then
-                             let sub' = Poly.minus sub (Poly.constmult (Poly.fromVar x) coeff) in
-                               not (Utils.contains (Poly.getVars sub') x)
-                           else
-                             false
-    | _ -> failwith "Internal error in Rule.hasUnitCoeff"
-and extract x d =
-  match d with
-    | Pc.Equ (s, t) -> let sub = Poly.minus s t in
-                         let coeff = Poly.getCoeff sub [(x, 1)] in
-                           if Poly.eq_big_int coeff Big_int.unit_big_int then
-                             Poly.constmult (Poly.minus sub (Poly.fromVar x)) (Big_int.minus_big_int Big_int.unit_big_int)
-                           else
-                             Poly.minus sub (Poly.fromVar x)
 
-    | _ -> failwith "Internal error in Rule.extract"
-and remove c d =
-  match c with
-    | [] -> []
-    | d'::rest -> if Pc.equalAtom d d' then
-                    rest
-                  else
-                    d'::(remove rest d)
 
 (* only one rhs? *)
 let isUnary r =

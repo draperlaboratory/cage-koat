@@ -35,10 +35,8 @@ val getSubstitution : Poly.var list -> Pc.cond -> Poly.var list ->
   (string * Poly.poly) list * Pc.cond
 val findDefinition :
   Poly.var -> Poly.var list -> Pc.cond -> Pc.atom option -> Pc.atom option
-val isEqu : Pc.atom -> bool
-val hasUnitCoeff : Pc.atom -> Poly.var -> bool
 val extract : Poly.var -> Pc.atom -> Poly.poly
-val remove : Pc.cond -> Pc.atom -> Pc.cond
+val remove : Pc.atom -> Pc.cond -> Pc.cond
 val isUnary : rule -> bool
 val instantiate : rule -> (Poly.var * Poly.poly) list -> rule
 val chainTwoRules : rule -> rule -> rule
