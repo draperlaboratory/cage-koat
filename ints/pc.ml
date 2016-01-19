@@ -19,12 +19,13 @@
 *)
 
 (* A PC atom *)
-type atom = Equ of Poly.poly * Poly.poly
-          | Neq of Poly.poly * Poly.poly
-          | Geq of Poly.poly * Poly.poly
-          | Gtr of Poly.poly * Poly.poly
-          | Leq of Poly.poly * Poly.poly
-          | Lss of Poly.poly * Poly.poly
+type atom =
+| Equ of Poly.poly * Poly.poly
+| Neq of Poly.poly * Poly.poly
+| Geq of Poly.poly * Poly.poly
+| Gtr of Poly.poly * Poly.poly
+| Leq of Poly.poly * Poly.poly
+| Lss of Poly.poly * Poly.poly
 
 (* A PC constraint *)
 type cond = atom list
