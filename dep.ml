@@ -1,5 +1,9 @@
 open DepStructs
-
+module RVG     = Cintfarkaspolo.RVG
+module SlicingProc = SlicingProc.Make(RVG)
+module CTRSObl = Cintfarkaspolo.CTRSObl
+module CTRS    = Cintfarkaspolo.CTRS
+  
 type reachablePosition = {
   argPos : argPos;
   qual : qual;
@@ -156,7 +160,7 @@ let flowsToCritical ?(graph = None) relationships starts =
   ans criticalArguments
 
 (** convert a set of relationships into a .dot file so that we can look at them. *)
-let visualizeInformationFlow relationships inputFname =
+let visualizeInformationFlow sliced relationships inputFname =
   let graph = computeGraph relationships in
   let isCritical = criticalArgument graph in
   let visGraph = buildFlowGraph relationships in
@@ -166,7 +170,7 @@ let visualizeInformationFlow relationships inputFname =
     else if flowsToCritical ~graph:(Some graph) relationships [v]
     then [`Color 0x336600; `Style `Bold]
     else [] in
-  draw ~augmentVertex:highlight visGraph inputFname
+  draw ~sliced ~augmentVertex:highlight visGraph inputFname
 
 
 let main () =
@@ -182,8 +186,17 @@ let main () =
     begin
       Printf.printf "Running Relationship Visualizer %s\n\n" !filename;
       let entrFun, system = Parser.parseCint !filename SimpleT.Stmts in
+
+      let initObl = CTRSObl.getInitialObl system entrFun Complexity.Time in
+      let slicedSystem =
+	(match SlicingProc.process initObl with
+	|None -> initObl.CTRSObl.ctrs.CTRS.rules
+	|Some (io,_) -> io.CTRSObl.ctrs.CTRS.rules )
+      and _ = initObl.CTRSObl.ctrs.CTRS.startFun in
       let relationships = Utils.concatMap RuleInfluence.processRule system in
-      visualizeInformationFlow relationships !filename
+      let slicedRelationships = Utils.concatMap RuleInfluence.processRule slicedSystem in
+      visualizeInformationFlow true relationships !filename;
+      visualizeInformationFlow false slicedRelationships !filename
     end
 
 

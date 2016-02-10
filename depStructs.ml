@@ -119,11 +119,12 @@ module Reachability = Graph.Fixpoint.Make (ArgPosGraph)(struct
     let analyze _ = (fun x -> x)
 end)
 
-let convertFname (path : string) =
+let convertFname sliced (path : string) =
   let dname = Filename.dirname path
   and fname = Filename.basename path in
   assert (Filename.check_suffix fname ".koat");
   let base = Filename.chop_suffix fname ".koat" in
+  let base = if sliced then base ^ "-sliced" else base in
   dname ^ "/" ^ base ^ ".dot"
 
 let buildFlowGraph (rts : ruleTrans list) =
@@ -148,7 +149,8 @@ let reachable (starts : argPos list)  (graph : ArgPosGraph.t) =
     with Not_found -> false in
   canReach
 
-let draw ?(augmentVertex = (fun v -> []) ) g fname =
+let draw ?(sliced = false)
+    ?(augmentVertex = (fun v -> []) ) g fname =
   let module Vis = Graph.Graphviz.Dot(struct
   include ArgPosGraph (* use the graph module from above *)
   let red = `Color 0xFF0000
@@ -173,7 +175,7 @@ let draw ?(augmentVertex = (fun v -> []) ) g fname =
   let default_vertex_attributes _ = []
   let graph_attributes _ = []
   end) in
-  let fname = convertFname fname in
+  let fname = convertFname sliced fname in
   let fdesc = Unix.openfile fname [Unix.O_CREAT; Unix.O_WRONLY;] 0o640 in
   let fStream = Unix.out_channel_of_descr fdesc in
   Vis.output_graph fStream g;

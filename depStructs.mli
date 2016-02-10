@@ -64,7 +64,7 @@ val doVis : ruleTrans list -> string -> unit
     information flow graph and compute which argument positions are reachable
     from a given set of starts, you can do that more efficiently. *)
 val buildFlowGraph : ruleTrans list -> ArgPosGraph.t
-val draw : ?augmentVertex:(argPos -> Graph.Graphviz.DotAttributes.vertex list) -> ArgPosGraph.t -> string -> unit
+val draw : ?sliced:bool -> ?augmentVertex:(argPos -> Graph.Graphviz.DotAttributes.vertex list) -> ArgPosGraph.t -> string -> unit
 
 (** given an argument position list and a flow graph, return a function which
     gives true if an argument position could be reached from those starts, and

@@ -37,4 +37,4 @@ val criticalArgument : reachableGraph -> DepStructs.argPos -> bool
 val flowsToCritical : ?graph:reachableGraph option -> DepStructs.ruleTrans list -> DepStructs.argPos list -> bool
 
 (** convert a set of relationships into a .dot file so that we can look at them. *)
-val visualizeInformationFlow : DepStructs.ruleTrans list -> string -> unit
+val visualizeInformationFlow : bool -> DepStructs.ruleTrans list -> string -> unit
