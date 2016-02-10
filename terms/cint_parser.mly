@@ -35,6 +35,8 @@ header :
 ;
 
 rules :
+| CLOSEPAR EOF
+    { [] }
 | CLOSEPAR eols EOF
     { [] }
 | rule eols rules
