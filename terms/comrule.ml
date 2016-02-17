@@ -398,10 +398,11 @@ let getArgs = function
   | hd::_ -> List.map Poly.toVar hd.lhs.Term.args
 
 let fixArity cint =
-  let maxArity,fixedArity = maximumArity cint in
+  let maxArity,_ = maximumArity cint in
   (* we don't have to fix the arity, just skip it. *)
-  if fixedArity then cint
+(*  if fixedArity then cint
   else
+*)
     (* not everything has the same arity, do a transform *)
     let newArgs = List.rev (buildNewArgs (maxArity - 1)) in
     let transform = buildMapping newArgs in
