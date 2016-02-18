@@ -89,7 +89,7 @@ end
 
 module RuleGraph = Graph.Imperative.Digraph.Concrete(FSymNode)
 
-let draw g =
+let draw fname g =
   let module Vis = Graph.Graphviz.Dot(struct
     include RuleGraph
   let edge_attributes _ = [`Style `Solid]
@@ -100,7 +100,6 @@ let draw g =
   let default_vertex_attributes _ = []
   let graph_attributes _ = []
   end ) in
-  let fname = "foo.dot" in
   let fdesc = Unix.openfile fname [Unix.O_CREAT; Unix.O_WRONLY;] 0o640 in
   let fStream = Unix.out_channel_of_descr fdesc in
   Vis.output_graph fStream g;
@@ -118,6 +117,13 @@ let buildGraph assoc =
   List.iter addNode assoc;
   g
 
+let convertFname (path : string) =
+  let dname = Filename.dirname path
+  and fname = Filename.basename path in
+  assert (Filename.check_suffix fname ".koat");
+  let base = Filename.chop_suffix fname ".koat" in
+  dname ^ "/" ^ base ^ ".dot"
+
 let main () =
   Arg.parse speclist (fun f -> filename := f) usage;
   if !filename = "" then
@@ -132,6 +138,7 @@ let main () =
     let ctype = if !is_space then Complexity.Space else Complexity.Time in
     let edges = Comrule.getEdges cint in
     let graph = buildGraph edges in
-    draw graph
+    let fname = convertFname !filename in
+    draw fname graph
 
 let _ = main ()
