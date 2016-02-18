@@ -408,3 +408,8 @@ let fixArity cint =
     let transform = buildMapping newArgs in
     List.map transform cint
 
+let getEdges cint =
+  List.flatten
+    (List.map (fun r ->
+      List.map (fun rhs -> r.lhs.Term.fn, rhs.Term.fn) r.rhss)
+       cint)

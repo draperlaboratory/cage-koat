@@ -1,7 +1,7 @@
 -include user.cfg
 
 HAVE_APRON?=true
-HAVE_Z3?=true
+HAVE_Z3?=false
 
 LIBS=-libs graph,str,nums
 
@@ -30,7 +30,7 @@ endif
 LIBPATH=-package ocamlgraph -package yojson -package unix $(LIBPATH_APRON) $(LIBPATH_Z3)
 PP_OPTS=-pp "camlp4o pa_macro.cmo $(PP_OPTS_APRON) $(PP_OPTS_Z3)"
 
-OPTS=${PP_OPTS} -use-ocamlfind -cflags -warn-error,+a
+OPTS=${PP_OPTS} -use-ocamlfind #-cflags -warn-error,+a
 
 default: kittel koat
 
@@ -53,6 +53,9 @@ koat: make_git_sha1 force_look
 
 dep: dep.ml
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} dep.native
+
+drawRules: drawRules.ml
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} drawRules.native
 
 koat.d.byte: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koat.d.byte

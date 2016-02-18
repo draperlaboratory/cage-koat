@@ -46,3 +46,4 @@ val getLowerBound : rule -> Poly.poly
 val getUpperBound : rule -> Poly.poly
 val fixArity : rule list -> rule list
 val getArgs : rule list -> Poly.var list
+val getEdges : rule list -> (Term.funSym * Term.funSym) list
