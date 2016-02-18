@@ -192,6 +192,14 @@ let doUnreachableRemoval () =
 let doKnowledgePropagation () =
   run KnowledgeProc.process
 
+let sliceState () =
+  let obl = !todo.obl in
+  match SlicingProc.process obl with
+  | None -> ()
+  | Some (sliced, _) ->
+    todo := { !todo with obl = sliced;
+      tgraph = TGraph.compute sliced.ctrs.rules; rvgraph = None; }
+
 let rec process cint maxchaining startfun ctype =
   check cint;
   i := 1;
@@ -214,6 +222,8 @@ let rec process cint maxchaining startfun ctype =
   checkStartCondition tgraph maybeSlicedObl.ctrs.rules startfun;
   let initial = { obl = maybeSlicedObl; tgraph = tgraph; rvgraph = None; outi = !i; } in
   todo := initial;
+  doUnreachableRemoval ();
+  sliceState();
   doLoop ();
   proofs := List.rev !proofs;
   input_nums := List.rev !input_nums;
