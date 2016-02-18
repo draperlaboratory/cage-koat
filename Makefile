@@ -30,7 +30,7 @@ endif
 LIBPATH=-package ocamlgraph -package yojson -package unix $(LIBPATH_APRON) $(LIBPATH_Z3)
 PP_OPTS=-pp "camlp4o pa_macro.cmo $(PP_OPTS_APRON) $(PP_OPTS_Z3)"
 
-OPTS=${PP_OPTS} -use-ocamlfind #-cflags -warn-error,+a
+OPTS=${PP_OPTS} -use-ocamlfind -cflags -warn-error,+a
 
 default: kittel koat
 
