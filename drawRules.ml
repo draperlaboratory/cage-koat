@@ -73,6 +73,51 @@ s print_usage)),
 and print_usage () =
   Arg.usage speclist usage
 
+
+module FSymNode : sig
+  type t = String.t
+  val compare : t -> t -> int
+  val hash : t -> int
+  val equal : t -> t -> bool
+end =
+struct
+  type t = String.t
+  let compare a b = String.compare a b
+  let hash el = Hashtbl.hash el
+  let equal = (=)
+end
+
+module RuleGraph = Graph.Imperative.Digraph.Concrete(FSymNode)
+
+let draw g =
+  let module Vis = Graph.Graphviz.Dot(struct
+    include RuleGraph
+  let edge_attributes _ = [`Style `Solid]
+  let default_edge_attributes _ = []
+  let get_subgraph vertex = None
+  let vertex_attributes v = [`Shape `Box; `Label v ]
+  let vertex_name v = v
+  let default_vertex_attributes _ = []
+  let graph_attributes _ = []
+  end ) in
+  let fname = "foo.dot" in
+  let fdesc = Unix.openfile fname [Unix.O_CREAT; Unix.O_WRONLY;] 0o640 in
+  let fStream = Unix.out_channel_of_descr fdesc in
+  Vis.output_graph fStream g;
+  Unix.close fdesc
+
+let buildGraph assoc =
+  let g = RuleGraph.create () in
+  let addNode (l,r) =
+    let lVert = RuleGraph.V.create l
+    and rVert = RuleGraph.V.create r in
+    let edge = RuleGraph.E.create lVert () rVert in
+    RuleGraph.add_vertex g lVert;
+    RuleGraph.add_vertex g rVert;
+    RuleGraph.add_edge_e g edge in
+  List.iter addNode assoc;
+  g
+
 let main () =
   Arg.parse speclist (fun f -> filename := f) usage;
   if !filename = "" then
@@ -86,6 +131,7 @@ let main () =
     let (startFun, cint) = Parser.parseCint !filename !combine in
     let ctype = if !is_space then Complexity.Space else Complexity.Time in
     let edges = Comrule.getEdges cint in
-    List.iter (fun (l,r) -> Printf.printf "%s -> %s\n" l r) edges
+    let graph = buildGraph edges in
+    draw graph
 
 let _ = main ()
