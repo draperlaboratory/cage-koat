@@ -34,7 +34,9 @@ OPTS=${PP_OPTS} -use-ocamlfind -cflags -warn-error,+a
 
 default: kittel koat
 
-all: kittel koat convert koatCConv koatFSTConv koatCESConv dep
+all: kittel koat convert koatCConv koatFSTConv koatCESConv vis
+
+vis: dep drawRules
 
 arity: arity.ml
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} arity.native
@@ -71,6 +73,9 @@ koatFSTConv: force_look
 
 koatCESConv: force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koatCESConv.native
+
+chain: ChainLoops.ml
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} chain.d.byte
 
 
 test: force_look
