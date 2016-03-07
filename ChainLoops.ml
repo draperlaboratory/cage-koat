@@ -79,6 +79,8 @@ let rec buildStraight arity sindex = function
   | i -> straightSegment arity sindex :: buildStraight arity sindex (i - 1)
 
 let rec buildLoop arity loopStart loopEnd = function
+  | i when i = loopStart && i = loopEnd ->
+    [exitLoop arity loopStart; closeLoop arity loopStart loopEnd]
   | i when i = loopStart ->
     exitLoop arity loopStart :: buildLoop arity loopStart loopEnd (i + 1)
   | i when i = loopEnd ->
@@ -137,16 +139,16 @@ let loopingInstance3 = [Loop {start = 0; stop = 0; };
 
 let main () =
   let printCR cr = Printf.printf "%s\n" (Comrule.toString cr) in
-  Printf.eprintf "Chain loops debugger\n";
-  Printf.eprintf "Straight line instance:\n";
+  Printf.printf "Chain loops debugger\n";
+  Printf.printf "\nStraight line instance:\n";
   List.iter printCR (programToITS straightInstance);
-  Printf.eprintf "Loop instance 1:\n";
+  Printf.printf "\nLoop instance 1:\n";
   List.iter printCR (programToITS loopingInstance1);
-  Printf.eprintf "Loop instance 2:\n";
+  Printf.printf "\nLoop instance 2:\n";
   List.iter printCR (programToITS loopingInstance2);
-  Printf.eprintf "Loop instance 3:\n";
+  Printf.printf "\nLoop instance 3:\n";
   List.iter printCR (programToITS loopingInstance3);
-  Printf.eprintf "Goodbye!"
+  Printf.printf "Goodbye!"
 
 
 let _ = main ()
