@@ -5,6 +5,19 @@
    [-*O+-*]+
 *)
 
+type range = {
+  start : int;
+  stop : int;
+}
+
+type loopIndex = int
+
+type segment =
+| Linear of range
+| Loop of (loopIndex * range)
+
+type program = segment list
+
 let rec listHelp = function
   | 0 -> [0]
   | x -> x :: listHelp (x - 1)
@@ -60,49 +73,38 @@ let straightSegment arity startIndex =
   let rhs = lefthandTerm arity (startIndex + 1) in
   Comrule.createRule lhs [rhs] []
 
-let closeLoop arity loopStart thisIndex =
+let closeLoop arity loopIndex loopStart thisIndex =
   let argNums = list (arity - 1) in
   let lhs = lefthandTerm arity thisIndex
   and rhs = { Term.fn = getFname loopStart;
-              args = List.mapi (argDecrement loopStart) argNums; }
-  and cond = Pc.Geq (arg loopStart, Poly.zero) in
+              args = List.mapi (argDecrement loopIndex) argNums; }
+  and cond = Pc.Geq (arg loopIndex, Poly.zero) in
   Comrule.createRule lhs [rhs] [cond]
 
-let exitLoop arity startIndex =
+let exitLoop arity loopIndex startIndex =
   let lhs = lefthandTerm arity startIndex
   and rhs = lefthandTerm arity (startIndex + 1)
-  and cond = Pc.Equ (arg startIndex, Poly.zero) in
+  and cond = Pc.Equ (arg loopIndex, Poly.zero) in
   Comrule.createRule lhs [rhs] [cond]
 
 let rec buildStraight arity sindex = function
   | 0 -> []
   | i -> straightSegment arity sindex :: buildStraight arity (sindex + 1) (i - 1)
 
-let rec buildLoop arity loopStart loopEnd = function
+let rec buildLoop arity loopIndex loopStart loopEnd = function
   | i when i = loopStart && i = loopEnd ->
-    [exitLoop arity loopStart; closeLoop arity loopStart loopEnd]
+    [exitLoop arity loopIndex loopStart; closeLoop arity loopIndex loopStart loopEnd]
   | i when i = loopStart ->
-    exitLoop arity loopStart :: buildLoop arity loopStart loopEnd (i + 1)
+    exitLoop arity loopIndex loopStart :: buildLoop arity loopIndex loopStart loopEnd (i + 1)
   | i when i = loopEnd ->
-        closeLoop arity loopStart loopEnd :: []
+        closeLoop arity loopIndex loopStart loopEnd :: []
   | i ->
-    straightSegment arity i :: buildLoop arity loopStart loopEnd (i + 1)
-
-type range = {
-  start : int;
-  stop : int;
-}
-
-type segment =
-| Linear of range
-| Loop of range
-
-type program = segment list
+    straightSegment arity i :: buildLoop arity loopIndex loopStart loopEnd (i + 1)
 
 let rec computeArityHelper = function
   | [] -> 0
   | Linear _ :: tl -> computeArityHelper tl
-  | Loop r :: tl -> 1 + computeArityHelper tl
+  | Loop (_,r) :: tl -> 1 + computeArityHelper tl
 
 let computeArity prgn =
   (* I want all programs to have at least arity 1, even if they're linear. *)
@@ -110,11 +112,11 @@ let computeArity prgn =
 
 let validSegment = function
   | Linear r
-  | Loop r ->
+  | Loop (_,r) ->
     r.start <= r.stop && r.start >= 0
 
 let segmentToComrule arity = function
-  | Loop r -> buildLoop arity r.start r.stop r.start
+  | Loop (lInd, r) -> buildLoop arity lInd r.start r.stop r.start
   | Linear r ->  buildStraight arity r.start (r.stop - r.start)
 
 let programToITS p =
@@ -129,13 +131,14 @@ let programToITS p =
 let straightInstance = [Linear { start = 0; stop = 10; }]
 
 let loopingInstance1 = [ Linear { start = 0; stop = 1; };
-                         Loop { start = 1; stop = 1; };
+                         Loop (0, { start = 1; stop = 1; });
                          Linear { start = 2; stop = 10; }; ]
-let loopingInstance2 = [Loop {start = 0; stop = 0; }]
-let loopingInstance3 = [Loop {start = 0; stop = 0; };
-                     Loop {start = 1; stop = 1; };
-                     Loop {start = 2; stop = 5; };
-                     Linear {start = 5; stop = 10; };]
+let loopingInstance2 = [Loop (0, {start = 0; stop = 0; })]
+let loopingInstance3 = [Loop (0, {start = 1; stop = 1; })]
+let loopingInstance4 = [Loop (0, {start = 0; stop = 0; });
+                        Loop (1, {start = 1; stop = 1; });
+                        Loop (2,{start = 2; stop = 5; });
+                        Linear {start = 5; stop = 10; };]
 
 let main () =
   let printCR cr = Printf.printf "%s\n" (Comrule.toString cr) in
@@ -148,6 +151,8 @@ let main () =
   List.iter printCR (programToITS loopingInstance2);
   Printf.printf "\nLoop instance 3:\n";
   List.iter printCR (programToITS loopingInstance3);
+  Printf.printf "\nLoop instance 4:\n";
+  List.iter printCR (programToITS loopingInstance4);
   Printf.printf "Goodbye!\n\n"
 
 

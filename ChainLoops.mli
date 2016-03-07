@@ -3,9 +3,11 @@ type range = {
   stop : int;
 }
 
+type loopIndex = int
+
 type segment =
 | Linear of range
-| Loop of range
+| Loop of (loopIndex * range)
 
 type program = segment list
 
