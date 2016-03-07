@@ -115,7 +115,7 @@ let validSegment = function
 
 let segmentToComrule arity = function
   | Loop r -> buildLoop arity r.start r.stop r.start
-  | Linear r ->  buildStraight arity r.start r.stop
+  | Linear r ->  buildStraight arity r.start (r.stop - r.start)
 
 let programToITS p =
   let arity = computeArity p in
@@ -148,7 +148,7 @@ let main () =
   List.iter printCR (programToITS loopingInstance2);
   Printf.printf "\nLoop instance 3:\n";
   List.iter printCR (programToITS loopingInstance3);
-  Printf.printf "Goodbye!"
+  Printf.printf "Goodbye!\n\n"
 
 
 let _ = main ()
