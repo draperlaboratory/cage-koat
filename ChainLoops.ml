@@ -76,7 +76,7 @@ let exitLoop arity startIndex =
 
 let rec buildStraight arity sindex = function
   | 0 -> []
-  | i -> straightSegment arity sindex :: buildStraight arity sindex (i - 1)
+  | i -> straightSegment arity sindex :: buildStraight arity (sindex + 1) (i - 1)
 
 let rec buildLoop arity loopStart loopEnd = function
   | i when i = loopStart && i = loopEnd ->
