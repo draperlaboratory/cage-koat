@@ -47,7 +47,7 @@ and tryOneS useSizeComplexities ctrsobl tgraph rvgraph globalSizeComplexities s 
     None
   else
     (
-      let (abs, params) = Cintfarkaspolo.create_poly_map toOrient in
+      let (abs, params) = Cintfarkaspolo.create_poly_map 1 toOrient in
       let cwbs_with_rules = get_cwbs toOrient abs in
       let cwbs_with_rules_for_unknowns = Cintfarkaspolo.getOnlyFor cwbs_with_rules toOrient s in
       let weak_with_rules = List.map Cintfarkaspolo.getAllWeak cwbs_with_rules in

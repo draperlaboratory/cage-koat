@@ -84,7 +84,7 @@ and tryOneS useSizeComplexities degree ctrsobl tgraph rvgraph globalSizeComplexi
     None
   else
     (
-      let (abs, params) = create_poly_map toOrient in
+      let (abs, params) = create_poly_map degree toOrient in
       let cwbs_with_rules = get_cwbs toOrient abs in
       let cwbs_with_rules_for_unknowns = getOnlyFor cwbs_with_rules toOrient s in
       let weak_with_rules = List.map getAllWeak cwbs_with_rules in
@@ -118,14 +118,14 @@ and tryOneS useSizeComplexities degree ctrsobl tgraph rvgraph globalSizeComplexi
     )
 
 (* set up parametric polynomials *)
-and create_poly_map cint =
+and create_poly_map degree cint =
   (* string list *)
   let funs = Utils.remdup (List.flatten (List.map (fun rule -> (Comrule.getFuns rule)) cint)) in
-  let abs = List.map (create_poly_map_one cint) funs in
+  let abs = List.map (create_poly_map_one degree cint) funs in
   let params = Polo.getParams abs in
   (abs, params)
-and create_poly_map_one cint f =
-  (f, Polo.getPoly 1 (Cint.getArityOf f cint) f)
+and create_poly_map_one degree cint f =
+  (f, Polo.getPoly degree (Cint.getArityOf f cint) f)
 
 and get_cwbs toOrient abs =
   List.map (fun r -> (r, convert_rule_to_leqs r abs)) toOrient
