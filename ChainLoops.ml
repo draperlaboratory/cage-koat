@@ -12,6 +12,10 @@ type range = {
 
 type loopIndex = int
 
+type sType =
+| Linear
+| Loop
+
 type segment =
 | Linear of range
 | Loop of (loopIndex * range)
@@ -132,6 +136,21 @@ let programToITS = function
     let convSeg = segmentToComrule arity in
     List.fold_left (fun accum pSeg -> convSeg pSeg @ accum) [buildEntry arity] p
 
+let rangeToJSON r =
+  let open Yojson.Basic.Util in
+  `Assoc [ ("start", `Int r.start);
+           ("stop", `Int r.stop); ]
+
+let segmentToJSON s =
+  let open Yojson.Basic.Util in
+  match s with
+  | Linear r ->
+    `Assoc [ ("type", `String "LINEAR");
+             ("range", rangeToJSON r); ]
+  | Loop (lInd, r) ->
+    `Assoc [ ("type", `String "LOOP");
+             ("range", rangeToJSON r);
+             ("loopIndex", `Int lInd); ]
 
 (*** Test Code beyond here ***)
 
