@@ -53,11 +53,11 @@ kittel.d.byte: make_git_sha1 force_look
 koat: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koat.native
 
-dep: dep.ml
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} dep.native
+dep: make_git_sha1 force_look
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} vis/dep.native
 
-drawRules: drawRules.ml
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} drawRules.native
+drawRules: make_git_sha1 force_look
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} vis/drawRules.native
 
 koat.d.byte: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koat.d.byte
