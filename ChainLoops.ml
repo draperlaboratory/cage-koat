@@ -103,7 +103,7 @@ let rec computeArityHelper = function
   | Linear _ :: tl -> computeArityHelper tl
   | Loop (_,r) :: tl -> 1 + computeArityHelper tl
 
-let computeArity prgn =
+let computeMinimumArity prgn =
   (* I want all programs to have at least arity 1, even if they're linear. *)
   max 1 (computeArityHelper prgn)
 
@@ -125,7 +125,7 @@ let buildEntry arity =
 let programToITS = function
   | [] -> failwith "Can't convert an empty program."
   | p ->
-    let arity = computeArity p in
+    let arity = computeMinimumArity p in
     let convSeg = segmentToComrule arity in
     List.fold_left (fun accum pSeg -> convSeg pSeg @ accum) [buildEntry arity] p
 
