@@ -38,13 +38,13 @@ all: kittel koat vis translations
 
 vis: dep drawRules
 
-translations: convert koatCConv koatFstConv koatCESConv fixArity
+translations: convert koatCConv koatFSTConv koatCESConv fixArity
 
 arity: arity.ml
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} arity.native
 
-fixArity: fixArity.ml
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} fixArity.native
+fixArity: make_git_sha1 force_look
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} translation/fixArity.native
 
 kittel: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} kittel.native
@@ -65,16 +65,16 @@ koat.d.byte: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koat.d.byte
 
 convert: force_look
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} convert.native
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} translation/convert.native
 
 koatCConv: force_look
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koatCConv.native
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} translation/koatCConv.native
 
 koatFSTConv: force_look
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koatFSTConv.native
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} translation/koatFSTConv.native
 
 koatCESConv: force_look
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koatCESConv.native
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} translation/koatCESConv.native
 
 chain: ChainLoops.ml
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} ChainLoops.d.byte
