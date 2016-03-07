@@ -173,7 +173,7 @@ let jsonToSegType j =
   | "LOOP" -> LoopSeg
   | _ -> failwith (Printf.sprintf "Unrecognized program segment type: %s" typeString)
 
-let jsontToSegment j =
+let jsonToSegment j =
   let open Yojson.Basic.Util in
   match jsonToSegType j with
   | LinSeg -> Linear (jsonToRange j)
@@ -181,7 +181,13 @@ let jsontToSegment j =
 
 let jsonToProgram j =
   let open Yojson.Basic.Util in
-  j |> member "program" |> to_list
+  j |> member "program" |> to_list |> List.map jsonToSegment
+
+let pathToProgram filePath =
+  Yojson.Basic.from_file filePath |> jsonToProgram
+
+let programToFile filePath p =
+  programToJSON p |> Yojson.Basic.to_file filePath
 
 (*** Test Code beyond here ***)
 
