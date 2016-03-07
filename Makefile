@@ -1,6 +1,6 @@
 -include user.cfg
 
-HAVE_APRON?=true
+HAVE_APRON?=false
 HAVE_Z3?=false
 
 LIBS=-libs graph,str,nums
@@ -75,7 +75,7 @@ koatCESConv: force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koatCESConv.native
 
 chain: ChainLoops.ml
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} chain.d.byte
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} ChainLoops.d.byte
 
 
 test: force_look

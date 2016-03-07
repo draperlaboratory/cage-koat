@@ -42,10 +42,10 @@ let argHelper = function
   | x -> Printf.sprintf "x%i" (x - 24)
 
 let arg i =
-  Poly.fromVar argHelper i
+  Poly.fromVar (argHelper i)
 
 let argDecrement target this i =
-  let thisArg = arg i
+  let thisArg = arg i in
   if target = this
   then Poly.minus thisArg Poly.one
   else thisArg
@@ -61,18 +61,18 @@ let straightSegment arity startIndex =
   Comrule.createRule lhs [rhs] []
 
 let closeLoop arity loopStart thisIndex =
-  let args = List.map arg (list (arity - 1)) in
-  let lhs = leftHandTerm arity thisIndex
+  let argNums = list (arity - 1) in
+  let lhs = lefthandTerm arity thisIndex
   and rhs = { Term.fn = getFname loopStart;
-              args = List.mapi (argDecrement loopStart) args; }
+              args = List.mapi (argDecrement loopStart) argNums; }
   and cond = Pc.Geq (arg loopStart, Poly.zero) in
-  Comrule.createRule lhs [rhs] cond
+  Comrule.createRule lhs [rhs] [cond]
 
-let exitLoop arity loopStart =
+let exitLoop arity startIndex =
   let lhs = lefthandTerm arity startIndex
   and rhs = lefthandTerm arity (startIndex + 1)
-  and cond = Pc.Equ (arg loopStart, Poly.zero) in
-  Comrule.createRule lhs [rhs] cond
+  and cond = Pc.Equ (arg startIndex, Poly.zero) in
+  Comrule.createRule lhs [rhs] [cond]
 
 let rec buildStraight arity sindex = function
   | 0 -> []
@@ -81,61 +81,63 @@ let rec buildStraight arity sindex = function
 let rec buildLoop arity loopStart loopEnd = function
   | i when i = loopStart ->
     exitLoop arity loopStart :: buildLoop arity loopStart loopEnd (i + 1)
-  | i when i = loopEnd
+  | i when i = loopEnd ->
         closeLoop arity loopStart loopEnd :: []
   | i ->
-    straightSegment arity current :: buildLoop arity loopStart loopEnd (i + 1)
+    straightSegment arity i :: buildLoop arity loopStart loopEnd (i + 1)
 
 type range = {
   start : int;
   stop : int;
 }
 
-type Segment =
+type segment =
 | Linear of range
 | Loop of range
 
-type program = Segment list
+type program = segment list
 
-let computeArityHelper = function
+let rec computeArityHelper = function
   | [] -> 0
   | Linear _ :: tl -> computeArityHelper tl
-  | Loop r :: tl -> 1 + computArityHelper tl
+  | Loop r :: tl -> 1 + computeArityHelper tl
 
 let computeArity prgn =
   (* I want all programs to have at least arity 1, even if they're linear. *)
   max 1 (computeArityHelper prgn)
 
-let validSegment =
+let validSegment = function
   | Linear r
   | Loop r ->
     r.start <= r.stop && r.start >= 0
 
-let segmentToComrule arity =
+let segmentToComrule arity = function
   | Loop r -> buildLoop arity r.start r.stop r.start
   | Linear r ->  buildStraight arity r.start r.stop
 
 let programToITS p =
   let arity = computeArity p in
   let convSeg = segmentToComrule arity in
-  List.fold_left (fun accum pSeg -> convSegment pSeg :: accum) [] p
+  List.fold_left (fun accum pSeg -> convSeg pSeg @ accum) [] p
 
 
 (*** Test Code beyond here ***)
 
 (* some simple instances *)
 let straightInstance = [Linear { start = 0; stop = 10; }]
-let loopingInstance1 = [Linear { start 0; stop = 1; };
-                        Loop { start = 1; stop = 1; };
-                        Linear { start = 2; stop = 10; };]
-let loopInstance2 = [Loop {start = 0; stop = 0; }]
-let loopInstance3 = [Loop {start = 0; stop = 0; };
+
+let loopingInstance1 = [ Linear { start = 0; stop = 1; };
+                         Loop { start = 1; stop = 1; };
+                         Linear { start = 2; stop = 10; }; ]
+let loopingInstance2 = [Loop {start = 0; stop = 0; }]
+let loopingInstance3 = [Loop {start = 0; stop = 0; };
                      Loop {start = 1; stop = 1; };
                      Loop {start = 2; stop = 5; };
                      Linear {start = 5; stop = 10; };]
 
 let main () =
   let printCR cr = Printf.printf "%s\n" (Comrule.toString cr) in
+  Printf.eprintf "Chain loops debugger\n";
   Printf.eprintf "Straight line instance:\n";
   List.iter printCR (programToITS straightInstance);
   Printf.eprintf "Loop instance 1:\n";

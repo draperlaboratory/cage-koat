@@ -3,10 +3,10 @@ type range = {
   stop : int;
 }
 
-type Segment =
+type segment =
 | Linear of range
 | Loop of range
 
-type program = Segment list
+type program = segment list
 
-val programToITS : program -> rule list
+val programToITS : program -> Comrule.rule list
