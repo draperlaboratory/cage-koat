@@ -119,10 +119,12 @@ let segmentToComrule arity = function
   | Loop (lInd, r) -> buildLoop arity lInd r.start r.stop r.start
   | Linear r ->  buildStraight arity r.start (r.stop - r.start)
 
-let programToITS p =
-  let arity = computeArity p in
-  let convSeg = segmentToComrule arity in
-  List.fold_left (fun accum pSeg -> convSeg pSeg @ accum) [] p
+let programToITS = function
+  | [] -> failwith "Can't convert an empty program."
+  | p ->
+    let arity = computeArity p in
+    let convSeg = segmentToComrule arity in
+    List.fold_left (fun accum pSeg -> convSeg pSeg @ accum) [] p
 
 
 (*** Test Code beyond here ***)
