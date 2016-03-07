@@ -34,9 +34,11 @@ OPTS=${PP_OPTS} -use-ocamlfind -cflags -warn-error,+a
 
 default: kittel koat
 
-all: kittel koat convert koatCConv koatFSTConv koatCESConv vis
+all: kittel koat vis translations
 
 vis: dep drawRules
+
+translations: convert koatCConv koatFstConv koatCESConv fixArity
 
 arity: arity.ml
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} arity.native
