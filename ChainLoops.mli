@@ -1,3 +1,9 @@
+(**
+   Represents a set of test instances which chain a set of very simple loops together.
+   If '-' is a bit of straight line code, and 'O' is a loop, we can think of the
+   instances represented here as strings accepted by [-*O+-*]+
+*)
+
 type range = {
   start : int;
   stop : int;
