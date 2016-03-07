@@ -152,6 +152,12 @@ let segmentToJSON s =
              ("range", rangeToJSON r);
              ("loopIndex", `Int lInd); ]
 
+let programToJSON = function
+  | [] -> failwith "Attempted to convert empty program to json."
+  | p ->
+    let open Yojson.Basic.Util in
+    `Assoc [ ("program", `List (List.map segmentToJSON p)) ]
+
 (*** Test Code beyond here ***)
 
 (* some simple instances *)
