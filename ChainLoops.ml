@@ -13,8 +13,8 @@ type range = {
 type loopIndex = int
 
 type sType =
-| Linear
-| Loop
+| LinSeg
+| LoopSeg
 
 type segment =
 | Linear of range
@@ -136,6 +136,8 @@ let programToITS = function
     let convSeg = segmentToComrule arity in
     List.fold_left (fun accum pSeg -> convSeg pSeg @ accum) [buildEntry arity] p
 
+(* I/O *)
+
 let rangeToJSON r =
   let open Yojson.Basic.Util in
   `Assoc [ ("start", `Int r.start);
@@ -157,6 +159,29 @@ let programToJSON = function
   | p ->
     let open Yojson.Basic.Util in
     `Assoc [ ("program", `List (List.map segmentToJSON p)) ]
+
+let jsonToRange j =
+  let open Yojson.Basic.Util in
+  { start = j |> member "start" |> to_int;
+    stop = j |> member "stop" |> to_int; }
+
+let jsonToSegType j =
+  let open Yojson.Basic.Util in
+  let typeString = j |> member "type" |> to_string |> String.uppercase in
+  match typeString with
+  | "LINEAR" -> LinSeg
+  | "LOOP" -> LoopSeg
+  | _ -> failwith (Printf.sprintf "Unrecognized program segment type: %s" typeString)
+
+let jsontToSegment j =
+  let open Yojson.Basic.Util in
+  match jsonToSegType j with
+  | LinSeg -> Linear (jsonToRange j)
+  | LoopSeg -> Loop (j |> member "loopIndex" |> to_int, jsonToRange j)
+
+let jsonToProgram j =
+  let open Yojson.Basic.Util in
+  j |> member "program" |> to_list
 
 (*** Test Code beyond here ***)
 
