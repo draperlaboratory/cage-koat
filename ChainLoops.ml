@@ -119,12 +119,18 @@ let segmentToComrule arity = function
   | Loop (lInd, r) -> buildLoop arity lInd r.start r.stop r.start
   | Linear r ->  buildStraight arity r.start (r.stop - r.start)
 
+let buildEntry arity =
+  let args = List.map arg (list (arity - 1)) in
+  let lhs = { Term.fn = "start"; Term.args = args}
+  and rhs = { Term.fn = "f0"; Term.args = args; } in
+  Comrule.createWeightedRule lhs [rhs] [] Poly.zero Poly.zero
+
 let programToITS = function
   | [] -> failwith "Can't convert an empty program."
   | p ->
     let arity = computeArity p in
     let convSeg = segmentToComrule arity in
-    List.fold_left (fun accum pSeg -> convSeg pSeg @ accum) [] p
+    List.fold_left (fun accum pSeg -> convSeg pSeg @ accum) [buildEntry arity] p
 
 
 (*** Test Code beyond here ***)
