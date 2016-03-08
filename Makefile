@@ -77,6 +77,9 @@ drawRules: make_git_sha1 force_look
 ## Instance Generation Targets
 
 chain: force_look make_git_sha1
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} ChainLoops.native
+
+chain-debug: force_look make_git_sha1
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} ChainLoops.d.byte
 
 ## Test Targets
