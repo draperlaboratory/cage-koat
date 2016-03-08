@@ -33,6 +33,7 @@ PP_OPTS=-pp "camlp4o pa_macro.cmo $(PP_OPTS_APRON) $(PP_OPTS_Z3)"
 OPTS=${PP_OPTS} -use-ocamlfind -cflags -warn-error,+a
 
 ## Solver Targets
+
 kittel: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} kittel.native
 
@@ -73,7 +74,6 @@ dep: make_git_sha1 force_look
 drawRules: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} drawRules.native
 
-
 ## Instance Generation Targets
 
 chain: force_look make_git_sha1
@@ -86,7 +86,7 @@ test: force_look
 
 ## Meta targets
 
-default: kittel koat
+default: koat
 
 all: solvers vis translations
 
