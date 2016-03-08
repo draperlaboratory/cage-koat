@@ -1,2 +1,2 @@
-<utils> or <ints> or <terms> or <procs> or <smt> or <translation> or <translation/simple> or <cprocs> or <cintprocs> or <common-procs> or <vis>: include
+<utils> or <ints> or <terms> or <procs> or <smt> or <translation> or <translation/simple> or <cprocs> or <cintprocs> or <common-procs> or <vis> or <instance-generation>: include
 <**/*.ml>: annot, package(ocamlgraph)

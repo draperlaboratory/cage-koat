@@ -80,7 +80,7 @@ koatCESConv: force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koatCESConv.native
 
 chain: force_look make_git_sha1
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} instance-generation/ChainLoops.d.byte
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} ChainLoops.d.byte
 
 
 test: force_look
