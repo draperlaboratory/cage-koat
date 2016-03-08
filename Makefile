@@ -43,9 +43,6 @@ translations: convert koatCConv koatFSTConv koatCESConv fixArity apronize
 apronize: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} apronize.native
 
-arity: arity.ml
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} arity.native
-
 fixArity: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} fixArity.native
 
