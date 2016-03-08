@@ -38,7 +38,10 @@ all: kittel koat vis translations
 
 vis: dep drawRules
 
-translations: convert koatCConv koatFSTConv koatCESConv fixArity
+translations: convert koatCConv koatFSTConv koatCESConv fixArity apronize
+
+apronize: make_git_sha1 force_look
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} translation/apronize.native
 
 arity: arity.ml
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} arity.native
