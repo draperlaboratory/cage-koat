@@ -32,20 +32,7 @@ PP_OPTS=-pp "camlp4o pa_macro.cmo $(PP_OPTS_APRON) $(PP_OPTS_Z3)"
 
 OPTS=${PP_OPTS} -use-ocamlfind -cflags -warn-error,+a
 
-default: kittel koat
-
-all: kittel koat vis translations
-
-vis: dep drawRules
-
-translations: convert koatCConv koatFSTConv koatCESConv fixArity apronize
-
-apronize: make_git_sha1 force_look
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} apronize.native
-
-fixArity: make_git_sha1 force_look
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} fixArity.native
-
+## Solver Targets
 kittel: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} kittel.native
 
@@ -55,14 +42,16 @@ kittel.d.byte: make_git_sha1 force_look
 koat: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koat.native
 
-dep: make_git_sha1 force_look
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} dep.native
-
-drawRules: make_git_sha1 force_look
-	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} drawRules.native
-
 koat.d.byte: make_git_sha1 force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koat.d.byte
+
+## Translation Targets
+
+apronize: make_git_sha1 force_look
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} apronize.native
+
+fixArity: make_git_sha1 force_look
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} fixArity.native
 
 convert: force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} convert.native
@@ -76,12 +65,36 @@ koatFSTConv: force_look
 koatCESConv: force_look
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} koatCESConv.native
 
+## Vis Targets
+
+dep: make_git_sha1 force_look
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} dep.native
+
+drawRules: make_git_sha1 force_look
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} drawRules.native
+
+
+## Instance Generation Targets
+
 chain: force_look make_git_sha1
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} ChainLoops.d.byte
 
+## Test Targets
 
 test: force_look
 	cd tests; sh runExamples.sh; sh simpleTest.sh
+
+## Meta targets
+
+default: kittel koat
+
+all: solvers vis translations
+
+solvers: kittel koat
+
+vis: dep drawRules
+
+translations: convert koatCConv koatFSTConv koatCESConv fixArity apronize
 
 clean: force_look
 	ocamlbuild -clean
