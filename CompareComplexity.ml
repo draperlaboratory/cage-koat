@@ -111,7 +111,7 @@ let rec speclist =
     "            - Display this list of options");
    ("--help", Arg.Unit (fun () -> print_usage (); exit 1), "");
    ("--old", Arg.Set_string old_path, "");
-   ("--new", Arg.Set_string old_path, "");]
+   ("--new", Arg.Set_string new_path, "");]
 and print_usage () =
   Arg.usage speclist usage
 
