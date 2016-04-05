@@ -119,7 +119,15 @@ and print_usage () =
 let main() =
   Arg.parse speclist (fun _ -> ()) usage;
   let result = compare_files !old_path !new_path in
-  Printf.printf "%s\n" (compare_result_to_string result)
+  Printf.printf "%s\n" (compare_result_to_string result);
+  match result with
+  | Exact
+  | SameMagnitude _ ->
+     exit 0
+  | _ -> begin
+    Printf.printf "Result got worse!\n";
+    exit 1
+    end
 
 
 let _ = main ()
