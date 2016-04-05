@@ -80,7 +80,7 @@ chain: force_look make_git_sha1
 	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} instance-generation/ChainLoops.d.byte
 
 compare: force_look make_git_sha1
-	ocamlbuld ${OPTS} ${LIBPATH} ${LIBS} CompareComplexity.d.byte
+	ocamlbuild ${OPTS} ${LIBPATH} ${LIBS} CompareComplexity.d.byte
 
 test: force_look
 	cd tests; sh runExamples.sh; sh simpleTest.sh

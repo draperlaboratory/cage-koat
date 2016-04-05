@@ -39,7 +39,7 @@ let complexity_string s =
       else
         Some (Result suffix)
     else None
-  with Invalid_argument -> None
+  with Invalid_argument _ -> None
 
 
 let rec find_complexity_string = function
@@ -53,7 +53,7 @@ let rec find_complexity_string = function
 
 
 let getDirection p1 p2 =
-  let comp = Poly.copmare p1 p2 in
+  let comp = Poly.compare p1 p2 in
   if comp = 1 then Tighter
   else if comp = -1 then Looser
   else
@@ -63,13 +63,13 @@ let getDirection p1 p2 =
 let compare older newer =
   match (older, newer) with
   | Unknown, Unknown -> Exact
-  | Unkown, _ -> DifferentMagnitude Tighter
+  | Unknown, _ -> DifferentMagnitude Tighter
   | _, Unknown -> DifferentMagnitude Looser
   | Result oldres, Result newres ->
      let oldBuff = Lexing.from_string oldres
      and newBuff = Lexing.from_string newres in
-     let oldPoly = Cint_parser.poly oldBuff
-     and newPoly = Cint_parser.poly newBuff in
+     let oldPoly = Cint_parser.poly Cint_lexer.token oldBuff, Big_int.zero_big_int
+     and newPoly = Cint_parser.poly Cint_lexer.token newBuff, Big_int.zero_big_int in
      if Poly.equal oldPoly newPoly then
        Exact else
        begin
@@ -110,8 +110,8 @@ let rec speclist =
   [("-help", Arg.Unit (fun () -> print_usage (); exit 1),
     "            - Display this list of options");
    ("--help", Arg.Unit (fun () -> print_usage (); exit 1), "");
-   ("--old", Arg.set_string old_path, "");
-   ("--new", Arg.set_string old_path, "");]
+   ("--old", Arg.Set_string old_path, "");
+   ("--new", Arg.Set_string old_path, "");]
 and print_usage () =
   Arg.usage speclist usage
 
