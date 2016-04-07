@@ -93,7 +93,7 @@ let rec ppKoat ctrs =
   "(GOAL COMPLEXITY)\n"
   ^ Printf.sprintf "(STARTTERM (FUNCTIONSYMBOLS %s))\n" ctrs.startFun
   ^ Printf.sprintf "(VAR %s)\n"  (String.concat " " (CTRS.getVars ctrs))
-  ^ Printf.sprintf "(RULES\n  %s\n)" (String.concat "\n  " (List.map ppRule ctrs.rules))
+  ^ Printf.sprintf "(RULES\n  %s\n)" (String.concat "\n  " (List.rev_map ppRule ctrs.rules))
 and ppRule rule =
   if Poly.equal rule.Rule.lowerBound Poly.one && Poly.equal rule.Rule.upperBound Poly.one
     then Rule.toString rule
