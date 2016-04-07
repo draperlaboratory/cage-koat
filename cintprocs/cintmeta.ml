@@ -111,7 +111,7 @@ let getOverallCost tgraph globalSizeComplexities state =
        Rule cost still contains variables from the TRS as it was given in the
        input file.  However, getCostForRule expects all variable names to be of
        the form X_i, where i is the argument position of that particular
-       variable.  The mapping should hav happened early, but we compute and
+       variable.  The mapping should have happened early, but we compute and
        apply it here.  Otherwise, we would end up with unknown complexity where
        we can actually compute the proper value.
     *)
