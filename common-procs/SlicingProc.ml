@@ -20,6 +20,8 @@
 
 open AbstractRule
 
+let heuristicValue = ref 40
+
 module Make (RVG : Rvgraph.S) = struct
   module TGraph = RVG.TGraph
   module CTRSObl = TGraph.CTRSObl
@@ -42,7 +44,7 @@ module Make (RVG : Rvgraph.S) = struct
     let ruleNum = List.length ctrsobl.ctrs.rules in
     let vars = CTRS.getVars ctrsobl.ctrs in
     let varNum = List.length vars in
-    if ruleNum * varNum < 40 then
+    if ruleNum * varNum < !heuristicValue then
       None
     else
       (

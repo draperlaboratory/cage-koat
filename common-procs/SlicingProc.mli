@@ -1,3 +1,5 @@
+val heuristicValue : int ref
+
 module Make(RVG : Rvgraph.S) :
 sig
 (*  val getProof : 'a -> CTRSObl.t -> string list -> int -> int -> string *)
