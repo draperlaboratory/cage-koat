@@ -21,6 +21,9 @@ open CTRS
 module UnreachableProc = DeleteUnreachableProc.Make(RVG)
 module UnsatProc = DeleteUnsatProc.Make(RVG)
 
+SlicingProc.heuristicValue := 1;
+module SlicingProc = SlicingProc.Make(RVG)
+
 IFDEF HAVE_APRON THEN
 module ApronInvariantsProc = ApronInvariantsProcessor.MakeKoatProc(RVG)
 END
@@ -48,12 +51,19 @@ let apply doit proc ((ctrsobl, tgraph, rvgraph) as prob) =
 
 let (|>) v f = f v ;;
 
+let slicer ((ctrsobl, tgraph, rvgraph) as prob) =
+  match SlicingProc.process ctrsobl with
+  | None -> prob
+  | Some (obl', proof) -> (obl', TGraph.compute obl'.ctrs.rules, None)
+
 let apronize ctrsobl simplify =
   let tgraph   = TGraph.compute ctrsobl.ctrs.rules in
   (* let lscs     = LSC.computeLocalSizeComplexities ctrsobl.ctrs.rules  in
   let rvgraph  = Some (RVG.compute lscs tgraph) in *)
   let rvgraph  = None in
-  (ctrsobl,tgraph,rvgraph)
+  let prob = (ctrsobl,tgraph,rvgraph) in
+  let prob' = if simplify then slicer prob else prob in
+  prob'
   |> apply simplify doUnsatRemoval
   |> apply simplify doUnreachableRemoval
   |> apply true     doApronInvariants
