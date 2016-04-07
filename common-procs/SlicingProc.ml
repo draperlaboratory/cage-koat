@@ -37,14 +37,14 @@ module Make (RVG : Rvgraph.S) = struct
       (String.concat ", " remainingVars)
       (CTRSObl.toStringNumber nctrsobl outi)
 
-  let process ctrsobl =
+  let process ?(thresh = !heuristicValue) ctrsobl =
     (* Heuristic: Do nothing for "small" systems, where small is an arbitrary number.
      * Thing to keep in mind: The RVG has |vars| * |rules| nodes, and up to squared that edges.
      *)
     let ruleNum = List.length ctrsobl.ctrs.rules in
     let vars = CTRS.getVars ctrsobl.ctrs in
     let varNum = List.length vars in
-    if ruleNum * varNum < !heuristicValue then
+    if ruleNum * varNum < thresh then
       None
     else
       (

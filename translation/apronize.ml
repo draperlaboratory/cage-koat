@@ -20,8 +20,6 @@ open CTRS
 
 module UnreachableProc = DeleteUnreachableProc.Make(RVG)
 module UnsatProc = DeleteUnsatProc.Make(RVG)
-
-SlicingProc.heuristicValue := 1;
 module SlicingProc = SlicingProc.Make(RVG)
 
 IFDEF HAVE_APRON THEN
@@ -52,7 +50,7 @@ let apply doit proc ((ctrsobl, tgraph, rvgraph) as prob) =
 let (|>) v f = f v ;;
 
 let slicer ((ctrsobl, tgraph, rvgraph) as prob) =
-  match SlicingProc.process ctrsobl with
+  match SlicingProc.process ~thresh:1 ctrsobl with
   | None -> prob
   | Some (obl', proof) -> (obl', TGraph.compute obl'.ctrs.rules, None)
 
