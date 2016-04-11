@@ -1,7 +1,7 @@
--include user.cfg
+HAVE_APRON?=true
+HAVE_Z3?=true
 
-HAVE_APRON?=false
-HAVE_Z3?=false
+-include user.cfg ## Override HAVE_APRON? and HAVE_Z3? here
 
 LIBS=-libs graph,str,nums
 
