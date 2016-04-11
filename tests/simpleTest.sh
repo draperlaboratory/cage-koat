@@ -12,7 +12,7 @@ compareFile(){
     if $DEBUG; then
         echo "diff $goldenFile $this"
     else
-        ../CompareComplexity.d.byte --old $goldenFile --new $this
+        ../CompareComplexity.native --old $goldenFile --new $this
         if [ $? -ne 0 ]; then
             echo "$goldenFile and $this differ."
             return 1
