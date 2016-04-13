@@ -431,3 +431,20 @@ let getPoly e =
   match e with
     | Pol p -> Some p
     | _ -> None
+
+let rec getDegree = function
+  | Pol p -> [], Big_int.big_int_of_int (Poly.getDegree p)
+  | Sum (e1, e2) -> Poly.max (getDegree e1) (getDegree e2)
+  | Mul (e1, e2) -> Poly.mult (getDegree e1) (getDegree e2)
+  | Exp (base, exp) -> failwith "stub"
+
+
+let compare a b =
+  if equal a b then 0
+  else
+    begin
+      let max_exp = max a b in
+      if equal max_exp a
+      then 1
+      else -1
+    end

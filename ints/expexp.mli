@@ -49,3 +49,5 @@ val max : expexp -> expexp -> expexp
 val getMax : expexp -> expexp -> expexp
 val remdup : expexp list -> expexp list
 val getPoly : expexp -> Poly.poly option
+val getDegree : expexp -> Poly.poly
+val compare : expexp -> expexp -> int
