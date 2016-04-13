@@ -6,88 +6,46 @@
            See LICENSE for details
 */
 
-%token <string> IDENT INFIX VAR INT
-%token COMMA OPENPAR CLOSEPAR EOL EOF TIMES POWER EXP
+%token <string> IDENT VAR INT
+%token COMMA OPENPAR CLOSEPAR EOL EOF TIMES POWER EXP PLUS MINUS 
 
-%left INFIX
+%left PLUS
+%left MINUS
 %left TIMES
 %left POWER
 %nonassoc IDENT
 
-%start poly
-%type <Expexp.expexp> poly
+%start exp
+%type <Expexp.expexp> exp
 
 %%
-poly:
- | poly_help {Expexp.Pol ($1, Big_int.zero_big_int) }
 
-poly_help:
-| mult_monomial
-    { [ $1 ] }
-| mult_monomial INFIX poly_help
-    { let push_sign sgn l =
-        match l with
-          | [] -> []
-          | (c, s)::l' -> (Big_int.mult_big_int c sgn, s)::l'
-      in
-        $1 :: (push_sign (if $2 = "+" then Big_int.unit_big_int else (Big_int.minus_big_int Big_int.unit_big_int)) $3)
-    }
-| mult_monomial INFIX OPENPAR poly_help CLOSEPAR
-    { let rec push_sign_all sgn l =
-        match l with
-          | [] -> []
-          | (c, s)::l' -> (Big_int.mult_big_int c sgn, s)::(push_sign_all sgn l')
-      in
-        $1 :: (push_sign_all (if $2 = "+" then Big_int.unit_big_int else (Big_int.minus_big_int Big_int.unit_big_int)) $4)
-    }
-| mult_monomial INFIX OPENPAR poly_help CLOSEPAR INFIX poly_help
-    { let rec push_sign sgn l =
-        match l with
-          | [] -> []
-          | (c, s)::l' -> (Big_int.mult_big_int c sgn, s)::l'
-      and push_sign_all sgn l =
-        match l with
-          | [] -> []
-          | (c, s)::l' -> (Big_int.mult_big_int c sgn, s)::(push_sign sgn l')
-      in
-        [$1] @ (push_sign_all (if $2 = "+" then Big_int.unit_big_int else (Big_int.minus_big_int Big_int.unit_big_int)) $4) @ (push_sign (if $6 = "+" then Big_int.unit_big_int else (Big_int.minus_big_int Big_int.unit_big_int)) $7)
-    }
+exp:
+ | EXP OPENPAR exp COMMA exp CLOSEPAR { Expexp.Exp ($3, $5) }
+ | exp TIMES exp { Expexp.Mul ($1, $3) }
+ | exp PLUS exp { Expexp.Sum ($1, $3) }
+ | exp MINUS exp { Expexp.Sum ($1, $3) }
+ | exp TIMES OPENPAR exp CLOSEPAR { Expexp.Mul ($1, $4) }
+ | exp PLUS OPENPAR exp CLOSEPAR { Expexp.Sum ($1, $4) }
+ | exp MINUS OPENPAR exp CLOSEPAR { Expexp.Sum ($1, $4) }
+ | mult_monomial { Expexp.Pol ([$1], Big_int.zero_big_int) }
 ;
 
 mult_monomial:
-| INT
-    { (Big_int.big_int_of_string $1, [("$!@", 1)]) }
-| INFIX INT
-    { if $1 = "+" then
-        (Big_int.big_int_of_string $2, [("$!@", 1)])
-      else
-        (Big_int.minus_big_int (Big_int.big_int_of_string $2), [("$!@", 1)]) }
-| INFIX OPENPAR INT CLOSEPAR
-    { if $1 = "+" then
-        (Big_int.big_int_of_string $3, [("$!@", 1)])
-      else
-        (Big_int.minus_big_int (Big_int.big_int_of_string $3), [("$!@", 1)]) }
-| monomial
-    { (Big_int.unit_big_int, $1) }
-| INFIX monomial
-    { if $1 = "+" then
-        (Big_int.unit_big_int, $2)
-      else
-        (Big_int.minus_big_int Big_int.unit_big_int, $2) }
-| INT TIMES monomial
-    { (Big_int.big_int_of_string $1, $3) }
-| var_power TIMES INT
-    { (Big_int.big_int_of_string $3, [$1]) }
-| INFIX INT TIMES monomial
-    { if $1 = "+" then
-        (Big_int.big_int_of_string $2, $4)
-      else
-        (Big_int.minus_big_int (Big_int.big_int_of_string $2), $4) }
-| INFIX OPENPAR INT CLOSEPAR TIMES monomial
-    { if $1 = "+" then
-        (Big_int.big_int_of_string $3, $6)
-      else
-        (Big_int.minus_big_int (Big_int.big_int_of_string $3), $6) }
+ | INT { Big_int.big_int_of_string $1, [("$!@", 1)] }
+ | PLUS INT { Big_int.big_int_of_string $2, [("$!@", 1)] }
+ | MINUS INT { (Big_int.minus_big_int (Big_int.big_int_of_string $2), [("$!@", 1)]) }
+ | PLUS OPENPAR INT CLOSEPAR { (Big_int.big_int_of_string $3, [("$!@", 1)]) }
+ | MINUS OPENPAR INT CLOSEPAR { (Big_int.minus_big_int (Big_int.big_int_of_string $3), [("$!@", 1)]) }
+ | monomial { (Big_int.unit_big_int, $1) }
+ | PLUS monomial {(Big_int.unit_big_int, $2)}
+ | MINUS monomial { (Big_int.minus_big_int Big_int.unit_big_int, $2) }
+ | INT TIMES monomial { (Big_int.big_int_of_string $1, $3) }
+ | var_power TIMES INT { (Big_int.big_int_of_string $3, [$1]) }
+ | PLUS INT TIMES monomial {(Big_int.big_int_of_string $2, $4) }
+ | MINUS INT TIMES monomial {(Big_int.minus_big_int (Big_int.big_int_of_string $2), $4) }
+ | PLUS OPENPAR INT CLOSEPAR TIMES monomial { (Big_int.big_int_of_string $3, $6) }
+ | MINUS OPENPAR INT CLOSEPAR TIMES monomial { (Big_int.minus_big_int (Big_int.big_int_of_string $3), $6) }
 ;
 
 monomial:

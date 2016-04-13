@@ -24,9 +24,8 @@ rule token = parse
                                      { let s = Lexing.lexeme lexbuf in
                                          pos := !pos + (String.length s);
                                          IDENT s }
-  | ['+' '-' ]                       { let s = Lexing.lexeme lexbuf in
-                                         pos := !pos + (String.length s);
-                                         INFIX s }
+  | ['+']                            { incr pos; PLUS }
+  | ['-']                            { incr pos; MINUS }
   | [ '*' ]                          { incr pos; TIMES }
   | [ '^' ]                          { incr pos; POWER }
   | '0'                              { incr pos; INT "0" }
