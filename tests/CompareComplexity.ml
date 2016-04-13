@@ -1,6 +1,6 @@
 type complexity =
   | Unknown
-  | Result of string
+  | Result of Poly.poly
 
 type compare_direction =
   | Tighter
@@ -17,7 +17,7 @@ let dir_to_string = function
 
 let comp_to_string = function
   | Unknown -> "Unknown"
-  | Result s -> s
+  | Result s -> Poly.toString s
 
 let compare_result_to_string = function
   | Exact -> "Exact"
@@ -37,7 +37,11 @@ let complexity_string s =
       if suffix.[0] = unknown_comp then
         Some Unknown
       else
-        Some (Result suffix)
+        begin
+          let buff = Lexing.from_string suffix in
+          let poly = Cint_parser.poly Cint_lexer.token buff, Big_int.zero_big_int in
+          Some (Result poly)
+        end
     else None
   with Invalid_argument _ -> None
 
@@ -65,11 +69,7 @@ let compare older newer =
   | Unknown, Unknown -> Exact
   | Unknown, _ -> DifferentMagnitude Tighter
   | _, Unknown -> DifferentMagnitude Looser
-  | Result oldres, Result newres ->
-     let oldBuff = Lexing.from_string oldres
-     and newBuff = Lexing.from_string newres in
-     let oldPoly = Cint_parser.poly Cint_lexer.token oldBuff, Big_int.zero_big_int
-     and newPoly = Cint_parser.poly Cint_lexer.token newBuff, Big_int.zero_big_int in
+  | Result oldPoly, Result newPoly ->
      if Poly.equal oldPoly newPoly then
        Exact else
        begin
