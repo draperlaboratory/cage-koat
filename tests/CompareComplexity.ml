@@ -39,7 +39,7 @@ let complexity_string s =
       else
         begin
           let buff = Lexing.from_string suffix in
-          let poly = Cint_parser.poly Cint_lexer.token buff, Big_int.zero_big_int in
+          let poly = Complexity_parser.poly Complexity_lexer.token buff, Big_int.zero_big_int in
           Some (Result poly)
         end
     else None
@@ -112,6 +112,7 @@ let rec speclist =
    ("--help", Arg.Unit (fun () -> print_usage (); exit 1), "");
    ("--old", Arg.Set_string old_path, "");
    ("--new", Arg.Set_string new_path, "");]
+
 and print_usage () =
   Arg.usage speclist usage
 
