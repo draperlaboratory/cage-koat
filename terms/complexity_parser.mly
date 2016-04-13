@@ -15,14 +15,16 @@
 %nonassoc IDENT
 
 %start poly
-%type <(Big_int.big_int * Poly.monomial) list> poly
+%type <Poly.poly> poly
 
 %%
-
 poly:
+ | poly_help {$1, Big_int.zero_big_int }
+
+poly_help:
 | mult_monomial
     { [ $1 ] }
-| mult_monomial INFIX poly
+| mult_monomial INFIX poly_help
     { let push_sign sgn l =
         match l with
           | [] -> []
@@ -30,7 +32,7 @@ poly:
       in
         $1 :: (push_sign (if $2 = "+" then Big_int.unit_big_int else (Big_int.minus_big_int Big_int.unit_big_int)) $3)
     }
-| mult_monomial INFIX OPENPAR poly CLOSEPAR
+| mult_monomial INFIX OPENPAR poly_help CLOSEPAR
     { let rec push_sign_all sgn l =
         match l with
           | [] -> []
@@ -38,7 +40,7 @@ poly:
       in
         $1 :: (push_sign_all (if $2 = "+" then Big_int.unit_big_int else (Big_int.minus_big_int Big_int.unit_big_int)) $4)
     }
-| mult_monomial INFIX OPENPAR poly CLOSEPAR INFIX poly
+| mult_monomial INFIX OPENPAR poly_help CLOSEPAR INFIX poly_help
     { let rec push_sign sgn l =
         match l with
           | [] -> []

@@ -39,7 +39,7 @@ let complexity_string s =
       else
         begin
           let buff = Lexing.from_string suffix in
-          let poly = Complexity_parser.poly Complexity_lexer.token buff, Big_int.zero_big_int in
+          let poly = Complexity_parser.poly Complexity_lexer.token buff in
           Some (Result poly)
         end
     else None
