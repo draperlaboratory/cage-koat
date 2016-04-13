@@ -432,12 +432,32 @@ let getPoly e =
     | Pol p -> Some p
     | _ -> None
 
-let rec getDegree = function
-  | Pol p -> [], Big_int.big_int_of_int (Poly.getDegree p)
-  | Sum (e1, e2) -> Poly.max (getDegree e1) (getDegree e2)
-  | Mul (e1, e2) -> Poly.mult (getDegree e1) (getDegree e2)
-  | Exp (base, exp) -> failwith "stub"
+type expDegree =
+| Polynomial of int
+| Exponential of int (* 2^n would be exponenital 1, 2^(2^n) is two, etc. *)
 
+let degMax a b =
+  match (a,b) with
+  | Exponential i , Polynomial _
+  | Polynomial _ , Exponential i -> Exponential i
+  | Polynomial i, Polynomial j -> Polynomial (Pervasives.max i j)
+  | Exponential i, Exponential j -> Exponential (Pervasives.max i j)
+
+let degCombine a b =
+  match (a,b) with
+  | Exponential i, Exponential j -> Exponential (i + j)
+  | Polynomial i, Polynomial j -> Polynomial (i + j)
+  | Exponential i, _
+  | _, Exponential i -> Exponential i
+
+let rec getDegree = function
+  | Pol p -> Polynomial (Poly.getDegree p)
+  | Sum (e1, e2) -> degMax (getDegree e1) (getDegree e2)
+  | Mul (e1, e2) -> degCombine (getDegree e1) (getDegree e2)
+  | Exp (_, exp) ->
+    match getDegree exp with
+    | Polynomial _ -> Exponential 1
+    | Exponential j -> Exponential (j + 1)
 
 let compare a b =
   if equal a b then 0

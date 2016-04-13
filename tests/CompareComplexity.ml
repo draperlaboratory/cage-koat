@@ -75,10 +75,10 @@ let compare older newer =
        begin
          let oldDegree = Expexp.getDegree oldPoly
          and newDegree = Expexp.getDegree newPoly in
-         let dir = Poly.compare oldDegree newDegree in
-         if dir = 0
-         then SameMagnitude (getDirection oldPoly newPoly)
-         else DifferentMagnitude (getDirection oldPoly newPoly)
+         match oldDegree, newDegree with
+         | (Expexp.Polynomial i, Expexp.Polynomial j) when i = j ->SameMagnitude (getDirection oldPoly newPoly)
+         | (Expexp.Exponential i, Expexp.Exponential j) when i = j -> SameMagnitude (getDirection oldPoly newPoly)
+         | _ -> DifferentMagnitude (getDirection oldPoly newPoly)
        end
 
 let lines_of_file path =

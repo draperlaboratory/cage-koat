@@ -49,5 +49,10 @@ val max : expexp -> expexp -> expexp
 val getMax : expexp -> expexp -> expexp
 val remdup : expexp list -> expexp list
 val getPoly : expexp -> Poly.poly option
-val getDegree : expexp -> Poly.poly
+
+type expDegree =
+| Polynomial of int
+| Exponential of int
+
+val getDegree : expexp -> expDegree
 val compare : expexp -> expexp -> int
