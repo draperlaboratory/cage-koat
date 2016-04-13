@@ -465,6 +465,6 @@ let compare a b =
     begin
       let max_exp = max a b in
       if equal max_exp a
-      then 1
-      else -1
+      then -1
+      else 1
     end

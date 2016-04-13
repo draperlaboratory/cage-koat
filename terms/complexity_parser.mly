@@ -33,19 +33,7 @@ exp:
 
 mult_monomial:
  | INT { Big_int.big_int_of_string $1, [("$!@", 1)] }
- | PLUS INT { Big_int.big_int_of_string $2, [("$!@", 1)] }
- | MINUS INT { (Big_int.minus_big_int (Big_int.big_int_of_string $2), [("$!@", 1)]) }
- | PLUS OPENPAR INT CLOSEPAR { (Big_int.big_int_of_string $3, [("$!@", 1)]) }
- | MINUS OPENPAR INT CLOSEPAR { (Big_int.minus_big_int (Big_int.big_int_of_string $3), [("$!@", 1)]) }
  | monomial { (Big_int.unit_big_int, $1) }
- | PLUS monomial {(Big_int.unit_big_int, $2)}
- | MINUS monomial { (Big_int.minus_big_int Big_int.unit_big_int, $2) }
- | INT TIMES monomial { (Big_int.big_int_of_string $1, $3) }
- | var_power TIMES INT { (Big_int.big_int_of_string $3, [$1]) }
- | PLUS INT TIMES monomial {(Big_int.big_int_of_string $2, $4) }
- | MINUS INT TIMES monomial {(Big_int.minus_big_int (Big_int.big_int_of_string $2), $4) }
- | PLUS OPENPAR INT CLOSEPAR TIMES monomial { (Big_int.big_int_of_string $3, $6) }
- | MINUS OPENPAR INT CLOSEPAR TIMES monomial { (Big_int.minus_big_int (Big_int.big_int_of_string $3), $6) }
 ;
 
 monomial:
