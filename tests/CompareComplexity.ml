@@ -1,6 +1,6 @@
 type complexity =
   | Unknown
-  | Result of Poly.poly
+  | Result of Expexp.expexp
 
 type compare_direction =
   | Tighter
@@ -17,7 +17,7 @@ let dir_to_string = function
 
 let comp_to_string = function
   | Unknown -> "Unknown"
-  | Result s -> Poly.toString s
+  | Result s -> Expexp.toString s
 
 let compare_result_to_string = function
   | Exact -> "Exact"
@@ -57,7 +57,7 @@ let rec find_complexity_string = function
 
 
 let getDirection p1 p2 =
-  let comp = Poly.compare p1 p2 in
+  let comp = Expexp.compare p1 p2 in
   if comp = 1 then Tighter
   else if comp = -1 then Looser
   else
@@ -70,12 +70,13 @@ let compare older newer =
   | Unknown, _ -> DifferentMagnitude Tighter
   | _, Unknown -> DifferentMagnitude Looser
   | Result oldPoly, Result newPoly ->
-     if Poly.equal oldPoly newPoly then
+     if Expexp.equal oldPoly newPoly then
        Exact else
        begin
-         let oldDegree = Poly.getDegree oldPoly
-         and newDegree = Poly.getDegree newPoly in
-         if oldDegree = newDegree
+         let oldDegree = Expexp.getDegree oldPoly
+         and newDegree = Expexp.getDegree newPoly in
+         let dir = Poly.compare oldDegree newDegree in
+         if dir = 0
          then SameMagnitude (getDirection oldPoly newPoly)
          else DifferentMagnitude (getDirection oldPoly newPoly)
        end

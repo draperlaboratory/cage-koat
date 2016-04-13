@@ -15,11 +15,11 @@
 %nonassoc IDENT
 
 %start poly
-%type <Poly.poly> poly
+%type <Expexp.expexp> poly
 
 %%
 poly:
- | poly_help {$1, Big_int.zero_big_int }
+ | poly_help {Expexp.Pol ($1, Big_int.zero_big_int) }
 
 poly_help:
 | mult_monomial
