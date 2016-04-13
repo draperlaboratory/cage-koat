@@ -26,6 +26,33 @@ let compare_result_to_string = function
 
 let base_string = "Complexity upper bound "
 let unknown_comp = '?'
+exception ParseException of int * int * string
+
+let getexp suffix =
+  let buff = Lexing.from_string suffix in
+  try
+    Complexity_parser.exp Complexity_lexer.token buff
+  with
+    | Parsing.Parse_error ->
+        raise
+          (
+            ParseException
+              (
+                !Complexity_lexer.line,
+                !Complexity_lexer.pos,
+                Printf.sprintf "Error: Parse error in %s at position %d." suffix !Complexity_lexer.pos
+              )
+          )
+    | Complexity_lexer.Unknown ->
+        raise
+          (
+            ParseException
+              (
+                !Complexity_lexer.line,
+                !Complexity_lexer.pos,
+                Printf.sprintf "Error: Unknown token in %s at position %d. " suffix !Complexity_lexer.pos
+              )
+          )
 
 let complexity_string s =
   (* string -> complexity option *)
@@ -38,9 +65,7 @@ let complexity_string s =
         Some Unknown
       else
         begin
-          let buff = Lexing.from_string suffix in
-          let poly = Complexity_parser.poly Complexity_lexer.token buff in
-          Some (Result poly)
+          Some (Result (getexp suffix))
         end
     else None
   with Invalid_argument _ -> None
@@ -76,7 +101,7 @@ let compare older newer =
          let oldDegree = Expexp.getDegree oldPoly
          and newDegree = Expexp.getDegree newPoly in
          match oldDegree, newDegree with
-         | (Expexp.Polynomial i, Expexp.Polynomial j) when i = j ->SameMagnitude (getDirection oldPoly newPoly)
+         | (Expexp.Polynomial i, Expexp.Polynomial j) when i = j -> SameMagnitude (getDirection oldPoly newPoly)
          | (Expexp.Exponential i, Expexp.Exponential j) when i = j -> SameMagnitude (getDirection oldPoly newPoly)
          | _ -> DifferentMagnitude (getDirection oldPoly newPoly)
        end
