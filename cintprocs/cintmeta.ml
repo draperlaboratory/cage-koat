@@ -145,12 +145,13 @@ let getProof (ctrsobl, _, _, _) inums onums theproofs () =
     (attachProofs onums theproofs inums)
 
 (** Solver loop / control flow **)
-let insertRVGraphIfNeeded state = 
+let insertRVGraphIfNeeded state =
   match state.rvgraph with
-  | Some _ -> ()
+  | Some _ -> state
   | None ->
       let lscs = LSC.computeLocalSizeComplexities state.obl.ctrs.rules in
-      todo := {state with rvgraph = Some (RVG.compute lscs state.tgraph); }
+      let state' = {state with rvgraph = Some (RVG.compute lscs state.tgraph); } in
+      state'
 
 
 
@@ -228,7 +229,7 @@ let rec process cint maxchaining startfun ctype =
   proofs := List.rev !proofs;
   input_nums := List.rev !input_nums;
   output_nums := List.rev !output_nums;
-  insertRVGraphIfNeeded !todo;
+  todo := insertRVGraphIfNeeded !todo;
   let rvgraph = Utils.unboxOption !todo.rvgraph in
   let globalSizeComplexities = GSC.compute !todo.obl rvgraph in
   Some (getOverallCost !todo.tgraph globalSizeComplexities !todo,
@@ -244,7 +245,7 @@ and doFarkasConstant () =
   run_ite (Cintfarkaspolo.process false 0) doLoop doFarkasConstantSizeBound
 
 and doFarkasConstantSizeBound () =
-  insertRVGraphIfNeeded !todo;
+  todo := insertRVGraphIfNeeded !todo;
   run_ite (Cintfarkaspolo.process true 0) doLoop doFarkas
 
 and doFarkas () =
