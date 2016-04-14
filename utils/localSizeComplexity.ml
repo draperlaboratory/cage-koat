@@ -526,6 +526,15 @@ module Make (RuleT : AbstractRule) = struct
     Printf.sprintf "%i-%i: %s" i j (toStringLocalComplexity c_vars)
   and dumpLSCDot (rule, lsb) =
     (RuleT.toDotString rule) ^ ":: " ^ (dumpLSC lsb)
+
+  let computeLocalSizeComplexityForTerm rule v =
+    let lvars = Term.getVars (RuleT.getLeft rule) in
+    let lvarswithnums = Utils.mapi (fun i v -> (v, i)) lvars in
+    let fullCond = RuleT.getCond rule in
+    let linCond = Pc.dropNonLinearAtoms fullCond in
+    computeLSCForTerm lvars lvarswithnums linCond fullCond v
+  let localcomplexity2complexity b vars = toSmallestComplexity b vars
+
 end
 
 module type S =
@@ -554,4 +563,7 @@ module type S =
     val toStringLocalComplexity : size_data -> string
     val dumpOneLSC : trans_data -> string
     val dumpLSCDot : trans_data -> string
+
+    val computeLocalSizeComplexityForTerm : RuleT.rule -> Poly.poly -> size_data
+    val localcomplexity2complexity : size_data -> Poly.var list -> Complexity.t
   end

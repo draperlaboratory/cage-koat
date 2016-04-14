@@ -42,6 +42,9 @@ module type S =
       val toStringLocalComplexity : size_data -> string
       val dumpOneLSC : trans_data -> string
       val dumpLSCDot : trans_data -> string
+
+      val computeLocalSizeComplexityForTerm : RuleT.rule -> Poly.poly -> size_data
+      val localcomplexity2complexity : size_data -> Poly.var list -> Complexity.t
     end
 
 module Make(RuleT : AbstractRule.AbstractRule) : S with module RuleT = RuleT

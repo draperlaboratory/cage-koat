@@ -90,16 +90,20 @@ let checkStartCondition tgraph trs startfun =
 
 (** Output **)
 
+
 let getOverallCost tgraph globalSizeComplexities state =
   let ctrsobl = state.obl in
   let vars = CTRS.getVars ctrsobl.ctrs in
   let getCostForRule tgraph globalSizeComplexities vars rule =
-    let sigma = List.mapi (fun i var -> Poly.toVar var, Expexp.fromVar (Printf.sprintf "X_%i" (i + 1))) rule.Comrule.lhs.Term.args in
+    let apply c m = match c with
+      | Complexity.P e     -> Complexity.apply e m
+      | Complexity.Unknown -> Complexity.Unknown
+    in
     let preRules = TGraph.getPreds tgraph [rule] in
-    let getCostPerPreRule (ruleCost : Expexp.expexp) globalSizeComplexities vars preRule =
+    let getCostPerPreRule ruleCost globalSizeComplexities vars preRule =
       let csmap = GSC.extractSizeMapForRule globalSizeComplexities preRule 0 vars in
       (* List.iter (fun (p,c) -> Printf.eprintf "%s -> %s\n" p (Complexity.toString c)) csmap;*)
-      let res = Complexity.apply ruleCost csmap in
+      let res = apply ruleCost csmap in
       (* List.iter (fun v -> Printf.eprintf " %s" v) vars;
          Printf.eprintf "\npreRuleComp: %s\n" (Complexity.toString res); *)
       res
@@ -114,15 +118,30 @@ let getOverallCost tgraph globalSizeComplexities state =
        variable.  The mapping should have happened early, but we compute and
        apply it here.  Otherwise, we would end up with unknown complexity where
        we can actually compute the proper value.
+
+        MS - 02/10/16
+        ruleCost can have variables not occuring on the lhs; we eliminate
+        free variables by expressing local size bounds as an expression in X_i
+        or Unknown
     *)
-    let ruleCost = Expexp.instantiate (CTRSObl.getCost ctrsobl rule) sigma in
+    let sigma          = List.mapi (fun i var -> Poly.toVar var, Complexity.P (Expexp.fromVar (Printf.sprintf "X_%i" (i + 1)))) rule.Comrule.lhs.Term.args in
+    let ruleCost       = CTRSObl.getCost ctrsobl rule in
+    let fvars          = List.filter (fun v -> not (List.mem v vars)) (Expexp.getVars ruleCost) in
+    (* List.iter (fun v -> Printf.eprintf " %s" v) fvars; *)
+    let localSize v    = LSC.computeLocalSizeComplexityForTerm rule (Poly.fromVar v) in
+    let toComplexity b = LSC.localcomplexity2complexity b vars in
+    let normalise c    = apply c sigma in
+    let fvmap          = List.map (fun fv -> (fv, normalise (toComplexity (localSize fv)))) fvars in
+    (* List.iter (fun (p,c) -> Printf.eprintf "%s -> %s\n" p (Complexity.toString c)) (sigma @ fvmap); *)
+    let ruleCost       = Complexity.apply ruleCost (sigma @ fvmap) in
+
     (* Printf.eprintf "RuleData: %s Comp: %s Cost: %s\n"
       (Comrule.toString rule)
       (Complexity.toString ruleComplexity)
       (Expexp.toString ruleCost); *)
     let result =
       match preRules with
-      | [] -> Complexity.mult ruleComplexity (Complexity.P ruleCost)
+      | [] -> Complexity.mult ruleComplexity ruleCost
       | _ -> Complexity.mult ruleComplexity
               (Complexity.sup
                  (List.map
