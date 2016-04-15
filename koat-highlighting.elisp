@@ -1,0 +1,59 @@
+;; Jordan Thayer  2016-04-15T07:46:01-04:00
+;; Defines a syntax highlighting for .koat files
+
+;; These are exactly the keywords in cint_lexer.mll, modulo com, which I highlight as math
+(setq koat-keywords '("GOAL" "COMPLEXITY" "TERMINATION" "STARTTERM" "VAR" "RULES" "FUNCTIONSYMBOLS"))
+(setq koat-keywords-rx (regexp-opt koat-keywords 'words))
+
+;; Setting up the conditionals, plus any comparison
+(setq conditional-rx ":|:\\|\\[\\|]\\|>=\\|<=\\|&&\\|||\\|/\\\\\\|>\\|<")
+
+;; Highlight transitions
+(setq transition-rx "->\\|-{\\|}>")
+
+;; Numbers
+(setq digit-rx "[0-9]+")
+;; Variables
+(setq var-rx "[a-z\\|A-Z\\|_]+[0-9\\|'\\|_\\|$]*")
+;; Arithmetic operations
+(setq math-rx "+\\|\\*\\|Com\\|\\^")
+;; Functions
+;; [JTT 15-04-16] You can see that I'm cheating on functions here. It's just a
+;; variable name followed by an open parentheses, and then we always grab close
+;; parentheses.  To avoid coloring all parentheses the same way, you'd have to
+;; implement a state-machine based highlighter, instead of a simple regexp one.
+(setq fname-rx "[a-z\\|A-Z\\|_]+[0-9\\|'\\|_\\|$]*(\\|(\\|)")
+
+;; set up the font locks based on the previously defined regexps
+;; if you don't like the highlighting scheme, this is the part to edit.
+;; See https://www.gnu.org/software/emacs/manual/html_node/elisp/Faces-for-Font-Lock.html
+;; for a list of available faces.
+(setq koat-font-locks
+      `((,koat-keywords-rx . font-lock-keyword-face)
+        (,fname-rx . font-lock-function-name-face)
+        (,transition-rx . font-lock-type-face)
+        (,conditional-rx . font-lock-doc-face)
+        (,var-rx . font-lock-variable-name-face)
+        (,digit-rx . font-lock-constant-face)
+        (,math-rx . font-lock-builtin-face)
+        )
+      )
+
+;; so you can M-x koat-mode a koat file
+(define-derived-mode koat-mode fundamental-mode
+  "KoAT Mode"
+  "Major mode for edeting .koat files (integer transition systems interpreted by koat)"
+  (setq font-lock-defaults '((koat-font-locks))))
+
+
+;; cleanup after yourself
+(setq koat-keywords nil)
+(setq rule-mid nil)
+(setq comparisons nil)
+(setq sartConditionals nil)
+(setq koat-keywords-rx nil)
+(setq rule-rx nil)
+(setq comparisons-rx nil)
+(setq conditionals-rx nil)
+
+(provide 'koat-mode)
