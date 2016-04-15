@@ -46,6 +46,24 @@
   (setq font-lock-defaults '((koat-font-locks))))
 
 
+;; highlights the entire conditional
+(setq conditional-segment-regexp "\\[.*$\\|:|:.*$")
+(setq left-segment-regexp ".*-{\\|.*-")
+(setq right-segment-regexp "}>.*\\|>.*")
+(setq header-regexp ".")
+
+(setq split-rules-font-locks
+      `((,conditional-segment-regexp . font-lock-keyword-face)
+        (,left-segment-regexp . font-lock-constant-face)
+        (,right-segment-regexp . font-lock-type-face)
+        (,header-regexp . font-lock-builtin-face)))
+
+
+(define-derived-mode split-koat-rules fundamental-mode
+  "Split KoAT Mode"
+  "Highlights each segment of a rule in a koat file"
+  (setq font-lock-defaults '((split-rules-font-locks))))
+
 ;; cleanup after yourself
 (setq koat-keywords nil)
 (setq rule-mid nil)
@@ -55,5 +73,10 @@
 (setq rule-rx nil)
 (setq comparisons-rx nil)
 (setq conditionals-rx nil)
+(setq conditional-segment-regexp nil)
+(setq left-segment-regexp nil)
+(setq right-segment-regexp nil)
+(setq header-regex nil)
 
 (provide 'koat-mode)
+(provide 'split-koat-rules)
