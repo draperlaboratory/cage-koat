@@ -227,7 +227,61 @@ let sliceState state =
       tgraph = TGraph.compute sliced.ctrs.rules;
       rvgraph = None; }
 
-let rec process cint maxchaining startfun ctype =
+let rec doLoop () =
+  doUnreachableRemoval ();
+  doKnowledgePropagation ();
+  doFarkasConstant ()
+
+and doFarkasConstant () =
+  run_ite (Cintfarkaspolo.process false 0) doLoop doFarkasConstantSizeBound
+
+and doFarkasConstantSizeBound () =
+  todo := insertRVGraphIfNeeded !todo;
+  run_ite (Cintfarkaspolo.process true 0) doLoop doFarkas
+
+and doFarkas () =
+  run_ite (Cintfarkaspolo.process false 1) doLoop doFarkasSizeBound
+
+and doFarkasSizeBound () =
+  run_ite (Cintfarkaspolo.process true 1) doLoop doDesperateMeasures
+
+and doDesperateMeasures () =
+IFDEF HAVE_APRON THEN
+  if not(!did_ai) then
+    begin
+      did_ai := true;
+      doApronInvariants ();
+      run UnsatProc.process; (* New invariants may show transitions to be unusable *)
+      doLoop ();
+    end
+  else
+    doChain1 ()
+ELSE
+  doChain1 ()
+END
+
+and doApronInvariants () =
+  did_ai := true;
+IFDEF HAVE_APRON THEN
+  run ApronInvariantsProc.process
+ELSE
+  ()
+END
+
+and doChain1 () =
+  run_ite (ChainProc.process 1) doLoop doChain2
+
+and doChain2 () =
+  run_ite (ChainProc.process 2) doLoop doExpFarkas
+
+and doExpFarkas () =
+  run_ite (Cintexpfarkaspolo.process false) doLoop doExpFarkasSizeBound
+
+and doExpFarkasSizeBound () =
+  run_ite (Cintexpfarkaspolo.process true) doLoop doNothing
+
+
+let process cint maxchaining startfun ctype =
   check cint;
   i := 1;
   proofs := [];
@@ -261,57 +315,3 @@ let rec process cint maxchaining startfun ctype =
   Some (getOverallCost !todo.tgraph globalSizeComplexities !todo,
         (* Why is initObl passed to getProof and not ctrsobl? *)
         getProof (initObl, !todo.tgraph, rvgraph, 1) !input_nums !output_nums !proofs)
-
-and doLoop () =
-  doUnreachableRemoval ();
-  doKnowledgePropagation ();
-  doFarkasConstant ()
-
-and doFarkasConstant () =
-  run_ite (Cintfarkaspolo.process false 0) doLoop doFarkasConstantSizeBound
-
-and doFarkasConstantSizeBound () =
-  todo := insertRVGraphIfNeeded !todo;
-  run_ite (Cintfarkaspolo.process true 0) doLoop doFarkas
-
-and doFarkas () =
-  run_ite (Cintfarkaspolo.process false 1) doLoop doFarkasSizeBound
-
-and doFarkasSizeBound () =
-  run_ite (Cintfarkaspolo.process true 1) doLoop doDesperateMeasures
-
-and doDesperateMeasures () =
-IFDEF HAVE_APRON THEN
-  if not(!did_ai) then
-    (
-      did_ai := true;
-      doApronInvariants ();
-      run UnsatProc.process; (* New invariants may show transitions to be unusable *)
-      doLoop ();
-    )
-  else
-    doChain1 ()
-ELSE
-  doChain1 ()
-END
-
-and doApronInvariants () =
-  did_ai := true;
-IFDEF HAVE_APRON THEN
-  run ApronInvariantsProc.process
-ELSE
-  ()
-END
-
-and doChain1 () =
-  run_ite (ChainProc.process 1) doLoop doChain2
-
-and doChain2 () =
-  run_ite (ChainProc.process 2) doLoop doExpFarkas
-
-and doExpFarkas () =
-  run_ite (Cintexpfarkaspolo.process false) doLoop doExpFarkasSizeBound
-
-and doExpFarkasSizeBound () =
-  run_ite (Cintexpfarkaspolo.process true) doLoop doNothing
-
