@@ -201,12 +201,14 @@ let run_ite (proc1 : processor) proc2 proc3 =
   (* if proc1 succeeds, run proc2, else run proc3 *)
   if not (CTRSObl.isSolved !todo.obl) then
     match (proc1 !todo.obl !todo.tgraph !todo.rvgraph) with
-    | None -> proc3 ()
+    | None -> proc3 !todo
     | Some (newData, p) ->
       begin
         todo := update newData p !todo.outi;
-        proc2 ()
+        proc2 !todo
       end
+  else
+    !todo
 
 
 let doNothing state = state
@@ -229,34 +231,34 @@ let sliceState state =
 
 let (|>) v f = f v
 
-let rec doLoop () =
-  todo := !todo |> doUnreachableRemoval |> doKnowledgePropagation;
-  doFarkasConstant ()
+let rec doLoop state =
+  todo := state |> doUnreachableRemoval |> doKnowledgePropagation;
+  doFarkasConstant !todo
 
-and doFarkasConstant () =
+and doFarkasConstant state =
   run_ite (Cintfarkaspolo.process false 0) doLoop doFarkasConstantSizeBound
 
-and doFarkasConstantSizeBound () =
+and doFarkasConstantSizeBound state =
   todo := insertRVGraphIfNeeded !todo;
   run_ite (Cintfarkaspolo.process true 0) doLoop doFarkas
 
-and doFarkas () =
+and doFarkas state =
   run_ite (Cintfarkaspolo.process false 1) doLoop doFarkasSizeBound
 
-and doFarkasSizeBound () =
+and doFarkasSizeBound state =
   run_ite (Cintfarkaspolo.process true 1) doLoop doDesperateMeasures
 
-and doDesperateMeasures () =
+and doDesperateMeasures state =
 IFDEF HAVE_APRON THEN
   if not(!did_ai) then
     begin
       todo := run UnsatProc.process (doApronInvariants !todo); (* New invariants may show transitions to be unusable *)
-      doLoop ();
+      doLoop !todo;
     end
   else
-    doChain1 ()
+    doChain1 state
 ELSE
-  doChain1 ()
+  doChain1 state
 END
 
 and doApronInvariants state =
@@ -267,16 +269,16 @@ ELSE
   state
 END
 
-and doChain1 () =
+and doChain1 state =
   run_ite (ChainProc.process 1) doLoop doChain2
 
-and doChain2 () =
+and doChain2 state =
   run_ite (ChainProc.process 2) doLoop doExpFarkas
 
-and doExpFarkas () =
+and doExpFarkas state =
   run_ite (Cintexpfarkaspolo.process false) doLoop doExpFarkasSizeBound
 
-and doExpFarkasSizeBound () =
+and doExpFarkasSizeBound state =
   run_ite (Cintexpfarkaspolo.process true) doLoop doNothing
 
 
@@ -302,7 +304,7 @@ let process cint maxchaining startfun ctype =
   checkStartCondition tgraph maybeSlicedObl.ctrs.rules startfun;
   let initial = { obl = maybeSlicedObl; tgraph = tgraph; rvgraph = None; outi = !i; } in
   todo := initial |> doUnreachableRemoval |> sliceState;
-  doLoop ();
+  ignore(doLoop !todo);
   proofs := List.rev !proofs;
   input_nums := List.rev !input_nums;
   output_nums := List.rev !output_nums;
