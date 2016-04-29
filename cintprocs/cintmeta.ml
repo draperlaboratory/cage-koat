@@ -211,11 +211,11 @@ let run_ite (proc1 : processor) proc2 proc3 =
 
 let doNothing state = state
 
-let doUnreachableRemoval () =
-  run UnreachableProc.process !todo
+let doUnreachableRemoval state =
+  run UnreachableProc.process state
 
-let doKnowledgePropagation () =
-  run KnowledgeProc.process !todo
+let doKnowledgePropagation state =
+  run KnowledgeProc.process state
 
 let sliceState state =
   let obl = state.obl in
@@ -228,8 +228,8 @@ let sliceState state =
       rvgraph = None; }
 
 let rec doLoop () =
-  todo := doUnreachableRemoval ();
-  todo := doKnowledgePropagation ();
+  todo := doUnreachableRemoval !todo;
+  todo := doKnowledgePropagation !todo;
   doFarkasConstant ()
 
 and doFarkasConstant () =
@@ -303,7 +303,7 @@ let process cint maxchaining startfun ctype =
   checkStartCondition tgraph maybeSlicedObl.ctrs.rules startfun;
   let initial = { obl = maybeSlicedObl; tgraph = tgraph; rvgraph = None; outi = !i; } in
   todo := initial;
-  todo := doUnreachableRemoval ();
+  todo := doUnreachableRemoval !todo;
   todo := sliceState !todo;
   doLoop ();
   proofs := List.rev !proofs;
