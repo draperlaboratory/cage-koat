@@ -56,8 +56,8 @@ let todo =
         rvgraph = None;
         outi = 0; }
 
-let printState prefix =
-  Printf.eprintf "\n%s Obligations: %s\n" prefix (CTRSObl.toString !todo.obl)
+let printState prefix state =
+  Printf.eprintf "\n%s Obligations: %s\n" prefix (CTRSObl.toString state.obl)
 
 (** Pre run validation **)
 let checkComrules arity lvars trs =
