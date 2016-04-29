@@ -227,9 +227,10 @@ let sliceState state =
       tgraph = TGraph.compute sliced.ctrs.rules;
       rvgraph = None; }
 
+let (|>) v f = f v
+
 let rec doLoop () =
-  todo := doUnreachableRemoval !todo;
-  todo := doKnowledgePropagation !todo;
+  todo := !todo |> doUnreachableRemoval |> doKnowledgePropagation;
   doFarkasConstant ()
 
 and doFarkasConstant () =
@@ -302,9 +303,7 @@ let process cint maxchaining startfun ctype =
   let tgraph = TGraph.compute maybeSlicedObl.ctrs.rules in
   checkStartCondition tgraph maybeSlicedObl.ctrs.rules startfun;
   let initial = { obl = maybeSlicedObl; tgraph = tgraph; rvgraph = None; outi = !i; } in
-  todo := initial;
-  todo := doUnreachableRemoval !todo;
-  todo := sliceState !todo;
+  todo := initial |> doUnreachableRemoval |> sliceState;
   doLoop ();
   proofs := List.rev !proofs;
   input_nums := List.rev !input_nums;
