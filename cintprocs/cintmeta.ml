@@ -250,9 +250,7 @@ and doDesperateMeasures () =
 IFDEF HAVE_APRON THEN
   if not(!did_ai) then
     begin
-      did_ai := true;
-      doApronInvariants ();
-      todo := run UnsatProc.process !todo; (* New invariants may show transitions to be unusable *)
+      todo := run UnsatProc.process (doApronInvariants !todo); (* New invariants may show transitions to be unusable *)
       doLoop ();
     end
   else
@@ -261,12 +259,12 @@ ELSE
   doChain1 ()
 END
 
-and doApronInvariants () =
+and doApronInvariants state =
   did_ai := true;
 IFDEF HAVE_APRON THEN
-  todo := run ApronInvariantsProc.process !todo
+  run ApronInvariantsProc.process state
 ELSE
-  ()
+  state
 END
 
 and doChain1 () =
