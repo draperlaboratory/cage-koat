@@ -190,12 +190,12 @@ let update (newctrsobl, newTGraph, newRVGraph) proof ini =
   output_nums := outi::!output_nums;
   state'
 
-let run (proc : processor) =
-  if CTRSObl.isSolved !todo.obl then ()
+let run (proc : processor) state =
+  if CTRSObl.isSolved state.obl then state
   else
-    match (proc !todo.obl !todo.tgraph !todo.rvgraph) with
-    | None -> ()
-    | Some (newData, p) -> todo := update newData p !todo.outi
+    match (proc state.obl state.tgraph state.rvgraph) with
+    | None -> state
+    | Some (newData, p) -> update newData p !todo.outi
 
 let run_ite (proc1 : processor) proc2 proc3 =
   (* if proc1 succeeds, run proc2, else run proc3 *)
@@ -209,13 +209,13 @@ let run_ite (proc1 : processor) proc2 proc3 =
       end
 
 
-let doNothing () = ()
+let doNothing state = state
 
 let doUnreachableRemoval () =
-  run UnreachableProc.process
+  run UnreachableProc.process !todo
 
 let doKnowledgePropagation () =
-  run KnowledgeProc.process
+  run KnowledgeProc.process !todo
 
 let sliceState state =
   let obl = state.obl in
@@ -228,8 +228,8 @@ let sliceState state =
       rvgraph = None; }
 
 let rec doLoop () =
-  doUnreachableRemoval ();
-  doKnowledgePropagation ();
+  todo := doUnreachableRemoval ();
+  todo := doKnowledgePropagation ();
   doFarkasConstant ()
 
 and doFarkasConstant () =
@@ -251,7 +251,7 @@ IFDEF HAVE_APRON THEN
     begin
       did_ai := true;
       doApronInvariants ();
-      run UnsatProc.process; (* New invariants may show transitions to be unusable *)
+      todo := run UnsatProc.process !todo; (* New invariants may show transitions to be unusable *)
       doLoop ();
     end
   else
@@ -263,7 +263,7 @@ END
 and doApronInvariants () =
   did_ai := true;
 IFDEF HAVE_APRON THEN
-  run ApronInvariantsProc.process
+  todo := run ApronInvariantsProc.process !todo
 ELSE
   ()
 END
@@ -303,7 +303,7 @@ let process cint maxchaining startfun ctype =
   checkStartCondition tgraph maybeSlicedObl.ctrs.rules startfun;
   let initial = { obl = maybeSlicedObl; tgraph = tgraph; rvgraph = None; outi = !i; } in
   todo := initial;
-  doUnreachableRemoval ();
+  todo := doUnreachableRemoval ();
   todo := sliceState !todo;
   doLoop ();
   proofs := List.rev !proofs;
