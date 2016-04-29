@@ -55,11 +55,6 @@ let (proofs : proof list ref) = ref []
 let (output_nums : int list ref) = ref []
 let (input_nums : int list ref) = ref []
 let did_ai = ref false
-let todo =
-  ref { obl = CTRSObl.getInitialObl [] "" Complexity.Time;
-        tgraph = TGraph.empty ();
-        rvgraph = None;
-        outi = 0; }
 
 let printState prefix state =
   Printf.eprintf "\n%s Obligations: %s\n" prefix (CTRSObl.toString state.obl)
@@ -195,14 +190,14 @@ let run (proc : processor) state =
   else
     match (proc state.obl state.tgraph state.rvgraph) with
     | None -> state
-    | Some (newData, p) -> update newData p !todo.outi
+    | Some (newData, p) -> update newData p state.outi
 
 let run_ite (proc1 : processor) proc2 proc3 state =
   (* if proc1 succeeds, run proc2, else run proc3 *)
   if not (CTRSObl.isSolved state.obl) then
-    match (proc1 !todo.obl !todo.tgraph !todo.rvgraph) with
+    match (proc1 state.obl state.tgraph state.rvgraph) with
     | None -> proc3 state
-    | Some (newData, p) -> update newData p !todo.outi |> proc2
+    | Some (newData, p) -> update newData p state.outi |> proc2
   else
     state
 
@@ -228,15 +223,13 @@ let sliceState state =
 let (|>) v f = f v
 
 let rec doLoop state =
-  todo := state |> doUnreachableRemoval |> doKnowledgePropagation;
-  doFarkasConstant !todo
+  state |> doUnreachableRemoval |> doKnowledgePropagation |> doFarkasConstant
 
 and doFarkasConstant state =
   run_ite (Cintfarkaspolo.process false 0) doLoop doFarkasConstantSizeBound state
 
 and doFarkasConstantSizeBound state =
-  todo := insertRVGraphIfNeeded !todo;
-  run_ite (Cintfarkaspolo.process true 0) doLoop doFarkas state
+  state |> insertRVGraphIfNeeded |> run_ite (Cintfarkaspolo.process true 0) doLoop doFarkas
 
 and doFarkas state =
   run_ite (Cintfarkaspolo.process false 1) doLoop doFarkasSizeBound state
@@ -296,14 +289,13 @@ let process cint maxchaining startfun ctype =
   let tgraph = TGraph.compute maybeSlicedObl.ctrs.rules in
   checkStartCondition tgraph maybeSlicedObl.ctrs.rules startfun;
   let initial = { obl = maybeSlicedObl; tgraph = tgraph; rvgraph = None; outi = !i; } in
-  todo := initial |> doUnreachableRemoval |> sliceState;
-  ignore(doLoop !todo);
+  let todo = initial |> doUnreachableRemoval |> sliceState |> doLoop in
   proofs := List.rev !proofs;
   input_nums := List.rev !input_nums;
   output_nums := List.rev !output_nums;
-  todo := insertRVGraphIfNeeded !todo;
-  let rvgraph = Utils.unboxOption !todo.rvgraph in
-  let globalSizeComplexities = GSC.compute !todo.obl rvgraph in
-  Some (getOverallCost !todo.tgraph globalSizeComplexities !todo,
+  let todo = insertRVGraphIfNeeded todo in
+  let rvgraph = Utils.unboxOption todo.rvgraph in
+  let globalSizeComplexities = GSC.compute todo.obl rvgraph in
+  Some (getOverallCost todo.tgraph globalSizeComplexities todo,
         (* Why is initObl passed to getProof and not ctrsobl? *)
-        getProof (initObl, !todo.tgraph, rvgraph, 1) !input_nums !output_nums !proofs)
+        getProof (initObl, todo.tgraph, rvgraph, 1) !input_nums !output_nums !proofs)
