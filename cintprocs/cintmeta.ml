@@ -180,21 +180,22 @@ let insertRVGraphIfNeeded state =
 
 let update (newctrsobl, newTGraph, newRVGraph) proof ini =
   let outi = !i + 1 in
-  todo := { obl = newctrsobl;
-            tgraph = newTGraph;
-            rvgraph = newRVGraph;
-            outi = outi; };
+  let state' = { obl = newctrsobl;
+                 tgraph = newTGraph;
+                 rvgraph = newRVGraph;
+                 outi = outi; } in
   i := outi;
   proofs := proof::!proofs;
   input_nums := ini::!input_nums;
-  output_nums := outi::!output_nums
+  output_nums := outi::!output_nums;
+  state'
 
 let run (proc : processor) =
   if CTRSObl.isSolved !todo.obl then ()
   else
     match (proc !todo.obl !todo.tgraph !todo.rvgraph) with
     | None -> ()
-    | Some (newData, p) -> update newData p !todo.outi
+    | Some (newData, p) -> todo := update newData p !todo.outi
 
 let run_ite (proc1 : processor) proc2 proc3 =
   (* if proc1 succeeds, run proc2, else run proc3 *)
@@ -203,7 +204,7 @@ let run_ite (proc1 : processor) proc2 proc3 =
     | None -> proc3 ()
     | Some (newData, p) ->
       begin
-        update newData p !todo.outi;
+        todo := update newData p !todo.outi;
         proc2 ()
       end
 
