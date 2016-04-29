@@ -197,18 +197,14 @@ let run (proc : processor) state =
     | None -> state
     | Some (newData, p) -> update newData p !todo.outi
 
-let run_ite (proc1 : processor) proc2 proc3 =
+let run_ite (proc1 : processor) proc2 proc3 state =
   (* if proc1 succeeds, run proc2, else run proc3 *)
-  if not (CTRSObl.isSolved !todo.obl) then
+  if not (CTRSObl.isSolved state.obl) then
     match (proc1 !todo.obl !todo.tgraph !todo.rvgraph) with
-    | None -> proc3 !todo
-    | Some (newData, p) ->
-      begin
-        todo := update newData p !todo.outi;
-        proc2 !todo
-      end
+    | None -> proc3 state
+    | Some (newData, p) -> update newData p !todo.outi |> proc2
   else
-    !todo
+    state
 
 
 let doNothing state = state
@@ -236,25 +232,22 @@ let rec doLoop state =
   doFarkasConstant !todo
 
 and doFarkasConstant state =
-  run_ite (Cintfarkaspolo.process false 0) doLoop doFarkasConstantSizeBound
+  run_ite (Cintfarkaspolo.process false 0) doLoop doFarkasConstantSizeBound state
 
 and doFarkasConstantSizeBound state =
   todo := insertRVGraphIfNeeded !todo;
-  run_ite (Cintfarkaspolo.process true 0) doLoop doFarkas
+  run_ite (Cintfarkaspolo.process true 0) doLoop doFarkas state
 
 and doFarkas state =
-  run_ite (Cintfarkaspolo.process false 1) doLoop doFarkasSizeBound
+  run_ite (Cintfarkaspolo.process false 1) doLoop doFarkasSizeBound state
 
 and doFarkasSizeBound state =
-  run_ite (Cintfarkaspolo.process true 1) doLoop doDesperateMeasures
+  run_ite (Cintfarkaspolo.process true 1) doLoop doDesperateMeasures state
 
 and doDesperateMeasures state =
 IFDEF HAVE_APRON THEN
   if not(!did_ai) then
-    begin
-      todo := run UnsatProc.process (doApronInvariants !todo); (* New invariants may show transitions to be unusable *)
-      doLoop !todo;
-    end
+    state |> doApronInvariants |> run UnsatProc.process |> doLoop (* New invariants may show transitions to be unusable *)
   else
     doChain1 state
 ELSE
@@ -270,16 +263,16 @@ ELSE
 END
 
 and doChain1 state =
-  run_ite (ChainProc.process 1) doLoop doChain2
+  run_ite (ChainProc.process 1) doLoop doChain2 state
 
 and doChain2 state =
-  run_ite (ChainProc.process 2) doLoop doExpFarkas
+  run_ite (ChainProc.process 2) doLoop doExpFarkas state
 
 and doExpFarkas state =
-  run_ite (Cintexpfarkaspolo.process false) doLoop doExpFarkasSizeBound
+  run_ite (Cintexpfarkaspolo.process false) doLoop doExpFarkasSizeBound state
 
 and doExpFarkasSizeBound state =
-  run_ite (Cintexpfarkaspolo.process true) doLoop doNothing
+  run_ite (Cintexpfarkaspolo.process true) doLoop doNothing state
 
 
 let process cint maxchaining startfun ctype =
