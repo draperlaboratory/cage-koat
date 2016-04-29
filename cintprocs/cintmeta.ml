@@ -45,10 +45,15 @@ type state = {
   outi : int;
 }
 
+type proof = int -> int -> String.t
+
+type processor = CTRSObl.t -> TGraph.tgraph -> RVG.rvg option ->
+  ((CTRSObl.t * TGraph.tgraph * RVG.rvg option) * proof) option
+
 let i = ref 1
-let proofs = ref []
-let output_nums = ref []
-let input_nums = ref []
+let (proofs : proof list ref) = ref []
+let (output_nums : int list ref) = ref []
+let (input_nums : int list ref) = ref []
 let did_ai = ref false
 let todo =
   ref { obl = CTRSObl.getInitialObl [] "" Complexity.Time;
@@ -173,7 +178,6 @@ let insertRVGraphIfNeeded state =
       state'
 
 
-
 let update (newctrsobl, newTGraph, newRVGraph) proof ini =
   let outi = !i + 1 in
   todo := { obl = newctrsobl;
@@ -185,14 +189,14 @@ let update (newctrsobl, newTGraph, newRVGraph) proof ini =
   input_nums := ini::!input_nums;
   output_nums := outi::!output_nums
 
-let run proc =
+let run (proc : processor) =
   if CTRSObl.isSolved !todo.obl then ()
   else
     match (proc !todo.obl !todo.tgraph !todo.rvgraph) with
     | None -> ()
     | Some (newData, p) -> update newData p !todo.outi
 
-let run_ite proc1 proc2 proc3 =
+let run_ite (proc1 : processor) proc2 proc3 =
   (* if proc1 succeeds, run proc2, else run proc3 *)
   if not (CTRSObl.isSolved !todo.obl) then
     match (proc1 !todo.obl !todo.tgraph !todo.rvgraph) with
