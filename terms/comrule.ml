@@ -323,7 +323,7 @@ let restrictArguments indexSet rule =
   }
 
 let rec buildNewArgs = function
-  | 0 -> ["Ar_0"]
+  | x when x < 0 -> []
   | i -> (Printf.sprintf "Ar_%i" i):: (buildNewArgs (i - 1))
 
 let rec firstN lst i =
