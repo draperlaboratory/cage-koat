@@ -43,8 +43,8 @@ returned by KoAT.
    make dep
 
 ## Running
-   ./dep.native <filename>.koat produces <filename>.dot and
-<filename>-sliced.dot where the "-sliced" modifier represents a version of the
+   ```./dep.native <filename>.koat``` produces ```<filename>.dot``` and ``` <filename>-sliced.dot```
+ where the "-sliced" modifier represents a version of the
 program that has had argument slicing applied before the visualization process.
 Many of the ITSs that KoAT is capable of solving are too large to easily
 visualize and understand.  Argument slicing reduces the size of the resulting
