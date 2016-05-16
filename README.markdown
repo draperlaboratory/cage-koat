@@ -46,11 +46,13 @@ returned by KoAT.
    ```
    ./dep.native <filename>.koat
    ```
+
    produces
    ```
     <filename>.dot
     <filename>-sliced.dot
     ```
+
 where the "-sliced" modifier represents a version of the program that has had
 argument slicing applied before the visualization process.  Many of the ITSs that
 KoAT is capable of solving are too large to easily visualize and understand.  Argument slicing
