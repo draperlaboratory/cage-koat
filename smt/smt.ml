@@ -247,6 +247,8 @@ let setSolver solver =
   | "mathsat5" -> smt_solver := Mathsat
   | "cvc4" -> smt_solver := CVC4
   | "yices2" -> smt_solver := Yices2
+  | "z3-internal" -> (Printf.eprintf "WARNING! Z3 internal isn't present, substituting with Z3!\n";
+                      smt_solver := Z3)
   | _ -> failwith ("Unsupported SMT solver: " ^ solver)
 
 let get_smt_file_checker () =
