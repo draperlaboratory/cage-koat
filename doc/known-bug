@@ -1,0 +1,23 @@
+There's a known issue in koat at this point, related to unused variables that appear
+across multiple terms.  It's related to inappropriate capture.  We think that
+variables with the same name are the same across functions, but we can not actually
+know that apriori.
+
+See cage-koat-issue-1 and similar for examples of inputs that tickle this
+particular bug.
+
+One would be tempted to think we introduced this bug, but it's a long standing
+issue with KoAT. When runing the s-falke branch against these inputs, you see
+the same sort of mistakes being made.
+
+This means one of two things: either it's a long standing bug in koat, or there's
+some additional semantics for the rules that aren't properly captured by current
+documentation.  If it's the former, we just need to find a solution, if it's the
+later, we need to write more documentation and place a translation shim between
+KoAT and AProVE
+
+The simplest thing we could do fix the issue is just rename all of the
+variable in the file so that there are no collissions.  This doesn't
+outright fix the issue, of course, it simply hides it.  In the instances we have,
+we've tried renaming all of the variables by hand, and that works fine.
+We get what appears to be the right answer, probably for the right reason.
