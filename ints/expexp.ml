@@ -388,7 +388,7 @@ and instantiateAux e map =
   match e with
     | Pol p -> instantiateAuxPol p map
     | Sum (e1, e2) -> Sum (instantiate e1 map, instantiate e2 map)
-    | Mul (e1, e2) -> Mul (instantiate e1 map, instantiate e1 map)
+    | Mul (e1, e2) -> Mul (instantiate e1 map, instantiate e2 map)
     | Exp (e1, e2) -> Exp (instantiate e1 map, instantiate e2 map)
 and instantiateAuxPol (monos, c) map =
   let tmp = (List.map (instantiateAuxMono map) monos) @ [fromConstant c] in
