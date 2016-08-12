@@ -98,7 +98,15 @@ let compare r1 r2 =
       if rhsComp <> 0 then
         rhsComp
       else
-        Pc.compare r1.cond r2.cond
+        let cComp = Pc.compare r1.cond r2.cond in
+        if cComp <> 0 then
+          cComp
+        else
+          let uComp = Poly.compare r1.upperBound r2.upperBound in
+          if uComp <> 0 then
+            uComp
+          else
+            Poly.compare r1.lowerBound r2.lowerBound
 
 (* Create a string for a rule *)
 let toDotString r =
