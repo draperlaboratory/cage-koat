@@ -2,11 +2,11 @@ type rule = {
   lhs : Term.term;
   rhss : Term.term list;
   cond : Pc.cond;
-  lowerBound : Poly.poly;
-  upperBound : Poly.poly;
+  lowerBound : Expexp.expexp;
+  upperBound : Expexp.expexp;
 }
 val createRule : Term.term -> Term.term list -> Pc.cond -> rule
-val createWeightedRule : Term.term -> Term.term list -> Pc.cond -> Poly.poly -> Poly.poly -> rule
+val createWeightedRule : Term.term -> Term.term list -> Pc.cond -> Expexp.expexp -> Expexp.expexp -> rule
 val toString : rule -> string
 val toDotString : rule -> string
 val listToStringPrefix : string -> rule list -> string
@@ -42,8 +42,8 @@ val instantiate : rule -> (Poly.var * Poly.poly) list -> rule
 val chainTwoRules : rule -> rule -> rule
 val removeNeq : rule -> rule list
 val restrictArguments : int list -> rule -> rule
-val getLowerBound : rule -> Poly.poly
-val getUpperBound : rule -> Poly.poly
+val getLowerBound : rule -> Expexp.expexp
+val getUpperBound : rule -> Expexp.expexp
 val fixArity : rule list -> rule list
 val getArgs : rule list -> Poly.var list
 val getEdges : rule list -> (Term.funSym * Term.funSym) list

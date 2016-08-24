@@ -22,8 +22,8 @@ type rule = {
   lhs : Term.term;
   rhss : Term.term list;
   cond : Pc.cond;
-  lowerBound : Poly.poly;
-  upperBound : Poly.poly;
+  lowerBound : Expexp.expexp;
+  upperBound : Expexp.expexp;
 }
 
 type cint = rule list
@@ -34,8 +34,9 @@ type system = {
 
 
 (* Create a string for a rule *)
+(* matt: include lower and upper bounds *)
 let rec toString r =
-  (Term.toString r.lhs) ^ " -> " ^ (toStringRhss r.rhss) ^
+  (Term.toString r.lhs) ^ " -{ " ^ (Expexp.toString r.lowerBound)  ^ " , " ^ (Expexp.toString r.upperBound)  ^ " }> " ^ (toStringRhss r.rhss) ^
   (if r.cond = [] then "" else " [ " ^ (Pc.toString r.cond) ^ " ]")
 and toStringRhss rs =
   "Com_" ^ (string_of_int (List.length rs)) ^ "(" ^
@@ -48,8 +49,8 @@ let createRule l rs c =
   { lhs = l;
     rhss = rs;
     cond = Utils.remdupC Pc.equalAtom c;
-    lowerBound = Poly.one;
-    upperBound = Poly.one;
+    lowerBound = Expexp.one;
+    upperBound = Expexp.one;
   }
 
 (* Create a comrule with bounds. *)
@@ -60,9 +61,11 @@ let createWeightedRule l rs c lb ub =
       cond = c;
       lowerBound = lb;
       upperBound = ub; }
-  and varsInLB = Poly.hasVars lb
-  and varsInUB = Poly.hasVars ub
-  and ineq = Pc.Geq (ub, lb) in
+(*  and varsInLB = Expexp.hasVars lb
+  and varsInUB = Expexp.hasVars ub *)
+  in r
+  (* matt: disable this check to allow nonpolynomial input weights (lb, ub) *)
+(*  and ineq = Pc.Geq (ub, lb) in
   (* JTT - We would want to ensure lb <= ub using PC where possible.
      Unfortunately, we can't always know -- especially where conditionals force
      values onto variables. *)
@@ -77,7 +80,7 @@ let createWeightedRule l rs c lb ub =
   else if Poly.equal lb ub then
     r
   else
-    r
+    r*)
 
 
 let compare r1 r2 =
@@ -102,11 +105,11 @@ let compare r1 r2 =
         if cComp <> 0 then
           cComp
         else
-          let uComp = Poly.compare r1.upperBound r2.upperBound in
+          let uComp = Expexp.compare r1.upperBound r2.upperBound in
           if uComp <> 0 then
             uComp
           else
-            Poly.compare r1.lowerBound r2.lowerBound
+            Expexp.compare r1.lowerBound r2.lowerBound
 
 (* Create a string for a rule *)
 let toDotString r =
@@ -152,13 +155,13 @@ let getVars r =
   Utils.remdup ((Term.getVars r.lhs)
                 @ (getRightVars r)
                 @ (Pc.getVars r.cond)
-                @ (Poly.getVars r.lowerBound)
-                @ (Poly.getVars r.upperBound))
+                @ (Expexp.getVars r.lowerBound)
+                @ (Expexp.getVars r.upperBound))
 
 let getSlicingVars r =
   Utils.remdup ((Pc.getVars r.cond)
-                @ (Poly.getVars r.lowerBound)
-                @ (Poly.getVars r.upperBound))
+                @ (Expexp.getVars r.lowerBound)
+                @ (Expexp.getVars r.upperBound))
 
 (* Renames the variables in a rule *)
 let rec renameVars badvars r =
@@ -167,8 +170,8 @@ let rec renameVars badvars r =
       { lhs = Term.renameVars varmapping r.lhs;
         rhss = List.map (Term.renameVars varmapping) r.rhss;
         cond = Pc.renameVars varmapping r.cond;
-        lowerBound = Poly.renameVars varmapping r.lowerBound;
-        upperBound = Poly.renameVars varmapping r.upperBound;
+        lowerBound = Expexp.renameVars varmapping r.lowerBound;
+        upperBound = Expexp.renameVars varmapping r.upperBound;
       }
 and createVarMapping badvars vars =
   match vars with
@@ -270,8 +273,8 @@ let rec internalize r =
             rhss = List.map (fun r -> Term.instantiate r sigma) r.rhss;
             cond = newC;
             (* JTT 11-12-15 -- It isn't clear that I shouldn't instantiate these too. *)
-            lowerBound = Poly.instantiate r.lowerBound sigma;
-            upperBound = Poly.instantiate r.upperBound sigma;
+            lowerBound = Expexp.instantiate_poly r.lowerBound sigma;
+            upperBound = Expexp.instantiate_poly r.upperBound sigma;
           }
 
 
@@ -284,8 +287,8 @@ let instantiate r varmap =
   { lhs = Term.instantiate r.lhs varmap;
     rhss = List.map (fun r -> Term.instantiate r varmap) r.rhss;
     cond = Pc.instantiate r.cond varmap;
-    lowerBound = Poly.instantiate r.lowerBound varmap;
-    upperBound = Poly.instantiate r.upperBound varmap;
+    lowerBound = Expexp.instantiate_poly r.lowerBound varmap;
+    upperBound = Expexp.instantiate_poly r.upperBound varmap;
   }
 
 let chainTwoRules rule1 rule2 =
@@ -300,8 +303,8 @@ let chainTwoRules rule1 rule2 =
     { lhs = rule1.lhs ;
       rhss = List.map (fun r -> Term.instantiate r subby) renamedRule2.rhss;
       cond = Utils.remdupC Pc.equalAtom (rule1.cond @ (Pc.instantiate renamedRule2.cond subby));
-      lowerBound = Poly.add rule1.lowerBound (Poly.instantiate renamedRule2.lowerBound subby);
-      upperBound = Poly.add rule1.upperBound (Poly.instantiate renamedRule2.upperBound subby);
+      lowerBound = Expexp.add rule1.lowerBound (Expexp.instantiate_poly renamedRule2.lowerBound subby);
+      upperBound = Expexp.add rule1.upperBound (Expexp.instantiate_poly renamedRule2.upperBound subby);
     }
   | _ -> failwith "Trying to chain rule1 and rule2 where rule1 is non-unary"
 
@@ -373,9 +376,9 @@ let buildMapping (newArgs : Poly.var list) (cr : rule) =
     cr.rhss in
   let ret =
   {lhs; rhss; cond; (* punning *)
-   lowerBound = Poly.instantiate cr.lowerBound sigma;
-   upperBound = Poly.instantiate cr.upperBound sigma;} in
- (* Printf.eprintf "%s\n\nbecomes\n\n%s\n\n" (toString cr) (toString ret); *)
+   lowerBound = Expexp.instantiate_poly cr.lowerBound sigma;
+   upperBound = Expexp.instantiate_poly cr.upperBound sigma;} in
+ (* Printf.printf "\n%s\n\nbecomes\n\n%s\n\n" (toString cr) (toString ret); *)
   ret
 
 let crArity cr =
