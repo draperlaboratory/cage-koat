@@ -24,6 +24,7 @@ rule token = parse
   | 'V''A''R'                        { pos := !pos + 3; VART }
   | 'R''U''L''E''S'                  { pos := !pos + 5; RULES }
   | 'T''R''U''E'                     { pos := !pos + 4; TRUE }
+  | 'p''o''w'                        { pos := !pos + 3; EXP }
   | [' ']                            { incr pos; token lexbuf }
   | ['\t']                           { pos := !pos + 8; token lexbuf }
   | ['\r' '\n']                      { pos := 1; incr line; EOL }
