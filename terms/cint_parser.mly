@@ -7,7 +7,7 @@
 */
 
 %token <string> IDENT INFIX VAR INT
-%token TO OPENWTO CLOSEWTO COMMA OPENPAR CLOSEPAR OPENSQ CLOSESQ CONSTRAINTSEP EOL EQU NEQ EOF GEQ GTR LEQ LSS CONJ TIMES POWER GOAL COMPLEXITY STARTTERM FUNCTIONSYMBOLS VART RULES COM TRUE
+%token TO OPENWTO CLOSEWTO COMMA OPENPAR CLOSEPAR OPENSQ CLOSESQ CONSTRAINTSEP EOL EQU NEQ EOF GEQ GTR LEQ LSS CONJ TIMES POWER GOAL COMPLEXITY STARTTERM FUNCTIONSYMBOLS VART RULES COM TRUE EXP
 
 %left INFIX
 %left TIMES
@@ -68,18 +68,18 @@ rule :
 ;
 
 wrule :
-| term OPENWTO poly COMMA poly CLOSEWTO COM OPENPAR term_list CLOSEPAR
-    { Comrule.createWeightedRule $1 $9 (Pc.create []) (Poly.construct_poly $3) (Poly.construct_poly $5) }
-| term OPENWTO poly COMMA poly CLOSEWTO term
-    { Comrule.createWeightedRule $1 [$7] (Pc.create []) (Poly.construct_poly $3) (Poly.construct_poly $5) }
-| term OPENWTO poly COMMA poly CLOSEWTO COM OPENPAR term_list CLOSEPAR CONSTRAINTSEP cond_list
-    { Comrule.createWeightedRule $1 $9 (Pc.create $12) (Poly.construct_poly $3) (Poly.construct_poly $5) }
-| term OPENWTO poly COMMA poly CLOSEWTO term CONSTRAINTSEP cond_list
-    { Comrule.createWeightedRule $1 [$7] (Pc.create $9) (Poly.construct_poly $3) (Poly.construct_poly $5) }
-| term OPENWTO poly COMMA poly CLOSEWTO COM OPENPAR term_list CLOSEPAR OPENSQ cond_list CLOSESQ
-    { Comrule.createWeightedRule $1 $9 (Pc.create $12) (Poly.construct_poly $3) (Poly.construct_poly $5) }
-| term OPENWTO poly COMMA poly CLOSEWTO term OPENSQ cond_list CLOSESQ
-    { Comrule.createWeightedRule $1 [$7] (Pc.create $9) (Poly.construct_poly $3) (Poly.construct_poly $5) }
+| term OPENWTO weight COMMA weight CLOSEWTO COM OPENPAR term_list CLOSEPAR
+    { Comrule.createWeightedRule $1 $9 (Pc.create []) $3 $5 }
+| term OPENWTO weight COMMA weight CLOSEWTO term
+    { Comrule.createWeightedRule $1 [$7] (Pc.create []) $3 $5 }
+| term OPENWTO weight COMMA weight CLOSEWTO COM OPENPAR term_list CLOSEPAR CONSTRAINTSEP cond_list
+    { Comrule.createWeightedRule $1 $9 (Pc.create $12) $3 $5 }
+| term OPENWTO weight COMMA weight CLOSEWTO term CONSTRAINTSEP cond_list
+    { Comrule.createWeightedRule $1 [$7] (Pc.create $9) $3 $5 }
+| term OPENWTO weight COMMA weight CLOSEWTO COM OPENPAR term_list CLOSEPAR OPENSQ cond_list CLOSESQ
+    { Comrule.createWeightedRule $1 $9 (Pc.create $12) $3 $5 }
+| term OPENWTO weight COMMA weight CLOSEWTO term OPENSQ cond_list CLOSESQ
+    { Comrule.createWeightedRule $1 [$7] (Pc.create $9) $3 $5 }
 ;
 
 term :
@@ -94,6 +94,30 @@ term_list :
     { [ $1 ] }
 | term COMMA term_list
     { $1 :: $3 }
+;
+
+weight:
+ | weight_exp { Expexp.simplifyToPoly $1 }
+
+weight_exp:
+ | OPENPAR weight_exp CLOSEPAR { $2 }
+ | weight_exp TIMES weight_exp { Expexp.mult $1 $3 }
+ | weight_exp INFIX weight_exp
+    { if $2 = "+" then
+        Expexp.add $1 $3
+      else
+        Expexp.minus $1 $3
+    }
+ | weight_exp POWER weight_exp { Expexp.exp $1 $3 }
+ | EXP OPENPAR weight_exp COMMA weight_exp CLOSEPAR { Expexp.exp $3 $5 }
+ | INT { Expexp.Pol (Poly.fromConstant (Big_int.big_int_of_string $1)) }
+ | IDENT { Expexp.Pol (Poly.fromVar $1) }
+ | INFIX weight_exp
+    { if $1 = "+" then
+        $2
+      else
+        Expexp.negate $2
+    }
 ;
 
 poly_list :
