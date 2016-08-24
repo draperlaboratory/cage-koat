@@ -16,6 +16,7 @@ val getConstant : expexp -> Big_int.big_int
 val getSummands : expexp -> expexp list
 val getFactors : expexp -> expexp list
 val toString : expexp -> string
+val toDebug : expexp -> string
 val toPoly : expexp -> Poly.poly
 val normalize : expexp -> expexp
 val evalConsts : expexp -> expexp
@@ -36,6 +37,7 @@ val minus : expexp -> expexp -> expexp
 val negate : expexp -> expexp
 val mult : expexp -> expexp -> expexp
 val getVars : expexp -> Poly.var list
+val hasVars : expexp -> bool
 val isSumOfVarsPlusConstant : expexp -> bool
 val isScaledSumOfVarsPlusConstant : expexp -> bool
 val getScaleFactor : expexp -> Big_int.big_int
@@ -56,3 +58,7 @@ type expDegree =
 
 val getDegree : expexp -> expDegree
 val compare : expexp -> expexp -> int
+
+val renameVars : (Poly.var * Poly.var) list -> expexp -> expexp
+val instantiate_poly : expexp -> (Poly.var * Poly.poly) list -> expexp
+val simplifyToPoly : expexp -> expexp

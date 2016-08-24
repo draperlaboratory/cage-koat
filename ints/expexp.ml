@@ -148,6 +148,14 @@ let toString e =
       List.fold_left (fun s res -> Sum (s, res)) (List.hd grouped_summands) (List.tl grouped_summands) in
   toString' 0 (groupSummands e)
 
+(* Construct a string useful for debugging *)
+let rec toDebug e =
+  match e with
+  | Pol p -> "[" ^ (Poly.toString p) ^ "]"
+  | Sum (a, b) -> "{" ^ (toDebug a) ^ " + " ^ (toDebug b) ^ "}"
+  | Mul (a, b) -> "{" ^ (toDebug a) ^ " * " ^ (toDebug b) ^ "}"
+  | Exp (a, b) -> "{" ^ (toDebug a) ^ " ^ " ^ (toDebug b) ^ "}"
+
 let toPoly e =
   match e with
     | Pol p -> p
@@ -343,6 +351,12 @@ let rec getVars e =
     | Mul (e1, e2) -> Utils.remdup ((getVars e1) @ (getVars e2))
     | Exp (e1, e2) -> Utils.remdup ((getVars e1) @ (getVars e2))
 
+(* matt: offer similar interface to Poly *)
+let hasVars e =
+  match getVars e with
+    | [] -> false
+    | _ -> true
+
 let isSumOfVarsPlusConstant e =
   match e with
     | Pol p -> Poly.isSumOfVarsPlusConstant p
@@ -468,3 +482,36 @@ let compare a b =
       then -1
       else 1
     end
+
+(* try to convert to polynomials where possible after parsing *)
+let isPoly e =
+  match e with
+  | Pol _ -> true
+  | _ -> false
+
+let rec simplifyToPoly e =
+  match e with
+  | Pol p -> Pol p
+  | Sum (a,b) -> let pa = simplifyToPoly a and pb = simplifyToPoly b in
+                 if isPoly pa && isPoly pb then Pol (Poly.add (toPoly pa) (toPoly pb)) else Sum (pa, pb)
+  | Mul (a,b) -> let pa = simplifyToPoly a and pb = simplifyToPoly b in
+                 if isPoly pa && isPoly pb then Pol (Poly.mult (toPoly pa) (toPoly pb)) else Mul (pa, pb)
+  | Exp (a,b) -> let pa = simplifyToPoly a and pb = simplifyToPoly b in
+                 if isPoly pa && isConst pb then
+                   Pol (Poly.pow (toPoly pa) (Poly.getConstant (toPoly pb)))
+                 else
+                   Exp (pa, pb)
+
+(* lift polynomial methods to expexp *)
+let rec map_poly f e =
+  match e with
+  | Pol p -> Pol (f p)
+  | Sum (a, b) -> Sum (map_poly f a, map_poly f b)
+  | Mul (a, b) -> Mul (map_poly f a, map_poly f b)
+  | Exp (a, b) -> Exp (map_poly f a, map_poly f b)
+
+let renameVars varmapping e =
+  map_poly (Poly.renameVars varmapping) e
+
+let instantiate_poly e bindings =
+  map_poly (fun p -> Poly.instantiate p bindings) e
