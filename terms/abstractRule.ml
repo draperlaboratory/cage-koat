@@ -2,7 +2,7 @@ module type AbstractRule =
   sig
     type rule
     val createRule: Term.term -> Term.term list -> Pc.cond -> rule
-    val createWeightedRule: Term.term -> Term.term list -> Pc.cond -> Poly.poly -> Poly.poly -> rule
+    val createWeightedRule: Term.term -> Term.term list -> Pc.cond -> Expexp.expexp -> Expexp.expexp -> rule
     val compare: rule -> rule -> int
     val toString: rule -> string
     val toDotString: rule -> string
@@ -47,6 +47,6 @@ module type AbstractRule =
       *    f(x,y,v) -> Com_2(g(x,y,v),h(y,x,v)))
       *)
     val restrictArguments: int list -> rule -> rule
-    val getLowerBound: rule -> Poly.poly
-    val getUpperBound: rule -> Poly.poly
+    val getLowerBound: rule -> Expexp.expexp
+    val getUpperBound: rule -> Expexp.expexp
   end

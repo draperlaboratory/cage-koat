@@ -247,5 +247,5 @@ let restrictArguments indexSet rule =
       Utils.getIndexedSubset indexSet (Term.getArgs rule.rhs)) ;
     cond = rule.cond }
 
-let getLowerBound _ = Poly.one
-let getUpperBound _ = Poly.one
+let getLowerBound _ = Expexp.one
+let getUpperBound _ = Expexp.one

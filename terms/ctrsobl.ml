@@ -98,9 +98,8 @@ module Make(CTRS : Ctrs.S) = struct
       Complexity.Unknown
 
   let spaceOrTimeWeight rule =
-    let p = RuleT.getUpperBound rule in
+    RuleT.getUpperBound rule
     (*Printf.eprintf "ctrsobl %s : %s \n" (RuleT.toString rule) (Poly.toString p);*)
-    Expexp.Pol p
 
 
   let getInitialObl rules start ctype =

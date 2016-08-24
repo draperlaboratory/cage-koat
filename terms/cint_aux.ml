@@ -123,8 +123,8 @@ let sanitizeRule r =
         (Term.renameVars varmapping (Comrule.getLeft r))
         (List.map (fun rhs -> Term.renameVars varmapping rhs) (Comrule.getRights r))
         (Pc.renameVars varmapping (Comrule.getCond r))
-        (Poly.renameVars varmapping (Comrule.getLowerBound r))
-        (Poly.renameVars varmapping (Comrule.getUpperBound r))
+        (Expexp.renameVars varmapping (Comrule.getLowerBound r))
+        (Expexp.renameVars varmapping (Comrule.getUpperBound r))
 
 
 let sanitize trs startFun =
