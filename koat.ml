@@ -28,11 +28,11 @@ exception Timeout
 let handle_sigalrm signo =
   raise Timeout
 
-let timed_run4 tsecs defaultval f arg1 arg2 arg3 arg4 =
+let timed_run5 tsecs defaultval f arg1 arg2 arg3 arg4 arg5 =
   let oldsig = Sys.signal Sys.sigalrm (Sys.Signal_handle handle_sigalrm) in
     try
       set_timer tsecs;
-      let res = f arg1 arg2 arg3 arg4 in
+      let res = f arg1 arg2 arg3 arg4 arg5 in
         set_timer 0.0;
         Sys.set_signal Sys.sigalrm oldsig;
         res
@@ -51,6 +51,7 @@ let filename = ref ""
 let ifacename = ref ""
 let timeout = ref 0.0
 let maxchaining = ref 15
+let do_ai = ref true
 let is_space = ref false
 
 let usage = "usage: " ^ Sys.argv.(0) ^ " <filename>"
@@ -102,6 +103,9 @@ s print_usage)),
     ("-max-chaining", Arg.Set_int maxchaining,
      Printf.sprintf "    - Set the maximum number of chaining processor applications [default %i]" !maxchaining);
     ("--max-chaining", Arg.Set_int maxchaining, "");
+    ("-no-invariants", Arg.Clear do_ai,
+     "   - Disable invariant generation");
+    ("--no-invariants", Arg.Clear do_ai, "");
     ("-help", Arg.Unit (fun () -> print_usage (); exit 1),
      "            - Display this list of options");
     ("--help", Arg.Unit (fun () -> print_usage (); exit 1), "");
@@ -136,10 +140,10 @@ let main () =
     Smt.smt_time := 0.0;
     let start = Unix.gettimeofday () in
     match if !timeout = 0.0
-      then
-        Cintmeta.process cint !maxchaining startFun ctype
-      else
-        timed_run4 !timeout None Cintmeta.process cint !maxchaining startFun ctype
+       then
+         Cintmeta.process cint !maxchaining !do_ai startFun ctype
+       else
+         timed_run5 !timeout None Cintmeta.process cint !maxchaining !do_ai startFun ctype
     with
     | None -> Printf.printf "MAYBE\n"
     | Some (c, proof) -> begin
