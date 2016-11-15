@@ -415,19 +415,16 @@ module Make (RuleT : AbstractRule) = struct
               create_size_data (SumPlusConstant (Poly.getConstant t), getVarNums lvarswithnums tvars)
             else
               create_size_data (P (Expexp.fromPoly (Poly.abs t)), getVarNums lvarswithnums tvars)
-          else if (Poly.isVar t) && (let (varN, suffL) = (Poly.toString t, String.length "_sep") in String.length varN > suffL && (String.sub varN ((String.length varN) - suffL) suffL) = "_sep") then
-            (* This is a variable on an edge obtained from separating out a part of the program.
-                     We generate conditions of the form v_sep >= 0 && v_sep <= boundTerm (or v_sep < 0 && -v_sep <= boundTerm).
-                     Try extracting those. *)
+          else if Poly.isVar t then
             (
               let (varPoly, negVarPoly) = (t, Poly.negate t) in
               let extractUpperBoundFor t acc p =
                 match p with
-                | Pc.Leq (a, b) when Poly.equal a t -> Some b
+                | Pc.Leq (a, b) when Poly.equal a t && Utils.containsAll (Poly.getVars b) lvars -> Some b
                 | _ -> acc
               in
 
-              (* Case v_sep >= 0 *)
+              (* abs(poly) if v >= 0 && v <= poly *)
               let checkLowerZeroArbitraryUpper =
                 let isZeroLowerBound p =
                   match p with
@@ -440,7 +437,7 @@ module Make (RuleT : AbstractRule) = struct
                   None
               in
 
-              (* Case v_sep < 0 *)
+              (* abs(poly) if v < 0 && -v <= poly *)
               let checkUpperZeroArbitraryLower =
                 let isZeroUpperBound p =
                   match p with
