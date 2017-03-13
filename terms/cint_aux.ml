@@ -103,9 +103,14 @@ let applyFunMapping mapping r =
 
 let sanitizeFuns trs startFun =
   let funs = Cint.getFuns trs in
-    let mapping = createFunMapping funs funs in
-    (List.map (applyFunMapping mapping) trs,
-     List.assoc startFun mapping)
+  let mapping = createFunMapping funs funs in
+  let refreshed_trs = List.map (applyFunMapping mapping) trs in
+  try
+    let newStart = List.assoc startFun mapping in
+    (refreshed_trs, newStart)
+  with
+  | Not_found -> failwith ("Start symbol '" ^ startFun ^ "' not found in a rule LHS!")
+
 
 let rec createVarMapping vars used =
   match vars with

@@ -1,5 +1,5 @@
 HAVE_APRON?=true
-HAVE_Z3?=true
+HAVE_Z3?=false
 
 -include user.cfg ## Override HAVE_APRON? and HAVE_Z3? here
 

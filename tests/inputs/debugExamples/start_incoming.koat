@@ -1,0 +1,7 @@
+(GOAL COMPLEXITY)
+(STARTTERM (FUNCTIONSYMBOLS koat_start))
+(VAR a b)
+(RULES
+        koat_start(a,b) -> start(a,b)
+        start(a,b) -> start(a-1,b) [ a > 0 ]
+)

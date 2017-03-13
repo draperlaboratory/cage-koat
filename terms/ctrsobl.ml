@@ -42,14 +42,17 @@ module Make(CTRS : Ctrs.S) = struct
     RuleMap.find rule obl.cost
 
   let complCostRuleStrings obl =
-    let maxLen = ref 0 in
     let asString r =
-      let (s, _) as tup = Printf.sprintf "(Comp: %s, Cost: %s)"
-      (Complexity.toString (getComplexity obl r))
-      (Expexp.toString (getCost obl r)), RuleT.toString r in
-      maxLen := max !maxLen (String.length s);
-      tup in
-    List.map asString obl.ctrs.CTRS.rules, !maxLen
+      let comp_cost = Printf.sprintf "(Comp: %s, Cost: %s)"
+        (Complexity.toString (getComplexity obl r))
+        (Expexp.toString (getCost obl r)) in
+      let rule_string = RuleT.toString r in
+      (comp_cost, rule_string)
+    in
+    let rules_strings = List.map asString obl.ctrs.CTRS.rules in
+    let max_length = List.fold_left (fun m (s, _) -> max m (String.length s)) 0 rules_strings in
+    (rules_strings, max_length)
+    
 
   let toStringPrefix prefix obl =
     let open CTRS in
@@ -58,6 +61,7 @@ module Make(CTRS : Ctrs.S) = struct
       | _ ->
         let complCostRuleStrings, maxLen = complCostRuleStrings obl in
         let toStringPrefixOne prefix maxLen (ccS, rS) =
+          (* Printf.eprintf "ccS:%s\nMax length: %d\n" ccS maxLen; *)
           Printf.sprintf "%s%s%s%s" prefix ccS (String.make (maxLen + 4 - (String.length ccS)) ' ') rS in
         String.concat "\n" (List.map (toStringPrefixOne (prefix ^ "\t") maxLen) complCostRuleStrings) in
     Printf.sprintf "%sT:\n%s\n%sstart location:\t%s\n%sleaf cost:\t%s"
