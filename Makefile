@@ -1,5 +1,5 @@
 HAVE_APRON?=true
-HAVE_Z3?=false
+HAVE_Z3?=true
 
 -include user.cfg ## Override HAVE_APRON? and HAVE_Z3? here
 
@@ -31,6 +31,8 @@ LIBPATH=-package ocamlgraph -package yojson -package unix $(LIBPATH_APRON) $(LIB
 PP_OPTS=-pp "camlp4o pa_macro.cmo $(PP_OPTS_APRON) $(PP_OPTS_Z3)"
 
 OPTS=${PP_OPTS} -use-ocamlfind -cflags -warn-error,+a
+
+.DEFAULT_GOAL := koat
 
 ## Solver Targets
 
