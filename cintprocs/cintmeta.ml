@@ -58,11 +58,11 @@ let did_ai = ref false
 
 let printState prefix state =
   Printf.eprintf "\n%s Obligations: %s\n" prefix (CTRSObl.toString state.obl)
-
+    
 (** Pre run validation **)
-let checkComrules arity lvars trs =
+let preprocessComrules arity lvars trs =
   let rec internal = function
-  | [] -> ()
+  | [] -> trs
   | rule::rest ->
     let lhs = Comrule.getLeft rule in
     if ((Term.getArity lhs) <> arity) || (Term.getVars lhs <> lvars) then
@@ -73,14 +73,22 @@ let checkComrules arity lvars trs =
       internal rest in
   internal trs
 
-let check = function
+let mk_new_start startfun lvars fun_symbols =
+  let start_symbol = Cint_aux.getNewName "koat_start" fun_symbols in
+  let start_rule = Comrule.createSimpleRule start_symbol startfun lvars in
+  (start_symbol, start_rule)
+
+    
+let preprocess startfun trs = match trs with
   | [] -> raise (Cint_aux.ParseException
                    (0, 0, "Error: Cannot handle empty CINT!"))
   | trs ->
     let first = List.hd trs in
-    let arity = Term.getArity (Comrule.getLeft first)
-    and lvars = Term.getVars (Comrule.getLeft first) in
-    checkComrules arity lvars trs
+    let arity = Term.getArity (Comrule.getLeft first) in
+    let lvars = Term.getVars (Comrule.getLeft first) in
+    let fun_symbols = Comrule.getFunsList trs in
+    let (new_start, new_start_rule) = mk_new_start startfun lvars fun_symbols in
+    (new_start, preprocessComrules arity lvars (new_start_rule::trs))
 
 let checkStartCondition tgraph trs startfun =
   let startComrules = List.filter (fun rule -> (Term.getFun (Comrule.getLeft rule)) = startfun) trs in
@@ -274,7 +282,7 @@ and doExpFarkasSizeBound state =
 
 
 let process cint maxchaining do_ai startfun ctype =
-  check cint;
+  let (startfun, cint) = preprocess startfun cint in
   i := 1;
   proofs := [];
   input_nums := [];

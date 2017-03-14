@@ -79,7 +79,14 @@ let createWeightedRule l rs c lb ub =
   else
     r
 
+(* Create a rule which creates a rule of the form f(x1,...,xn) -> g(x1,...,xn) *)
+let createSimpleRule f g vars =
+  let poly_vars = List.map Poly.fromVar vars in
+  let fx = Term.create' (f, poly_vars) in
+  let gx = Term.create' (g, poly_vars) in
+  createWeightedRule fx [gx] [Pc.trivial_atom] Poly.zero Poly.zero
 
+      
 let compare r1 r2 =
   let lComp = Term.compare r1.lhs r2.lhs in
   if lComp <> 0 then
@@ -129,6 +136,10 @@ let getCond r =
 let getFuns r =
   Utils.remdup ((Term.getFun r.lhs)::(List.map Term.getFun r.rhss))
 
+(* Get function symbols from a list of rules *)
+let getFunsList rs =
+  Utils.remdup (List.concat (List.map getFuns rs))
+    
 let getLowerBound r =
   r.lowerBound
 

@@ -7,6 +7,7 @@ type rule = {
 }
 val createRule : Term.term -> Term.term list -> Pc.cond -> rule
 val createWeightedRule : Term.term -> Term.term list -> Pc.cond -> Poly.poly -> Poly.poly -> rule
+val createSimpleRule : Term.funSym -> Term.funSym -> Poly.var list -> rule
 val toString : rule -> string
 val toDotString : rule -> string
 val listToStringPrefix : string -> rule list -> string
@@ -18,6 +19,7 @@ val getLeft : rule -> Term.term
 val getRights : rule -> Term.term list
 val getCond : rule -> Pc.cond
 val getFuns : rule -> Term.funSym list
+val getFunsList : rule list -> Term.funSym list
 val getLeftFun : rule -> Term.funSym
 val getRightFuns : rule -> Term.funSym list
 val getRightVars : rule -> Poly.var list

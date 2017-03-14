@@ -5,7 +5,7 @@ type pos = int
 type term = { fn : funSym; args : Poly.poly list }
 
 val create :
-  string ->
+  funSym ->
   (Big_int.big_int * (String.t * int) list) list list ->
   term
 val create' : funSym * Poly.poly list -> term

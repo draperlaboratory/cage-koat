@@ -78,7 +78,7 @@ let getNewName v used =
   let cand = getCand v in
     attachPrimes cand used
 
-(* rename functions so that their arguments obey rules *)
+(* rename functions so that their names obey some syntax rules *)
 let rec createFunMapping used = function
   | [] -> []
   | f::ff -> if isBad f then
@@ -101,6 +101,7 @@ let applyFunMapping mapping r =
     (Comrule.getUpperBound r)
 
 
+(* Replace the function names in the rules with sanitized names *)
 let sanitizeFuns trs startFun =
   let funs = Cint.getFuns trs in
   let mapping = createFunMapping funs funs in

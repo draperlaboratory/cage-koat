@@ -45,6 +45,9 @@ and construct_atom p l r =
     | "Neq" -> Neq (l, r)
     | _ -> failwith "Unexpected atom kind!"
 
+(* Create the trivial atom 0 <= 0 *)
+let trivial_atom = Leq (Poly.zero, Poly.zero)
+       
 (* Checks whether a PC constraint is linear *)
 let rec isLinear cond =
   List.for_all isLinearAtom cond

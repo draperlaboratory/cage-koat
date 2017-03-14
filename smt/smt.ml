@@ -556,7 +556,7 @@ let isSatisfiablePolo polyconditions polystrict boundconditions extraconditions 
 let isSatisfiableFarkasPolo weakconds strictconds vars =
   let farkasAutostrict =
       if strictconds = [] then
-          (Atom (Pc.Equ (Poly.zero, Poly.zero)))
+          (Atom Pc.trivial_atom)
       else
           (Or (List.map (fun c -> AndA c) strictconds))
       in

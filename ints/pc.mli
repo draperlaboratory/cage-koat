@@ -11,6 +11,7 @@ val create :
    (Big_int.big_int * (String.t * int) list) list)
   list -> atom list
 val construct_atom : string -> Poly.poly -> Poly.poly -> atom
+val trivial_atom : atom
 val isLinear : atom list -> bool
 val isLinearAtom : atom -> bool
 val dropNonLinearAtoms : atom list -> atom list
