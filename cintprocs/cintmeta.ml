@@ -94,7 +94,7 @@ let checkStartCondition tgraph trs startfun =
   let startComrules = List.filter (fun rule -> (Term.getFun (Comrule.getLeft rule)) = startfun) trs in
   match TGraph.getPreds tgraph startComrules with
   | [] -> ()
-  | _ -> raise (Cint_aux.ParseException (0, 0, "Error: Start nodes have incoming edges!"))
+  | _ -> failwith "internal error in Cintmeta.checkStartCondition: Start nodes have incoming edges!"
 
 (** Output **)
 
