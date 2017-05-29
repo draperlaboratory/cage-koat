@@ -22,6 +22,10 @@ type t = P of Expexp.expexp | Unknown
 
 type ctype = Time | Space
 
+type expDegree =
+| Polynomial of int
+| Exponential of int (* 2^n would be exponenital 1, 2^(2^n) is two, etc. *)
+
 let toStringCompetitionStyle c =
   match c with
     | Unknown -> "MAYBE"
@@ -30,6 +34,16 @@ and toString c =
   match c with
     | Unknown -> "?"
     | P p -> Expexp.toString p
+  and toStringTermcompStyle c =
+  match c with
+    | Unknown -> "MAYBE"
+    | P p ->
+        let bound =
+          match Expexp.getDegree p with
+            | Expexp.Polynomial 0  ->  "1"
+            | Expexp.Polynomial i  ->  "n^" ^ string_of_int i
+            | Expexp.Exponential i -> "EXP"
+        in "WORST_CASE(?, O(" ^ bound ^ "))"
 
 let equal c d =
   match (c, d) with
