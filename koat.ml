@@ -54,6 +54,7 @@ let maxchaining = ref 15
 let do_ai = ref true
 let is_space = ref false
 let use_termcomp_format = ref false
+let no_print_proof = ref false
 
 let usage = "usage: " ^ Sys.argv.(0) ^ " <filename>"
 
@@ -121,8 +122,11 @@ s print_usage)),
     ("-space-complexity", Arg.Set is_space,
      "- Compute the space complexity instead of time");
     ("-use-termcomp-format", Arg.Set use_termcomp_format,
-     "      - Print result in termcomp format");
-    ("--use-termcomp-format", Arg.Set use_termcomp_format, "")
+     Printf.sprintf "      - Print result in termcomp format [default %B]" !use_termcomp_format);
+    ("--use-termcomp-format", Arg.Set use_termcomp_format, "");
+    ("-no-print-proof", Arg.Set no_print_proof,
+     Printf.sprintf "      - Disable proof output [default %B]" !no_print_proof);
+    ("--no-print-proof", Arg.Set no_print_proof, "")
   ]
 and print_usage () =
   Arg.usage speclist usage
@@ -152,11 +156,14 @@ let main () =
     | None -> Printf.printf "MAYBE\n"
     | Some (c, proof) -> begin
       let stop = Unix.gettimeofday () in
-      Printf.printf "%s\n\n"
+      Printf.printf "%s\n"
         (if !use_termcomp_format then Complexity.toStringTermcompStyle c else Complexity.toStringCompetitionStyle c);
-      Printf.printf "%s" (proof ());
-      Printf.printf "%s\n\n" ("Complexity upper bound " ^ (Complexity.toString c));
-      Printf.printf "Time: %.3f sec (SMT: %.3f sec)\n" (stop -. start) (!Smt.smt_time)
+      if not !no_print_proof then
+        (
+        Printf.printf "\n%s" (proof ());
+        Printf.printf "%s\n\n" ("Complexity upper bound " ^ (Complexity.toString c));
+        Printf.printf "Time: %.3f sec (SMT: %.3f sec)\n" (stop -. start) (!Smt.smt_time)
+        )
     end
 
 
