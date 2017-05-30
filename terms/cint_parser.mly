@@ -97,11 +97,21 @@ term_list :
 ;
 
 poly_list :
-| poly
+| ppoly
     { [ $1 ] }
-| poly COMMA poly_list
+| ppoly COMMA poly_list
     { $1 :: $3 }
 ;
+
+ppoly:
+| poly
+    {  $1  }
+| OPENPAR poly CLOSEPAR
+    {  $2  }
+;
+
+
+
 
 poly:
 | mult_monomial
@@ -196,17 +206,17 @@ cond_list:
 ;
 
 cond:
-| poly EQU poly
+| ppoly EQU ppoly
     { ("Equ", $1, $3) }
-| poly NEQ poly
+| ppoly NEQ ppoly
     { ("Neq", $1, $3) }
-| poly GEQ poly
+| ppoly GEQ ppoly
     { ("Geq", $1, $3) }
-| poly GTR poly
+| ppoly GTR ppoly
     { ("Gtr", $1, $3) }
-| poly LEQ poly
+| ppoly LEQ ppoly
     { ("Leq", $1, $3) }
-| poly LSS poly
+| ppoly LSS ppoly
     { ("Lss", $1, $3) }
 ;
 
