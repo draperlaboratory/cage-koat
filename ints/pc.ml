@@ -35,6 +35,8 @@ let rec create arglist =
   List.map (fun (p, l, r) -> construct_atom p (Poly.construct_poly l)
                                               (Poly.construct_poly r))
            arglist
+and create' arglist =
+  List.map (fun (p, l, r) -> construct_atom p l r) arglist
 and construct_atom p l r =
   match p with
     | "Geq" -> Geq (l, r)

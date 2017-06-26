@@ -54,6 +54,7 @@ let maxchaining = ref 15
 let do_ai = ref true
 let is_space = ref false
 let use_termcomp_format = ref false
+let use_its_parser = ref false
 let no_print_proof = ref false
 
 let usage = "usage: " ^ Sys.argv.(0) ^ " <filename>"
@@ -124,6 +125,9 @@ s print_usage)),
     ("-use-termcomp-format", Arg.Set use_termcomp_format,
      Printf.sprintf "      - Print result in termcomp format [default %B]" !use_termcomp_format);
     ("--use-termcomp-format", Arg.Set use_termcomp_format, "");
+    ("-use-its-parser", Arg.Set use_its_parser,
+     Printf.sprintf "      - Print result in termcomp format [default %B]" !use_its_parser);
+    ("--use-its-parser", Arg.Set use_its_parser, "");
     ("-no-print-proof", Arg.Set no_print_proof,
      Printf.sprintf "      - Disable proof output [default %B]" !no_print_proof);
     ("--no-print-proof", Arg.Set no_print_proof, "")
@@ -143,7 +147,7 @@ let main () =
   )
   else
     Log.init_timer ();
-    let (startFun, cint) = Parser.parseCint !filename !combine in
+    let (startFun, cint) = if !use_its_parser then Its_aux.parse !filename else Cint_aux.parse !filename in
     let ctype = if !is_space then Complexity.Space else Complexity.Time in
     Smt.smt_time := 0.0;
     let start = Unix.gettimeofday () in
