@@ -148,6 +148,9 @@ let main () =
   else
     Log.init_timer ();
     let (startFun, cint) = if !use_its_parser then Its_aux.parse !filename else Cint_aux.parse !filename in
+
+    Printf.eprintf "Parsed rules :\n%a\n" Cint.print cint;
+
     let ctype = if !is_space then Complexity.Space else Complexity.Time in
     Smt.smt_time := 0.0;
     let start = Unix.gettimeofday () in

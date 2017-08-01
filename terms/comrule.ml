@@ -27,6 +27,7 @@ type rule = {
 }
 
 type cint = rule list
+
 type system = {
   startSym : Term.term;
   cint : cint;
@@ -42,7 +43,7 @@ and toStringRhss rs =
   String.concat ", " (List.map Term.toString rs) ^ ")"
 and listToStringPrefix prefix rules =
   String.concat "\n" (List.map (fun r -> prefix ^ toString r) rules)
-
+    
 (* Create a comrule. *)
 let createRule l rs c =
   { lhs = l;

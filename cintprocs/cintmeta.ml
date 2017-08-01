@@ -24,6 +24,7 @@ module CTRSObl = Cintfarkaspolo.CTRSObl
 module GSC     = Cintfarkaspolo.GSC
 module LSC     = Cintfarkaspolo.LSC
 module TGraph  = Cintfarkaspolo.TGraph
+module PP      = Preprocess
 
 open CTRSObl
 open CTRS
@@ -58,44 +59,8 @@ let did_ai = ref false
 
 let printState prefix state =
   Printf.eprintf "\n%s Obligations: %s\n" prefix (CTRSObl.toString state.obl)
-    
-(** Pre run validation **)
-let preprocessComrules arity lvars trs =
-  let rec internal = function
-  | [] -> trs
-  | rule::rest ->
-    let lhs = Comrule.getLeft rule in
-    if ((Term.getArity lhs) <> arity) || (Term.getVars lhs <> lvars) then
-      raise (Cint_aux.ParseException (0, 0, "Error: Not all rules have the same variables!"))
-    else if List.exists (fun r -> (Term.getArity r <> arity)) (Comrule.getRights rule) then
-      raise (Cint_aux.ParseException (0, 0, "Error: Not all function symbols have the same arity!"))
-    else
-      internal rest in
-  internal trs
 
-let mk_new_start startfun lvars fun_symbols =
-  let start_symbol = Cint_aux.getNewName "koat_start" fun_symbols in
-  let start_rule = Comrule.createSimpleRule start_symbol startfun lvars in
-  (start_symbol, start_rule)
-
-    
-let preprocess startfun trs = match trs with
-  | [] -> raise (Cint_aux.ParseException
-                   (0, 0, "Error: Cannot handle empty CINT!"))
-  | trs ->
-    let first = List.hd trs in
-    let arity = Term.getArity (Comrule.getLeft first) in
-    let lvars = Term.getVars (Comrule.getLeft first) in
-    let fun_symbols = Comrule.getFunsList trs in
-    let (new_start, new_start_rule) = mk_new_start startfun lvars fun_symbols in
-    (new_start, preprocessComrules arity lvars (new_start_rule::trs))
-
-let checkStartCondition tgraph trs startfun =
-  let startComrules = List.filter (fun rule -> (Term.getFun (Comrule.getLeft rule)) = startfun) trs in
-  match TGraph.getPreds tgraph startComrules with
-  | [] -> ()
-  | _ -> failwith "internal error in Cintmeta.checkStartCondition: Start nodes have incoming edges!"
-
+     
 (** Output **)
 
 
@@ -282,7 +247,10 @@ and doExpFarkasSizeBound state =
 
 
 let process cint maxchaining do_ai startfun ctype =
-  let (startfun, cint) = preprocess startfun cint in
+  let (startfun, cint) = PP.preprocess startfun cint in
+
+  Printf.eprintf "Processed rules :\n%a\n" Cint.print cint;
+
   i := 1;
   proofs := [];
   input_nums := [];
@@ -301,7 +269,6 @@ let process cint maxchaining do_ai startfun ctype =
       output_nums := 2::!output_nums;
       newctrsobl in
   let tgraph = TGraph.compute maybeSlicedObl.ctrs.rules in
-  checkStartCondition tgraph maybeSlicedObl.ctrs.rules startfun;
   let initial = { obl = maybeSlicedObl; tgraph = tgraph; rvgraph = None; outi = !i; } in
   let todo = initial |> doUnreachableRemoval |> sliceState |> doLoop in
   proofs := List.rev !proofs;

@@ -18,13 +18,16 @@
   limitations under the License.
 *)
 
-type cint = Comrule.rule list
-
+type cint = Comrule.cint
+  
 (* Create a string for a Cint *)
 let rec toStringPrefix p rules =
   String.concat "\n" (List.map (fun r -> p ^ Comrule.toString r) rules)
 and toString rules =
   toStringPrefix "" rules
+
+let print out rules =
+  Printf.fprintf out "%s" (toString rules)
 
 (* Get the arity of a function symbol in a trs *)
 let rec getArityOf f cint =
