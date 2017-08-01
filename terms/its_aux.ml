@@ -31,17 +31,7 @@ let readIn filename =
           )
 
 
-let getIts fileName =
-    let (startFun, tmp) = readIn fileName in
-    (* remove duplicate rules *)
-    let noDups = Cint_aux.check (Cint_aux.remdup tmp) in
-    (* fix functions arity *)
-    let fixedArity = Comrule.fixArity noDups in
-    let (startFun', tmp2) = Cint_aux.sanitize fixedArity startFun in
-    (startFun', Cint_aux.internalize (Cint_aux.removeNeq tmp2))
-
-
 (* Parses a cint from a filename *)
-let parse filename =
-  getIts filename
+let parse filename = readIn filename
+
 
