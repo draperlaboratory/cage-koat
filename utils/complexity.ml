@@ -34,7 +34,7 @@ and toString c =
   match c with
     | Unknown -> "?"
     | P p -> Expexp.toString p
-  and toStringTermcompStyle c =
+and toStringTermcompStyle c =
   match c with
     | Unknown -> "MAYBE"
     | P p ->
