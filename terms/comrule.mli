@@ -5,6 +5,9 @@ type rule = {
   lowerBound : Poly.poly;
   upperBound : Poly.poly;
 }
+
+type cint = rule list
+
 val createRule : Term.term -> Term.term list -> Pc.cond -> rule
 val createWeightedRule : Term.term -> Term.term list -> Pc.cond -> Poly.poly -> Poly.poly -> rule
 val createSimpleRule : Term.funSym -> Term.funSym -> Poly.var list -> rule
@@ -19,7 +22,7 @@ val getLeft : rule -> Term.term
 val getRights : rule -> Term.term list
 val getCond : rule -> Pc.cond
 val getFuns : rule -> Term.funSym list
-val getFunsList : rule list -> Term.funSym list
+val getFunsList : cint -> Term.funSym list
 val getLeftFun : rule -> Term.funSym
 val getRightFuns : rule -> Term.funSym list
 val getRightVars : rule -> Poly.var list
@@ -46,6 +49,6 @@ val removeNeq : rule -> rule list
 val restrictArguments : int list -> rule -> rule
 val getLowerBound : rule -> Poly.poly
 val getUpperBound : rule -> Poly.poly
-val fixArity : rule list -> rule list
-val getArgs : rule list -> Poly.var list
-val getEdges : rule list -> (Term.funSym * Term.funSym) list
+val fixArity : cint -> cint
+val getArgs : cint -> Poly.var list
+val getEdges : cint -> (Term.funSym * Term.funSym) list
