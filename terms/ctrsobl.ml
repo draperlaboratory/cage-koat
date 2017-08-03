@@ -107,7 +107,7 @@ module Make(CTRS : Ctrs.S) = struct
     Expexp.Pol p
 
 
-  let getInitialObl rules start ctype =
+  let getInitialObl rules start =
     let open Expexp in
     let open CTRS in
     let initComp = initComp start in
@@ -151,7 +151,7 @@ module type S =
       val hasUnknownComplexity : t -> CTRS.RuleT.rule -> bool
       val getUnknownComplexityRules : t -> CTRS.RuleT.rule list
       val getKnownComplexityRules : t -> CTRS.RuleT.rule list
-      val getInitialObl : CTRS.RuleT.rule list -> Term.funSym -> Complexity.ctype -> t
+      val getInitialObl : CTRS.RuleT.rule list -> Term.funSym -> t
       val haveSameComplexities : t -> t -> bool
     end
 

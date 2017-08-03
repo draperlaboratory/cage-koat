@@ -3,5 +3,4 @@ val process :
   int ->
   bool ->
   Term.funSym ->
-  Complexity.ctype ->
   (Complexity.t * (unit -> string)) option

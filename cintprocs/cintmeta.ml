@@ -246,7 +246,7 @@ and doExpFarkasSizeBound state =
   run_ite (Cintexpfarkaspolo.process true) doLoop doNothing state
 
 
-let process cint maxchaining do_ai startfun ctype =
+let process cint maxchaining do_ai startfun =
   let (startfun, cint) = PP.preprocess startfun cint in
 
   Printf.eprintf "Processed rules :\n%a\n" Cint.print cint;
@@ -258,7 +258,7 @@ let process cint maxchaining do_ai startfun ctype =
   ChainProc.max_chaining := maxchaining;
   ChainProc.done_chaining := 0;
   did_ai := not do_ai;
-  let initObl = CTRSObl.getInitialObl cint startfun ctype in
+  let initObl = CTRSObl.getInitialObl cint startfun in
   let maybeSlicedObl =
     match (SlicingProc.process initObl) with
     | None -> initObl

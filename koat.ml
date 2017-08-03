@@ -28,11 +28,11 @@ exception Timeout
 let handle_sigalrm signo =
   raise Timeout
 
-let timed_run5 tsecs defaultval f arg1 arg2 arg3 arg4 arg5 =
+let timed_run4 tsecs defaultval f arg1 arg2 arg3 arg4 =
   let oldsig = Sys.signal Sys.sigalrm (Sys.Signal_handle handle_sigalrm) in
     try
       set_timer tsecs;
-      let res = f arg1 arg2 arg3 arg4 arg5 in
+      let res = f arg1 arg2 arg3 arg4 in
         set_timer 0.0;
         Sys.set_signal Sys.sigalrm oldsig;
         res
@@ -52,7 +52,6 @@ let ifacename = ref ""
 let timeout = ref 0.0
 let maxchaining = ref 15
 let do_ai = ref true
-let is_space = ref false
 let use_termcomp_format = ref false
 let use_its_parser = ref false
 let no_print_proof = ref false
@@ -120,8 +119,6 @@ s print_usage)),
     ("--version", Arg.Unit (fun () -> Printf.printf "KoAT\nCopyright 2010-2014 Stephan Falke\nVersion %s\n" Git_sha1.git_sha1; exit 1), "");
     ("-iface-file", Arg.Set_string ifacename,
      "      - Set the .json interface file for specifying complexity");
-    ("-space-complexity", Arg.Set is_space,
-     "- Compute the space complexity instead of time");
     ("-use-termcomp-format", Arg.Set use_termcomp_format,
      Printf.sprintf "      - Print result in termcomp format [default %B]" !use_termcomp_format);
     ("--use-termcomp-format", Arg.Set use_termcomp_format, "");
@@ -151,14 +148,13 @@ let main () =
 
     Printf.eprintf "Parsed rules :\n%a\n" Cint.print cint;
 
-    let ctype = if !is_space then Complexity.Space else Complexity.Time in
     Smt.smt_time := 0.0;
     let start = Unix.gettimeofday () in
     match if !timeout = 0.0
        then
-         Cintmeta.process cint !maxchaining !do_ai startFun ctype
+         Cintmeta.process cint !maxchaining !do_ai startFun
        else
-         timed_run5 !timeout None Cintmeta.process cint !maxchaining !do_ai startFun ctype
+         timed_run4 !timeout None Cintmeta.process cint !maxchaining !do_ai startFun
     with
     | None -> Printf.printf "MAYBE\n"
     | Some (c, proof) -> begin

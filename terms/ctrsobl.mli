@@ -17,7 +17,7 @@ module type S =
       val getUnknownComplexityRules : t -> CTRS.RuleT.rule list
       val getKnownComplexityRules : t -> CTRS.RuleT.rule list
       val getInitialObl : CTRS.RuleT.rule list ->
-        Term.funSym -> Complexity.ctype -> t
+        Term.funSym -> t
       val haveSameComplexities : t -> t -> bool
     end
 

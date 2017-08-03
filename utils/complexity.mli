@@ -1,7 +1,5 @@
 type t = P of Expexp.expexp | Unknown
 
-type ctype = Time | Space
-
 val toStringCompetitionStyle : t -> string
 
 val toStringTermcompStyle : t -> string

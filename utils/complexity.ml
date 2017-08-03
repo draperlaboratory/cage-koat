@@ -20,8 +20,6 @@
 
 type t = P of Expexp.expexp | Unknown
 
-type ctype = Time | Space
-
 type expDegree =
 | Polynomial of int
 | Exponential of int (* 2^n would be exponenital 1, 2^(2^n) is two, etc. *)
