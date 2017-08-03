@@ -6,6 +6,8 @@ KoAT
 
 *)
 
+module CR = Comrule
+
 (* General parse exception. *)
 exception PreProcessException of string
 
@@ -27,11 +29,11 @@ let rec check_distinct seen = function
 (* takes every comrule with a <> constraint in the conditional, and produces
    a list of rules with disjoint constraints covering the original rule *)
 let removeNeq startFun trs =
-  (startFun, Utils.concatMap Comrule.removeNeq trs)
+  (startFun, Utils.concatMap CR.removeNeq trs)
 
 (* rewrites rhss so that they don't contain the same variables that exist on the lhs? *)
 let internalize startFun cint =
-  (startFun, List.map Comrule.internalize cint)
+  (startFun, List.map CR.internalize cint)
 
 (* attaches primes to a variable name until it is unique *)
 let rec attachPrimes cand used =
@@ -41,16 +43,16 @@ let rec attachPrimes cand used =
     cand
 
 (* remove duplicate constraints from a rule*)
-let remdupComrule r =
-  Comrule.createWeightedRule
-    (Comrule.getLeft r)
-    (Comrule.getRights r)
-    (Utils.remdupC Pc.equalAtom (Comrule.getCond r))
-    (Comrule.getLowerBound r)
-    (Comrule.getUpperBound r)
+let remdupCR r =
+  CR.createWeightedRule
+    (CR.getLeft r)
+    (CR.getRights r)
+    (Utils.remdupC Pc.equalAtom (CR.getCond r))
+    (CR.getLowerBound r)
+    (CR.getUpperBound r)
 
 let remdup cint =
-  List.map remdupComrule cint
+  List.map remdupCR cint
 
 (* remove bad characters from a variable *)
 let getCand v =
@@ -82,12 +84,12 @@ let applyFunMappingTerm mapping { Term.fn = f; Term.args = args } =
 
 (* apply a mapping to a comrule *)
 let applyFunMapping mapping r =
-  Comrule.createWeightedRule
-    (applyFunMappingTerm mapping (Comrule.getLeft r))
-    (List.map (applyFunMappingTerm mapping) (Comrule.getRights r))
-    (Comrule.getCond r)
-    (Comrule.getLowerBound r)
-    (Comrule.getUpperBound r)
+  CR.createWeightedRule
+    (applyFunMappingTerm mapping (CR.getLeft r))
+    (List.map (applyFunMappingTerm mapping) (CR.getRights r))
+    (CR.getCond r)
+    (CR.getLowerBound r)
+    (CR.getUpperBound r)
 
 
 (* Replace the function names in the rules with sanitized names *)
@@ -112,14 +114,14 @@ let rec createVarMapping vars used =
                  createVarMapping vv used
 
 let sanitizeRule r =
-  let vars = Comrule.getVars r in
+  let vars = CR.getVars r in
     let varmapping = createVarMapping vars vars in
-      Comrule.createWeightedRule
-        (Term.renameVars varmapping (Comrule.getLeft r))
-        (List.map (fun rhs -> Term.renameVars varmapping rhs) (Comrule.getRights r))
-        (Pc.renameVars varmapping (Comrule.getCond r))
-        (Poly.renameVars varmapping (Comrule.getLowerBound r))
-        (Poly.renameVars varmapping (Comrule.getUpperBound r))
+      CR.createWeightedRule
+        (Term.renameVars varmapping (CR.getLeft r))
+        (List.map (fun rhs -> Term.renameVars varmapping rhs) (CR.getRights r))
+        (Pc.renameVars varmapping (CR.getCond r))
+        (Poly.renameVars varmapping (CR.getLowerBound r))
+        (Poly.renameVars varmapping (CR.getUpperBound r))
 
 
 let sanitize startFun cint =
@@ -129,7 +131,7 @@ let sanitize startFun cint =
 (**************** Verifying Correctness *******************)
 
 let checkLhsRule r =
-  let args = Term.getArgs (Comrule.getLeft r) in
+  let args = Term.getArgs (CR.getLeft r) in
   if (List.for_all Poly.isVar args) && (check_distinct [] args) then
     ()
   else
@@ -150,8 +152,8 @@ let getAritiesOne { Term.fn = f; Term.args = args } g =
 let rec getArities f = function
   | [] -> []
   | r::rr ->
-    (getAritiesOne (Comrule.getLeft r) f)
-    @ (Utils.concatMap (fun r -> getAritiesOne r f) (Comrule.getRights r))
+    (getAritiesOne (CR.getLeft r) f)
+    @ (Utils.concatMap (fun r -> getAritiesOne r f) (CR.getRights r))
     @ (getArities f rr)
 
 (* makes sure that every occurance of the function symbol f have the same arity *)
@@ -162,7 +164,7 @@ let checkArityFun cint f =
 
 (* makes sure that checkArityFun holds for every function in cint *)
 let checkArity startFun cint =
-  let funs = Utils.remdup (List.flatten (List.map (fun rule -> (Comrule.getFuns rule)) cint)) in
+  let funs = Utils.remdup (List.flatten (List.map (fun rule -> (CR.getFuns rule)) cint)) in
   List.iter (checkArityFun cint) funs;
   (startFun, cint)
 
@@ -175,52 +177,129 @@ let checkEmpty startFun cint =
 let removeDups startFun cint =
   (startFun, remdup cint)
 
-let fixArity startFun cint =
-  (startFun, Comrule.fixArity cint)
 
-    
-(** Pre run validation **)
-let preprocessComrules arity lvars cint =
+let crArity cr =
+  let lhsAr = Term.getArity (CR.getLeft cr) in
+  List.fold_left (fun maxArity rhs ->
+    let thisArity = Term.getArity rhs in
+    if thisArity > maxArity
+    then thisArity
+    else if thisArity = maxArity
+    then maxArity
+    else maxArity) lhsAr (CR.getRights cr)
+
+let maximumArity cint =
+  let init,rst = match cint with
+      [] -> 0, []
+    | hd::tl -> crArity hd, tl in
+  let folder maxArity cr =
+    let crArity = crArity cr in
+    if crArity > maxArity
+    then crArity
+    else if crArity = maxArity
+    then maxArity
+    else maxArity in
+  List.fold_left folder init rst
+
+
+let rec buildNewArgs = function
+  | x when x < 0 -> []
+  | i -> Poly.mkVar (Printf.sprintf "Ar_%i" i) :: (buildNewArgs (i - 1))
+
+let pad maxArity term =
+  let pel = Poly.fromVar "ArityPad" in
+  let rec makePad = function
+    | 0 -> []
+    | x -> pel::(makePad (x - 1)) in
+  let toAdd = maxArity - (Term.getArity term) in
+  let padding = makePad toAdd in
+  { Term.fn = term.Term.fn;
+    Term.args = term.Term.args @ padding; }
+
+let buildMapping (newArgs : Poly.var list) (cr : CR.rule) =
+  let maxArity = List.length newArgs in
+  let lhs = CR.getLeft cr in
+  let toMap = Utils.take (Term.getArity lhs) newArgs in
+  let sigma = List.map2 (fun var poly -> Poly.toVar poly, Poly.fromVar var)
+    toMap lhs.Term.args in
+  let cond = Pc.instantiate (CR.getCond cr) sigma in
+  let lhs = { lhs with Term.args = List.map Poly.fromVar newArgs } in
+  let rhss = List.map
+    (fun rh ->
+      let rh' = Term.instantiate rh sigma in
+      let rh'' = pad maxArity rh' in
+      rh'')
+    (CR.getRights cr) in
+  let lowerBound = Poly.instantiate (CR.getLowerBound cr) sigma in
+  let upperBound = Poly.instantiate (CR.getUpperBound cr) sigma in
+  CR.createWeightedRule lhs rhss cond lowerBound upperBound
+     
+(* Fix the arities of all symbols to a common constant *)
+let fixArity startFun cint =
+   let fixArityCint cint =
+     let maxArity = maximumArity cint in
+     let newArgs = List.rev (buildNewArgs (maxArity - 1)) in
+     let transform = buildMapping newArgs in
+     List.map transform cint
+   in
+  (startFun, fixArityCint cint)
+
+
+let checkVarsAndArityCint arity lvars cint =
   let rec internal = function
   | [] -> cint
   | rule::rest ->
-    let lhs = Comrule.getLeft rule in
+    let lhs = CR.getLeft rule in
     if ((Term.getArity lhs) <> arity) || (Term.getVars lhs <> lvars) then
       raise (PreProcessException "Error: Not all rules have the same variables!")
-    else if List.exists (fun r -> (Term.getArity r <> arity)) (Comrule.getRights rule) then
+    else if List.exists (fun r -> (Term.getArity r <> arity)) (CR.getRights rule) then
       raise (PreProcessException "Error: Not all function symbols have the same arity!")
     else
       internal rest in
   internal cint
     
-let mk_new_start startfun lvars fun_symbols =
+let mk_new_start startFun lvars fun_symbols =
   let start_symbol = getNewName "koat_start" fun_symbols in
-  let start_rule = Comrule.createSimpleRule start_symbol startfun lvars in
+  let start_rule = CR.createSimpleRule start_symbol startFun lvars in
   (start_symbol, start_rule)
 
 
 let addNewStart startFun cint =
   let first = List.hd cint in
-  let lvars = Term.getVars (Comrule.getLeft first) in
-  let fun_symbols = Comrule.getFunsList cint in
+  let lvars = Term.getVars (CR.getLeft first) in
+  let fun_symbols = CR.getFunsList cint in
   let (new_start, new_start_rule) = mk_new_start startFun lvars fun_symbols in
   (new_start, new_start_rule::cint)
 
 let checkVarsAndArity startFun cint =
   let first = List.hd cint in
-  let lvars = Term.getVars (Comrule.getLeft first) in
-  let arity = Term.getArity (Comrule.getLeft first) in
-  (startFun, preprocessComrules arity lvars cint)
+  let lvars = Term.getVars (CR.getLeft first) in
+  let arity = Term.getArity (CR.getLeft first) in
+  (startFun, checkVarsAndArityCint arity lvars cint)
 
-let checkStartCondition startfun cint =
-  let rhsFuns = Utils.concatMap Comrule.getRightFuns cint in
-  if List.mem startfun rhsFuns then
-    failwith ("internal error in Preprocess.checkStartCondition: start function " ^ startfun ^ " appears in an RHS!")
-  else (startfun, cint)
+let checkStartCondition startFun cint =
+  let rhsFuns = Utils.concatMap CR.getRightFuns cint in
+  if List.mem startFun rhsFuns then
+    failwith
+      (Printf.sprintf
+         "internal error in Preprocess.checkStartCondition: start function %s appears in an RHS!"
+         startFun)
+  else (startFun, cint)
 
 
-let runPreProcessors pps = fun startfun cint ->
-  List.fold_left (fun (s, cs) p -> p s cs) (startfun, cint) pps
+let rec freshenRHSVarsCint cint =
+  match cint with
+  | [] -> []
+  | r::rs ->
+     let fv = CR.getFreeVars r in
+     let subst = Term.makeFreshVarMap fv in
+     (CR.instantiate r subst) :: freshenRHSVarsCint rs
+
+let freshenRHSVars startFun cint = (startFun, freshenRHSVarsCint cint)
+
+    
+let runPreProcessors pps = fun startFun cint ->
+  List.fold_left (fun (s, cs) p -> p s cs) (startFun, cint) pps
 
 (** Perform all transforms/checks on the input *)
 let preprocess startFun cint =
@@ -234,6 +313,7 @@ let preprocess startFun cint =
     removeNeq;
     internalize;
     addNewStart;
+    freshenRHSVars;
     checkVarsAndArity;
     checkStartCondition
   ] in

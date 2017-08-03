@@ -38,7 +38,7 @@ let parseTrs filename combine =
                 Trs_aux.getTrs inchan
               in
       close_in inchan;
-      Trs.internalize res
+      res
 
 let parseCint filename combine =
   let inchan = open_in filename in

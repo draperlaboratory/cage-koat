@@ -19,6 +19,11 @@
 *)
 
 type var = string
+
+let mkVar s = s
+let stringOfVar v = v
+
+
 type mapping = var * var
 module VarMap = Map.Make(String)
 

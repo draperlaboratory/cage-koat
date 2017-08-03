@@ -36,14 +36,15 @@ type system = {
 
 (* Create a string for a rule *)
 let rec toString r =
-  (Term.toString r.lhs) ^ " -> " ^ (toStringRhss r.rhss) ^
-  (if r.cond = [] then "" else " [ " ^ (Pc.toString r.cond) ^ " ]")
+  let condString = if r.cond = [] then "" else Printf.sprintf " [ %s ]" (Pc.toString r.cond) in
+  Printf.sprintf "%s -> %s%s" (Term.toString r.lhs) (toStringRhss r.rhss) condString
 and toStringRhss rs =
-  "Com_" ^ (string_of_int (List.length rs)) ^ "(" ^
-  String.concat ", " (List.map Term.toString rs) ^ ")"
+  Printf.sprintf "Com_%i(%s)" (List.length rs) (String.concat ", " (List.map Term.toString rs))
 and listToStringPrefix prefix rules =
   String.concat "\n" (List.map (fun r -> prefix ^ toString r) rules)
     
+let toDotString = toString
+
 (* Create a comrule. *)
 let createRule l rs c =
   { lhs = l;
@@ -116,11 +117,6 @@ let compare r1 r2 =
           else
             Poly.compare r1.lowerBound r2.lowerBound
 
-(* Create a string for a rule *)
-let toDotString r =
-  (Term.toString r.lhs) ^ " -> " ^ (toStringRhss r.rhss) ^
-  (if r.cond = [] then "" else " [ " ^ (Pc.toDotString r.cond) ^ " ]")
-
 (* Get lhs of a rule *)
 let getLeft r =
   r.lhs
@@ -155,6 +151,10 @@ let getLeftFun r =
 let getRightFuns r =
   Utils.remdup (List.map Term.getFun r.rhss)
 
+(* Return the variables in the right-hand sides *)
+let getLeftVars r =
+  Utils.remdup (Term.getVars r.lhs)
+  
 (* Return the variables in the right-hand sides *)
 let getRightVars r =
   Utils.remdup (Utils.concatMap Term.getVars r.rhss)
@@ -270,9 +270,16 @@ let rec getSubstitution newVars c lvars =
                    | Some d -> let (sigma, newc) = getSubstitution rest (remove d c) lvars in
                                  ((x, extract x d)::sigma, newc)
 
+
+let getFreeVars r =
+  let lvars = getLeftVars r in
+  let rvars = getRightVars r in
+  Utils.notIn lvars rvars
+
+(* TODO: move this function to preprocess.ml *)
 let rec internalize r =
-  let lvars = Term.getVars r.lhs
-  and rvars = getRightVars r in
+  let lvars = getLeftVars r in
+  let rvars = getRightVars r in
     let newVars = Utils.notIn lvars rvars in
       let (sigma, newC) = getSubstitution newVars r.cond lvars in
         if sigma = [] then
@@ -342,91 +349,14 @@ let restrictArguments indexSet rule =
     upperBound = rule.upperBound;
   }
 
-let rec buildNewArgs = function
-  | x when x < 0 -> []
-  | i -> (Printf.sprintf "Ar_%i" i):: (buildNewArgs (i - 1))
-
-let rec firstN lst i =
-  if i == 0 then
-    []
-  else
-    match lst with
-    | [] -> failwith "Splitting list beyond its end!"
-    | hd::tl -> hd::(firstN tl (i - 1))
-
-let pad maxArity term =
-  let pel = Poly.fromVar "ArityPad" in
-  let rec makePad = function
-    | 0 -> []
-    | x -> pel::(makePad (x - 1)) in
-  let toAdd = maxArity - (Term.getArity term) in
-  let padding = makePad toAdd in
-  { Term.fn = term.Term.fn;
-    Term.args = term.Term.args @ padding; }
-
 let rec sigmaToString = function
   | [] -> Printf.sprintf "\n"
   | (s,p)::tl ->
-    Printf.sprintf "%s -> %s\n" s (Poly.toString p) ^ (sigmaToString tl)
-
-let buildMapping (newArgs : Poly.var list) (cr : rule) =
-  let maxArity = List.length newArgs in
-  let lhs = cr.lhs in
-  let toMap = firstN newArgs (Term.getArity lhs) in
-  let sigma = List.map2 (fun var poly -> Poly.toVar poly, Poly.fromVar var)
-    toMap lhs.Term.args in
-  let cond = Pc.instantiate cr.cond sigma in
-  let lhs = { lhs with Term.args = List.map Poly.fromVar newArgs } in
-  let rhss = List.map
-    (fun rh ->
-      let rh' = Term.instantiate rh sigma in
-      let rh'' = pad maxArity rh' in
-      rh'')
-    cr.rhss in
-  let ret =
-  {lhs; rhss; cond; (* punning *)
-   lowerBound = Poly.instantiate cr.lowerBound sigma;
-   upperBound = Poly.instantiate cr.upperBound sigma;} in
- (* Printf.eprintf "%s\n\nbecomes\n\n%s\n\n" (toString cr) (toString ret); *)
-  ret
-
-let crArity cr =
-  let lhsAr = Term.getArity cr.lhs in
-  List.fold_left (fun (maxArity, fixedArity) rhs ->
-    let thisArity = Term.getArity rhs in
-    if thisArity > maxArity
-    then thisArity, false
-    else if thisArity = maxArity
-    then maxArity, fixedArity
-    else maxArity, false) (lhsAr, true) cr.rhss
-
-let maximumArity cint =
-  let init,rst = match cint with
-      [] -> (0,true), []
-    | hd::tl -> crArity hd, tl in
-  let folder (maxArity, fixedArity) cr =
-    let crArity, selfFixed = crArity cr in
-    if crArity > maxArity
-    then crArity, false
-    else if crArity = maxArity
-    then maxArity, (fixedArity && selfFixed)
-    else maxArity, false in
-  List.fold_left folder init rst
+    Printf.sprintf "%s -> %s\n%s" s (Poly.toString p) (sigmaToString tl)
 
 let getArgs = function
   | [] -> []
   | hd::_ -> List.map Poly.toVar hd.lhs.Term.args
-
-let fixArity cint =
-  let maxArity,_ = maximumArity cint in
-  (* we don't have to fix the arity, just skip it. *)
-(*  if fixedArity then cint
-  else
-*)
-    (* not everything has the same arity, do a transform *)
-    let newArgs = List.rev (buildNewArgs (maxArity - 1)) in
-    let transform = buildMapping newArgs in
-    List.map transform cint
 
 let getEdges cint =
   List.flatten

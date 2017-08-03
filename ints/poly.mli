@@ -1,4 +1,8 @@
 type var = string
+
+val mkVar : string -> var
+val stringOfVar : var -> string
+
 type mapping = var * var
 
 module VarMap : Map.S with type key = var

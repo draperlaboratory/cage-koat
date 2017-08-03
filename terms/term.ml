@@ -48,7 +48,7 @@ let compare { fn = f1; args = as1 } { fn = f2; args = as2 } =
 
 (* Create a string for a term *)
 let toString { fn = f; args = args } =
-  f ^ "(" ^ (String.concat ", " (List.map Poly.toString args)) ^ ")"
+  Printf.sprintf "%s(%s)" f (String.concat ", " (List.map Poly.toString args))
 
 (* Get the argument integer terms *)
 let getArgs t =
@@ -82,3 +82,17 @@ let rec equal t1 t2 =
   t1 == t2 || equalInternal t1 t2
 and equalInternal { fn = f1; args = args1 } { fn = f2; args = args2 } =
   f1 = f2 && (List.for_all2 Poly.equal args1 args2)
+  
+let makeFreshVar =
+  let tic = ref 0 in
+  function () ->
+    if !tic = Pervasives.max_int then
+      failwith "makeFreshVar: max exceeded maximum possible value!"
+    else
+      let candidateVar = Poly.mkVar (Printf.sprintf "Fresh_%i" !tic) in
+      tic := !tic + 1;
+      candidateVar
+
+let makeFreshVarMap vs =
+  let freshVarList = List.map (fun _ -> Poly.fromVar (makeFreshVar ())) vs in
+  List.combine vs freshVarList

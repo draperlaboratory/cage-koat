@@ -25,8 +25,10 @@ val getFuns : rule -> Term.funSym list
 val getFunsList : cint -> Term.funSym list
 val getLeftFun : rule -> Term.funSym
 val getRightFuns : rule -> Term.funSym list
+val getLeftVars : rule -> Poly.var list
 val getRightVars : rule -> Poly.var list
 val getVars : rule -> Poly.var list
+val getFreeVars : rule -> Poly.var list
 val getSlicingVars : rule -> Poly.var list
 val renameVars : Poly.var list -> rule -> rule
 val createVarMapping : Poly.var list -> Poly.var list -> Poly.mapping list
@@ -35,6 +37,7 @@ val isLinear : rule -> bool
 val isRightLinear : rule -> bool
 val isConstraintLinear : rule -> bool
 val satisfiesVarCond : rule -> bool
+(* TODO: remove this piece of functionality *)
 val internalize : rule -> rule
 val getSubstitution : Poly.var list -> Pc.cond -> Poly.var list ->
   (string * Poly.poly) list * Pc.cond
@@ -49,6 +52,5 @@ val removeNeq : rule -> rule list
 val restrictArguments : int list -> rule -> rule
 val getLowerBound : rule -> Poly.poly
 val getUpperBound : rule -> Poly.poly
-val fixArity : cint -> cint
 val getArgs : cint -> Poly.var list
 val getEdges : cint -> (Term.funSym * Term.funSym) list
