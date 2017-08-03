@@ -32,7 +32,7 @@ exp:
 ;
 
 mult_monomial:
- | INT { Big_int.big_int_of_string $1, [("$!@", 1)] }
+ | INT { Big_int.big_int_of_string $1, [(Poly.mkVar "$!@", 1)] }
  | monomial { (Big_int.unit_big_int, $1) }
 ;
 
@@ -45,9 +45,9 @@ monomial:
 
 var_power:
 | IDENT
-    { ($1, 1) }
+    { (Poly.mkVar $1, 1) }
 | IDENT POWER INT
-    { ($1, int_of_string $3) }
+    { (Poly.mkVar $1, int_of_string $3) }
 
 ;
 

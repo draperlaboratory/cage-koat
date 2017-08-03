@@ -249,7 +249,7 @@ and doExpFarkasSizeBound state =
 let process cint maxchaining do_ai startfun =
   let (startfun, cint) = PP.preprocess startfun cint in
 
-  Printf.eprintf "Processed rules :\n%a\n" Cint.print cint;
+  (* Printf.eprintf "Processed rules :\n%a\n" Cint.print cint; *)
 
   i := 1;
   proofs := [];
