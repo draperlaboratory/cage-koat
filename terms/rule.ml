@@ -106,13 +106,8 @@ let rec renameVars badvars r =
 and createVarMapping badvars vars =
   match vars with
     | [] -> []
-    | v::vv -> let vnew = getNewVarName badvars v in
+    | v::vv -> let vnew = Poly.getFreshVarFrom badvars v in
                  (v, vnew)::(createVarMapping (vnew::badvars) vv)
-and getNewVarName badvars v =
-  if (Utils.contains badvars v) then
-    getNewVarName badvars (v ^ "'")
-  else
-    v
 
 (* Determines whether a rule is linear *)
 let isLinear r =
@@ -210,21 +205,25 @@ let standardize rule =
   let polyGetName p = List.hd (Poly.getVars p) in
   let (_, lhsArgs, lhsSubst) =
     List.fold_left
-      (fun (i, args, subst) v -> let newV = Poly.fromVar ("X_" ^ string_of_int i) in (i + 1, args @ [newV], (polyGetName v, newV) :: subst))
+      (fun (i, args, subst) v ->
+        let newV = Poly.mkVar (Printf.sprintf "X_%i" i) in
+        let newP = Poly.fromVar newV in
+        (i + 1, args @ [newP], (polyGetName v, newP) :: subst))
       (1, [], [])
       (Term.getArgs rule.lhs) in
   let (_, rhsArgs, rhsCond, rhsSubst) =
     List.fold_left
       (fun (i, args, cond, subst) a ->
-        let newV = Poly.fromVar ("X_" ^ string_of_int i ^ "'") in
+        let newV = Poly.mkVar (Printf.sprintf "X_%i'" i) in
+        let newP = Poly.fromVar newV in
         (* Do not introduce equality when this is just a var, we'll just replace it by its new name. *)
         if Poly.isVar a then
           if Utils.containsC Poly.equal (Term.getArgs rule.lhs) a then (* if it's a lhs var, we need it. *)
-            (i + 1, args @ [newV], (Pc.Equ(a, newV)) :: cond, (polyGetName a, newV) :: subst)
+            (i + 1, args @ [newP], (Pc.Equ(a, newP)) :: cond, (polyGetName a, newP) :: subst)
           else
-            (i + 1, args @ [newV], cond, (polyGetName a, newV) :: subst)
+            (i + 1, args @ [newP], cond, (polyGetName a, newP) :: subst)
         else
-          (i + 1, args @ [newV], (Pc.Equ(a, newV)) :: cond, subst))
+          (i + 1, args @ [newP], (Pc.Equ(a, newP)) :: cond, subst))
       (1, [], [], [])
       (Term.getArgs rule.rhs) in
   let freshVars =
@@ -233,7 +232,10 @@ let standardize rule =
       ((Term.getVars rule.lhs) @ (List.map fst rhsSubst)) in
   let condSubst =
     Utils.mapi
-      (fun i v -> let newV = Poly.fromVar ("Y_" ^ string_of_int i) in (v, newV))
+      (fun i v ->
+        let newV = Poly.mkVar (Printf.sprintf "Y_%i" i) in
+        let newP = Poly.fromVar newV in
+        (v, newP))
       freshVars in
   { lhs = Term.create' (Term.getFun rule.lhs, lhsArgs) ;
     rhs = Term.create' (Term.getFun rule.rhs, rhsArgs) ;

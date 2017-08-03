@@ -22,7 +22,11 @@ IFDEF HAVE_APRON THEN
 
 open Apron
 open AbstractRule
-module VarMap = Map.Make(String)
+module PVar = struct
+  type t = Poly.var
+  let compare = Poly.compareVar
+end
+module VarMap = Map.Make(PVar)
 module FunMap = Map.Make(String)
        
 module MakeKittelProc(RuleT : AbstractRule) = struct
@@ -31,7 +35,9 @@ module MakeKittelProc(RuleT : AbstractRule) = struct
   let extend_env env oldMap newVars =
     let (newApronVars, newMap) =
       List.fold_left
-        (fun (l,m) v -> let aV = Var.of_string v in (aV::l, VarMap.add v aV m))
+        (fun (l,m) v ->
+          let aV = Var.of_string (Poly.stringOfVar v) in
+          (aV::l, VarMap.add v aV m))
         ([], oldMap)
         newVars
     in
@@ -103,7 +109,7 @@ module MakeKittelProc(RuleT : AbstractRule) = struct
         | Coeff.Interval _ -> raise (Invalid_argument "Interval coefficients not supported.")
       )
     | Dim dim ->
-      Poly.fromVar (Var.to_string (Environment.var_of_dim env dim))
+      Poly.fromVar (Poly.mkVar (Var.to_string (Environment.var_of_dim env dim)))
     | Unop (op, expr, _, _) ->
       (
         match op with
@@ -324,7 +330,9 @@ module MakeKittelProc(RuleT : AbstractRule) = struct
                 let inv = abstr1_to_pc man (FunMap.find defSym funToAbstrVal) in
 
                 (* Map from std names to actually used names: *)
-                let subst = Utils.mapi (fun i v -> ("X_" ^ (string_of_int (i+1)), v)) (Term.getArgs lhs) in
+                let subst = Utils.mapi (fun i v ->
+                  (Poly.mkVar (Printf.sprintf "X_%i" (i+1)), v)
+                ) (Term.getArgs lhs) in
                 let inv = Pc.instantiate inv subst in
 
                 Rule.create lhs (Rule.getRight rule) (Utils.remdupC Pc.equalAtom (inv@(Rule.getCond rule))))
@@ -382,7 +390,9 @@ module MakeKoatProc(RVG : Rvgraph.S) = struct
                 let inv = ApronKittelProc.abstr1_to_pc man (FunMap.find defSym funToAbstrVal) in
 
                 (* Map from std names to actually used names: *)
-                let subst = Utils.mapi (fun i v -> ("X_" ^ (string_of_int (i+1)), v)) (Term.getArgs lhs) in
+                let subst = Utils.mapi (fun i v ->
+                  (Poly.mkVar (Printf.sprintf "X_%i" (i+1)), v)
+                ) (Term.getArgs lhs) in
                 let inv = Pc.instantiate inv subst in
 
                 let newRule = RuleT.createRule lhs (RuleT.getRights rule) (Utils.remdupC Pc.equalAtom (inv@(RuleT.getCond rule))) in

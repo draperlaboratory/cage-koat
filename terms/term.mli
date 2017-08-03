@@ -6,7 +6,7 @@ type term = { fn : funSym; args : Poly.poly list }
 
 val create :
   funSym ->
-  (Big_int.big_int * (String.t * int) list) list list ->
+  (Big_int.big_int * (Poly.var * int) list) list list ->
   term
 val create' : funSym * Poly.poly list -> term
 val compare : term -> term -> int

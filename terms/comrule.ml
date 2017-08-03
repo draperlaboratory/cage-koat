@@ -185,13 +185,8 @@ let rec renameVars badvars r =
 and createVarMapping badvars vars =
   match vars with
     | [] -> []
-    | v::vv -> let vnew = getNewVarName badvars v in
+    | v::vv -> let vnew = Poly.getFreshVarFrom badvars v in
                  (v, vnew)::(createVarMapping (vnew::badvars) vv)
-and getNewVarName badvars v =
-  if (Utils.contains badvars v) then
-    getNewVarName badvars (v ^ "'")
-  else
-    v
 
 (* Determines whether a rule is linear *)
 let isLinear r =

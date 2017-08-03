@@ -32,7 +32,6 @@ val getFreeVars : rule -> Poly.var list
 val getSlicingVars : rule -> Poly.var list
 val renameVars : Poly.var list -> rule -> rule
 val createVarMapping : Poly.var list -> Poly.var list -> Poly.mapping list
-val getNewVarName : Poly.var list -> Poly.var -> Poly.var
 val isLinear : rule -> bool
 val isRightLinear : rule -> bool
 val isConstraintLinear : rule -> bool
@@ -40,7 +39,7 @@ val satisfiesVarCond : rule -> bool
 (* TODO: remove this piece of functionality *)
 val internalize : rule -> rule
 val getSubstitution : Poly.var list -> Pc.cond -> Poly.var list ->
-  (string * Poly.poly) list * Pc.cond
+  (Poly.var * Poly.poly) list * Pc.cond
 val findDefinition :
   Poly.var -> Poly.var list -> Pc.cond -> Pc.atom option -> Pc.atom option
 val extract : Poly.var -> Pc.atom -> Poly.poly

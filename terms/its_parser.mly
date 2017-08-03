@@ -88,8 +88,8 @@ poly :
 | poly TIMES poly         { Poly.mult $1 $3 }
 | MINUS poly %prec UMINUS { Poly.negate $2 }
 | INT                     { Poly.fromConstant (Big_int.big_int_of_string $1) }
-| IDENT POWER INT         { Poly.fromVarPower $1 2 }
-| IDENT                   { Poly.fromVar $1 }
+| IDENT POWER INT         { Poly.fromVarPower (Poly.mkVar $1) 2 }
+| IDENT                   { Poly.fromVar (Poly.mkVar $1) }
 ;
 
 cond_list:

@@ -22,7 +22,11 @@
 type parapoly = ((Poly.poly * Poly.monomial) list) * Poly.poly
 
 let toString (poly, c) =
-  String.concat " + " ( (List.map (fun (pp, x) -> "(" ^ (Poly.toString pp) ^ ")*" ^ (Poly.toStringMonomial x)) poly) @ [Poly.toString c] )
+  String.concat " + " ( (List.map
+                           (fun (pp, x) ->
+                             Printf.sprintf "(%s)*%s" (Poly.toString pp) (Poly.toStringMonomial x))
+                           poly)
+                        @ [Poly.toString c] )
 
 (* Construct a parampoly of param monomials *)
 let rec construct_poly monolist c =
@@ -35,7 +39,7 @@ and normMonomial (c, mon) =
 and sort_monos monolist =
   List.map sortMonomial monolist
 and sortMonomial (c, mon) =
-  (c, List.sort (fun (x, _) (y, _) -> String.compare x y) mon)
+  (c, List.sort (fun (x, _) (y, _) -> Poly.compareVar x y) mon)
 and merge monolist =
   match monolist with
     | [] -> []

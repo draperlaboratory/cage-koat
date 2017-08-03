@@ -26,7 +26,11 @@ module Make (RVG : Rvgraph.S) = struct
   module TGraph = RVG.TGraph
   module CTRSObl = TGraph.CTRSObl
   module CTRS = CTRSObl.CTRS
-  module VarMap = Map.Make(String)
+  module PVar = struct
+    type t = Poly.var
+    let compare = Poly.compareVar
+  end
+  module VarMap = Map.Make(PVar)
   open CTRSObl
   open CTRS
 
@@ -34,7 +38,7 @@ module Make (RVG : Rvgraph.S) = struct
     Printf.sprintf
       "Slicing away variables that do not contribute to conditions from problem %i leaves variables [%s].\nWe thus obtain the following problem:\n%s"
       ini
-      (String.concat ", " remainingVars)
+      (String.concat ", " (List.map Poly.stringOfVar remainingVars))
       (CTRSObl.toStringNumber nctrsobl outi)
 
   let process ?(thresh = !heuristicValue) ctrsobl =
@@ -74,7 +78,9 @@ module Make (RVG : Rvgraph.S) = struct
           None
         else
           let remainingVars = Utils.getIndexedSubset neededIdxs vars in
-          Log.log (Printf.sprintf "Successfully sliced %i variables away, %s remain." (varNum - (List.length neededIdxs)) (String.concat ", " remainingVars));
+          Log.log (Printf.sprintf "Successfully sliced %i variables away, %s remain."
+                     (varNum - (List.length neededIdxs))
+                     (String.concat ", " (List.map Poly.stringOfVar remainingVars)));
           let (newRules, newComplexity, newCost) =
             List.fold_left
               (fun (newRules, newComplexity, newCost) rule ->

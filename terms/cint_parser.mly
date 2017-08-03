@@ -148,17 +148,17 @@ poly:
 
 mult_monomial:
 | INT
-    { (Big_int.big_int_of_string $1, [("$!@", 1)]) }
+    { (Big_int.big_int_of_string $1, [(Poly.mkVar "$!@", 1)]) }
 | INFIX INT
     { if $1 = "+" then
-        (Big_int.big_int_of_string $2, [("$!@", 1)])
+        (Big_int.big_int_of_string $2, [(Poly.mkVar "$!@", 1)])
       else
-        (Big_int.minus_big_int (Big_int.big_int_of_string $2), [("$!@", 1)]) }
+        (Big_int.minus_big_int (Big_int.big_int_of_string $2), [(Poly.mkVar "$!@", 1)]) }
 | INFIX OPENPAR INT CLOSEPAR
     { if $1 = "+" then
-        (Big_int.big_int_of_string $3, [("$!@", 1)])
+        (Big_int.big_int_of_string $3, [(Poly.mkVar "$!@", 1)])
       else
-        (Big_int.minus_big_int (Big_int.big_int_of_string $3), [("$!@", 1)]) }
+        (Big_int.minus_big_int (Big_int.big_int_of_string $3), [(Poly.mkVar "$!@", 1)]) }
 | monomial
     { (Big_int.unit_big_int, $1) }
 | INFIX monomial
@@ -191,9 +191,9 @@ monomial:
 
 var_power:
 | IDENT
-    { ($1, 1) }
+    { (Poly.mkVar $1, 1) }
 | IDENT POWER INT
-    { ($1, int_of_string $3) }
+    { (Poly.mkVar $1, int_of_string $3) }
 ;
 
 cond_list:

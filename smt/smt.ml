@@ -120,7 +120,11 @@ let drop_last_char s =
 let yices_assignment thefilename =
   let rec get_yices_assignment icc assignment =
     let parse_yices_line line assignment =
-      let f x s = VarMap.add x (Big_int.big_int_of_string (String.sub s 0 (String.length s - 1))) assignment in
+      let f x s = VarMap.add
+        (Poly.mkVar x)
+        (Big_int.big_int_of_string (String.sub s 0 (String.length s - 1)))
+        assignment
+      in
       Scanf.sscanf line "(= %s %s" f in
     try
       get_yices_assignment icc (parse_yices_line (input_line_no_cr icc) assignment)
@@ -142,7 +146,7 @@ let z3_assignment thefilename =
         else
           failwith "Cannot parse Z3's model" in
       let (var_s, val_s) = split_z3_line line in
-      VarMap.add var_s (Big_int.big_int_of_string val_s) assignment in
+      VarMap.add (Poly.mkVar var_s) (Big_int.big_int_of_string val_s) assignment in
     try
       get_z3_assignment icc (parse_z3_line (input_line_no_cr icc) assignment)
     with
@@ -163,7 +167,7 @@ let mathsat_assignment thefilename =
         else
           failwith "Cannot parse MathSAT's model" in
       let (var_s, val_s) = split_mathsat_line line in
-      VarMap.add var_s (Big_int.big_int_of_string val_s) assignment in
+      VarMap.add (Poly.mkVar var_s) (Big_int.big_int_of_string val_s) assignment in
     try
       get_mathsat_assignment icc (parse_mathsat_line (input_line_no_cr icc) assignment)
     with
@@ -189,7 +193,7 @@ let cvc4_assignment thefilename =
         assignment
       else
         let (var_s, val_s) = split_cvc4_line line in
-        VarMap.add var_s (Big_int.big_int_of_string val_s) assignment in
+        VarMap.add (Poly.mkVar var_s) (Big_int.big_int_of_string val_s) assignment in
     try
       get_cvc4_assignment icc (parse_cvc4_line (input_line_no_cr icc) assignment)
     with
@@ -203,7 +207,12 @@ let yices2_assignment thefilename =
       if line = "" then
         assignment
       else
-        let f x s = VarMap.add x (Big_int.big_int_of_string (String.sub s 0 (String.length s - 1))) assignment in
+        let f x s =
+          VarMap.add
+            (Poly.mkVar x)
+            (Big_int.big_int_of_string (String.sub s 0 (String.length s - 1)))
+            assignment
+        in
         Scanf.sscanf line "(= %s %s" f in
     try
       get_yices2_assignment icc (parse_yices2_line (input_line_no_cr icc) assignment)
@@ -275,8 +284,12 @@ let output_var_string formulafile vs =
   match vs with
     | [] -> ()
     | _ -> output_string formulafile "  :extrafuns (";
-           List.iter (fun v -> output_string formulafile ("(" ^ v ^ " Int) ")) vs;
-           output_string formulafile ")\n"
+      List.iter
+        (fun v ->
+          output_string formulafile (Printf.sprintf "(%s Int)" (Poly.stringOfVar v))
+        )
+        vs;
+      output_string formulafile ")\n"
 
 IFDEF HAVE_Z3 THEN
 (* Z3 export of our little formulas. *)
@@ -284,7 +297,7 @@ let get_z3_var_binding varBindings var =
   if VarMap.mem var varBindings then
     VarMap.find var varBindings
   else
-    Integer.mk_const_s !z3_ctx var
+    Integer.mk_const_s !z3_ctx (Poly.stringOfVar var)
 
 let poly_to_z3 varBindings (coeff_monomial_list, const) =
   let bi_to_z3 i =
@@ -347,45 +360,48 @@ END
 
 let rec formula_to_smt_file file formula =
   match formula with
-    | And []
-    | AndA [] ->
-      output_string file "true"
-    | And fs ->
-      output_string file "(and " ;
-      List.iter (formula_to_smt_file file) fs ;
-      output_string file ")" ;
-    | AndA atoms ->
-      output_string file "(and ";
-      List.iter (fun a -> output_string file (Pc.atomSMT a)) atoms;
-      output_string file ")"
-    | Or fs ->
-      output_string file "(or " ;
-      List.iter (formula_to_smt_file file) fs ;
-      output_string file ")" ;
-    | Not f ->
-      output_string file "(not " ;
-      formula_to_smt_file file f ;
-      output_string file ")" ;
-    | Atom atom ->
-      output_string file (Pc.atomSMT atom)
-    | Let (var, term, formula) ->
-      output_string file ("(let (" ^ var ^ " ") ;
-      term_to_smt_file file term ;
-      output_string file ") (" ;
-      formula_to_smt_file file formula ;
-      output_string file "))"
+  | And []
+  | AndA [] ->
+     output_string file "true"
+  | And fs ->
+     output_string file "(and " ;
+    List.iter (formula_to_smt_file file) fs ;
+    output_string file ")" ;
+  | AndA atoms ->
+     output_string file "(and ";
+    List.iter (fun a -> output_string file (Pc.atomSMT a)) atoms;
+    output_string file ")"
+  | Or fs ->
+     output_string file "(or " ;
+    List.iter (formula_to_smt_file file) fs ;
+    output_string file ")" ;
+  | Not f ->
+     output_string file "(not " ;
+    formula_to_smt_file file f ;
+    output_string file ")" ;
+  | Atom atom ->
+     output_string file (Pc.atomSMT atom)
+  | Let (var, term, formula) ->
+     output_string file "(let (";
+    var_to_smt_file file var;
+    output_string file " ";
+    term_to_smt_file file term ;
+    output_string file ") (" ;
+    formula_to_smt_file file formula ;
+    output_string file "))"
 and term_to_smt_file file term =
   match term with
   | AtomT term ->
-    output_string file (Poly.toSMT term)
+     output_string file (Poly.toSMT term)
   | Ite (condFormula, thenTerm, elseTerm) ->
-    output_string file "(ite (" ;
+     output_string file ("(ite (") ;
     formula_to_smt_file file condFormula ;
     output_string file ") (" ;
     term_to_smt_file file thenTerm ;
     output_string file ") (" ;
     term_to_smt_file file elseTerm ;
     output_string file "))"
+and var_to_smt_file file var = output_string file (Poly.stringOfVar var)
 
 let write_smt_file vars formula =
   let (thefilename, formulafile) = Filename.open_temp_file "FORMULA_1_" ".smt" in
@@ -506,7 +522,7 @@ let getModelForFormulaOpt f vars opt_conds =
                       let name = Symbol.get_string (FuncDecl.get_name func_decl) in
                       let value = Utils.unboxOption (Model.get_const_interp model func_decl) in
                       let value_string = Str.replace_first neg_re "-\\1" (Expr.to_string value) in
-                      VarMap.add name (Big_int.big_int_of_string value_string) assignment)
+                      VarMap.add (Poly.mkVar name) (Big_int.big_int_of_string value_string) assignment)
                     VarMap.empty
                     consts)
           | _ -> assert (false) (* SAT but no model! Oh noes! *)
@@ -584,13 +600,15 @@ let isSatisfiableFarkasPoloMinimal minrestrictions minimplications weakconds wea
 (* Sizebound stuff. First the little helpers for absolute values and maximum computation, then the actual checks. *)
 
 let getAbsVarName var =
-  "." ^ var ^ "_abs"
+  let varName = Poly.stringOfVar var in
+  Poly.mkVar (Printf.sprintf ".%s_abs" varName)
+
 let getAbsValueFormulaForTerm term =
   Ite (Atom (Pc.Geq (term, Poly.zero)), AtomT term, AtomT (Poly.negate term))
 
 (* Constructs a formula such that var is assigned the maximum value of term in innerFormula *)
 let setToAbsValue var term innerFormula =
-  let termVarName = ".T." ^ var in
+  let termVarName = Poly.mkVar (".T." ^ (Poly.stringOfVar var)) in
   Let (termVarName, AtomT term,
        Let (var, getAbsValueFormulaForTerm (Poly.fromVar termVarName),
             innerFormula))
@@ -610,17 +628,21 @@ let setToAbsMaxOf maxVar vars innerFormula =
   let varNum = List.length vars in
   (* Set the maxVar to the computed maximal value. *)
   let resFormula =
-    Let (maxVar, AtomT (Poly.fromVar (maxVarNamePrefix ^ (string_of_int varNum))), innerFormula) in
+    Let (maxVar,
+         AtomT (Poly.fromVar (Poly.mkVar (maxVarNamePrefix ^ (string_of_int varNum)))),
+         innerFormula)
+  in
   (* Compute the maximal value of the absolutes, by doing pairwise max using If-then-else *)
   let resFormula =
-    Let (maxVarNamePrefix ^ "0",
+    Let (Poly.mkVar (maxVarNamePrefix ^ "0"),
          AtomT Poly.zero,
          (fst (List.fold_left
                  (fun (resFormula, idx) var ->
                    let previousMaxVar = maxVarNamePrefix ^ (string_of_int (idx - 1)) in
-                   (Let (maxVarNamePrefix ^ (string_of_int idx),
-                         Ite (Atom (Pc.Gtr (Poly.fromVar previousMaxVar, Poly.fromVar (getAbsVarName var))),
-                              AtomT (Poly.fromVar previousMaxVar),
+                   (Let (Poly.mkVar (maxVarNamePrefix ^ (string_of_int idx)),
+                         Ite (Atom (Pc.Gtr (Poly.fromVar (Poly.mkVar previousMaxVar),
+                                            Poly.fromVar (getAbsVarName var))),
+                              AtomT (Poly.fromVar (Poly.mkVar previousMaxVar)),
                               AtomT (Poly.fromVar (getAbsVarName var))),
                          resFormula),
                     idx - 1))
@@ -647,7 +669,7 @@ let isConstantBound cond argument constBound =
      If yes, maxBound is a constant bound.
      We use "." as prefix because we do not allow variables from the input to start with "."
    *)
-  let absArgumentVarName = getAbsVarName ".T" in
+  let absArgumentVarName = getAbsVarName (Poly.mkVar ".T") in
 
   let checkFormula = AndA ((Pc.Gtr ((Poly.fromVar absArgumentVarName), (Poly.fromConstant constBound))) :: cond) in
   let checkFormula = setToAbsValue absArgumentVarName argument checkFormula in
@@ -679,22 +701,24 @@ let isMaxBound cond argument constBound inVars =
        and check for UNSAT. If yes, then we have a max-bound.
        We use "." as prefix because we do not allow variables from the input to start with ".".
     *)
-    let maxVarName = ".MAX" in
-    let absArgumentVarName = getAbsVarName ".T" in
+    let maxVarName = Poly.mkVar ".MAX" in
+    let absArgumentVarName = getAbsVarName (Poly.mkVar ".T") in
 
     (* We build this from the inner part out, starting wit the actual check: *)
     let checkFormula = AndA ((Pc.Gtr (Poly.fromVar absArgumentVarName, Poly.fromVar maxVarName)) :: cond) in
 
     (* Now define the .MAX variable as max(.MAX_VALUES, constBound) *)
+    let max_values = Poly.mkVar ".MAX_VALUES" in
+    
     let checkFormula =
       Let (maxVarName,
-           (Ite (Atom (Pc.Gtr (Poly.fromVar ".MAX_VALUES", Poly.fromConstant constBound)),
-                 AtomT (Poly.fromVar ".MAX_VALUES"),
+           (Ite (Atom (Pc.Gtr (Poly.fromVar max_values, Poly.fromConstant constBound)),
+                 AtomT (Poly.fromVar max_values),
                  AtomT (Poly.fromConstant constBound))),
            checkFormula) in
 
     (* Compute the .MAX_VALUES variable: *)
-    let checkFormula = setToAbsMaxOf ".MAX_VALUES" inVars checkFormula in
+    let checkFormula = setToAbsMaxOf max_values inVars checkFormula in
 
     (* Finally define the thing that we want to bound *)
     let checkFormula = setToAbsValue absArgumentVarName argument checkFormula in
@@ -724,8 +748,8 @@ let isMaxPlusConstantBound cond argument constSum inVars =
                 (and cond (> .T_abs (+ .MAXK constBound)))))))))))
        and check for UNSAT. If yes, then we have a constant add-bound.
     *)
-    let absArgumentVarName = getAbsVarName ".T" in
-    let maxVarName = ".MAX" in
+    let absArgumentVarName = getAbsVarName (Poly.mkVar ".T") in
+    let maxVarName = Poly.mkVar ".MAX" in
 
     (* We build this from the inner part out, starting wit the actual check: *)
     let checkFormula = AndA (Pc.Gtr (Poly.fromVar absArgumentVarName, (Poly.add (Poly.fromVar maxVarName) (Poly.fromConstant constSum))) :: cond) in
@@ -757,8 +781,8 @@ let isSumPlusConstantBound cond argument constSum inVars =
              (and cond (> argument (+ .SUM_abs constSum)))))))))
        and check for UNSAT. If yes, then we have a sum-bound.
     *)
-    let absArgumentVarName = getAbsVarName ".T" in
-    let sumVarName = ".SUM" in
+    let absArgumentVarName = getAbsVarName (Poly.mkVar ".T") in
+    let sumVarName = Poly.mkVar ".SUM" in
 
     (* We build this from the inner part out, starting wit the actual check: *)
     let checkFormula = AndA (Pc.Gtr (Poly.fromVar absArgumentVarName, (Poly.add (Poly.fromVar sumVarName) (Poly.fromConstant constSum))) :: cond) in
@@ -790,8 +814,8 @@ let isScaledSumPlusConstantBound cond argument constSum constScale inVars =
              (and cond (> argument ( * constScale (+ .SUM_abs constSum))))))))))
        and check for UNSAT. If yes, then we have a sum-bound.
     *)
-    let absArgumentVarName = getAbsVarName ".T" in
-    let sumVarName = ".SUM" in
+    let absArgumentVarName = getAbsVarName (Poly.mkVar ".T") in
+    let sumVarName = Poly.mkVar ".SUM" in
 
     (* We build this from the inner part out, starting wit the actual check: *)
     let checkFormula = AndA (Pc.Gtr (Poly.fromVar absArgumentVarName, (Poly.constmult (Poly.add (Poly.fromVar sumVarName) (Poly.fromConstant constSum)) constScale)) :: cond) in

@@ -22,7 +22,7 @@ type var = string
 
 let mkVar s = s
 let stringOfVar v = v
-
+let compareVar = String.compare
 
 type mapping = var * var
 module VarMap = Map.Make(String)
@@ -316,6 +316,12 @@ and getNewVarName varmapping x =
                     else
                       getNewVarName vv x
 
+let rec getFreshVarFrom badvars v =
+  if (Utils.contains badvars v) then
+    getFreshVarFrom badvars (v ^ "'")
+  else
+    v
+                        
 (* Get the variables from a polynomial *)
 let rec getVars (poly, _) =
   Utils.remdup (List.flatten (List.map (fun (_, mon) -> getVarsMonomial mon) poly))

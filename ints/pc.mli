@@ -7,8 +7,8 @@ type atom =
   | Lss of Poly.poly * Poly.poly
 type cond = atom list
 val create :
-  (string * (Big_int.big_int * (String.t * int) list) list *
-   (Big_int.big_int * (String.t * int) list) list)
+  (string * (Big_int.big_int * (Poly.var * int) list) list *
+   (Big_int.big_int * (Poly.var * int) list) list)
   list -> atom list
 val create' :
   (string * Poly.poly * Poly.poly)

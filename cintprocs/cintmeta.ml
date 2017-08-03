@@ -119,7 +119,7 @@ let getOverallCost tgraph globalSizeComplexities state =
           let ruleCost = normalisedRuleCost (List.map (fun var -> Poly.toVar var, Complexity.P (Expexp.fromVar (Poly.toVar var))) rule.Comrule.lhs.Term.args) in
           Complexity.mult ruleComplexity ruleCost
       | _  ->
-          let ruleCost = normalisedRuleCost (List.mapi (fun i var -> Poly.toVar var, Complexity.P (Expexp.fromVar (Printf.sprintf "X_%i" (i + 1)))) rule.Comrule.lhs.Term.args) in
+          let ruleCost = normalisedRuleCost (List.mapi (fun i var -> Poly.toVar var, Complexity.P (Expexp.fromVar (Poly.mkVar (Printf.sprintf "X_%i" (i + 1))))) rule.Comrule.lhs.Term.args) in
           Complexity.mult ruleComplexity
               (Complexity.sup
                  (List.map

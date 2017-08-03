@@ -22,7 +22,8 @@ module VarMap = Poly.VarMap
 
 let count = ref 1
 
-type poly_map = string * Parapoly.parapoly
+(* FIXME:  Should the type of variables here be different from Poly.var ? *)
+type poly_map = Poly.var * Parapoly.parapoly
 
 (* Find a polynomial interpretation *)
 let rec process degree trs tgraph isScc =
@@ -56,7 +57,7 @@ and create_poly_map degree trs =
 and create_poly_map_one degree trs f =
   (f, getPoly degree (Trs.getArityOf f trs) f)
 and getPoly degree arity f =
-  let vars = List.map (fun i -> "X_" ^ (string_of_int i)) (Utils.getList 1 arity) in
+  let vars = List.map (fun i -> Poly.mkVar (Printf.sprintf "X_%i" i)) (Utils.getList 1 arity) in
     let num = List.length vars in
       let monos = getMonos degree vars num in
         let mononum = List.length monos in
@@ -102,7 +103,7 @@ and getPoly_mono f j mono =
   let name = getName f j in
     (([(Big_int.unit_big_int, [(name, 1)])], Big_int.zero_big_int), mono)
 and getName f j =
-  f ^ "_" ^ (string_of_int j)
+  Poly.mkVar (Printf.sprintf "%s_%i" f j)
 and getParams abs =
   (List.flatten (List.map getParamsOne abs))
 and getParamsOne (_, (pp, c)) =
@@ -130,7 +131,7 @@ and getInstBin f args i =
   match args with
     | [] -> []
     | a::l -> let sub = getInstBin f l (i + 1) in
-                ("X_" ^ (string_of_int i), getAsParaPoly a)::sub
+                (Poly.mkVar (Printf.sprintf "X_%i" i), getAsParaPoly a)::sub
 and getAsParaPoly (poly, c) =
   (List.map getAsParaPolyAux poly, ([], c))
 and getAsParaPolyAux (c, mon) =
@@ -269,7 +270,7 @@ and getExpressPossibilitiesLoop s monos =
     | m::mm -> let wname = getWname () in
                  (wname, List.hd (snd m), getNewPolynomial s m wname)::(getExpressPossibilitiesLoop s mm)
 and getWname () =
-  let wname = "!!_" ^ (string_of_int !count) in
+  let wname = Poly.mkVar (Printf.sprintf "!!_%i" !count) in
     incr count;
     wname
 and getNewPolynomial s m wname =
@@ -440,7 +441,7 @@ and get_concrete_poly abs model =
     | [] -> []
     | (f, pol)::popo -> (f, get_concrete_poly_one pol model)::(get_concrete_poly popo model)
 and get_concrete_poly_one (pol, c) model =
-  let res = List.map (fun (p, x) -> (Poly.evaluate p model, x)) pol in
+  let res= List.map (fun (p, x) -> (Poly.evaluate p model, x)) pol in
     let (iterm, _) = Poly.construct_poly res in
       (iterm, Poly.evaluate c model)
 

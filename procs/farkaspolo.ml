@@ -93,7 +93,7 @@ and getLambdas c i =
     | [] -> []
     | cc::c' -> (getLambda !lambda_count i)::(getLambdas c' (i + 1))
 and getLambda i j =
-  let name = "LAMBDA_" ^ (string_of_int i) ^ "_" ^ (string_of_int j) in
+  let name = Poly.mkVar (Printf.sprintf "LAMBDA_%i_%i" i j) in
     all_lambdas := name::!all_lambdas;
     Poly.fromVar name
 and get_farkas_condition_for_constant lambdas c d =

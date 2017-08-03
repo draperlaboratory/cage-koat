@@ -10,9 +10,9 @@ module type AbstractRule =
     val getLeft: rule -> Term.term
     val getRights: rule -> Term.term list
     val getCond: rule -> Pc.cond
-    val getFuns: rule -> string list
-    val getLeftFun: rule -> string
-    val getRightFuns: rule -> string list
+    val getFuns: rule -> Term.funSym list
+    val getLeftFun: rule -> Term.funSym
+    val getRightFuns: rule -> Term.funSym list
 
     (** Get all used variables (in lhs, rhs, cond) *)
     val getVars: rule -> Poly.var list

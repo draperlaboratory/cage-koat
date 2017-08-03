@@ -254,7 +254,9 @@ module Make(RVG : Rvgraph.S) = struct
   (** Extract mapping for variables X_1 .. X_{length vars} to their
       global size complexity after using the j-th rhs of rule r *)
   let extractSizeMapForRule globalSizeComplexities r rhsIdx vars =
-    Utils.mapi (fun i _ -> "X_" ^ (string_of_int (i + 1)), findEntry globalSizeComplexities r rhsIdx i vars) vars
+    Utils.mapi (fun i _ ->
+      (Poly.mkVar (Printf.sprintf "X_%i" (i + 1)), findEntry globalSizeComplexities r rhsIdx i vars)
+    ) vars
 
   (** Extract mapping for variables in vars to their
       global size complexity after using the j-th rhs of rule r *)

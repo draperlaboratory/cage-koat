@@ -42,7 +42,7 @@ val getScaleFactor : expexp -> Big_int.big_int
 val abs : expexp -> expexp
 val instantiate : expexp -> (Poly.var * expexp) list -> expexp
 val getPolMap :
-  (Poly.var * expexp) list -> (String.t * Poly.poly) list option
+  (Poly.var * expexp) list -> (Poly.var * Poly.poly) list option
 val instantiateAuxVarPower :
   (Poly.var * expexp) list -> Poly.var * int -> expexp
 val max : expexp -> expexp -> expexp

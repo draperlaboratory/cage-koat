@@ -30,7 +30,7 @@ module RV = struct
   module Make(RuleT : AbstractRule) = struct
     type t = RuleT.rule * Poly.var
     let compare (r1, v1) (r2, v2) =
-      let vComp = String.compare v1 v2 in
+      let vComp = Poly.compareVar v1 v2 in
       if vComp <> 0 then
         vComp
       else

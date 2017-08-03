@@ -18,6 +18,14 @@ let isBad v =
   (v.[0] = '$') || (v.[0] = '_') || (v.[0] >= 'A' && v.[0] <= 'Z')
 
 
+let isBadFun f = isBad f
+
+(* We are more permissive for variables, but we try to avoid reserved symbols used in
+   SMT generation *)
+let isBadVar v =
+  let sv = Poly.stringOfVar v in
+  (sv.[0] = '.') || (sv.[0] = 'X')
+
 let rec check_distinct seen = function
   | [] -> true
   | a::l -> let varname = List.hd (Poly.getVars a) in
@@ -35,13 +43,6 @@ let removeNeq startFun trs =
 let internalize startFun cint =
   (startFun, List.map CR.internalize cint)
 
-(* attaches primes to a variable name until it is unique *)
-let rec attachPrimes cand used =
-  if (Utils.contains used cand) then
-    attachPrimes (cand ^ "'") used
-  else
-    cand
-
 (* remove duplicate constraints from a rule*)
 let remdupCR r =
   CR.createWeightedRule
@@ -57,17 +58,27 @@ let remdup cint =
 (* remove bad characters from a variable *)
 let getCand v =
   let rest = (String.sub v 1 ((String.length v) - 1)) in
+  let out =
     if v.[0] = '$' then
       "dollar" ^ rest
     else if v.[0] = '_' then
       "underscore" ^ rest
     else
       String.uncapitalize v
+  in
+  out
 
 (* remove illegal chars and attach primes until v is unique in used *)
-let getNewName v used =
-  let cand = getCand v in
-    attachPrimes cand used
+let getNewName f used =
+  let rec getFreshNameFrom badnames f =
+  if (Utils.contains badnames f) then
+    getFreshNameFrom badnames (f ^ "'")
+  else
+    f
+  in
+  let cand = getCand f in
+  getFreshNameFrom used cand
+  
 
 (* rename functions so that their names obey some syntax rules *)
 let rec createFunMapping used = function
@@ -107,8 +118,8 @@ let sanitizeFuns startFun cint =
 let rec createVarMapping vars used =
   match vars with
     | [] -> []
-    | v::vv -> if isBad v then
-                 let vnew = getNewName v used in
+    | v::vv -> if isBadVar v then
+                 let vnew = Poly.getFreshVarFrom used v in
                    (v, vnew)::(createVarMapping vv (vnew::used))
                else
                  createVarMapping vv used
@@ -207,7 +218,7 @@ let rec buildNewArgs = function
   | i -> Poly.mkVar (Printf.sprintf "Ar_%i" i) :: (buildNewArgs (i - 1))
 
 let pad maxArity term =
-  let pel = Poly.fromVar "ArityPad" in
+  let pel = Poly.fromVar (Poly.mkVar "ArityPad") in
   let rec makePad = function
     | 0 -> []
     | x -> pel::(makePad (x - 1)) in

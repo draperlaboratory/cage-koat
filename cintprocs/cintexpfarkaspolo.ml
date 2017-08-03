@@ -108,7 +108,9 @@ and getNewBound useSizeComplexities tgraph concretePoly ctrsobl toOrient globalS
   else
     let pol_startFun = Expexp.fromPoly (List.assoc ctrsobl.ctrs.startFun concretePoly) in
     let powterm = getPowTerm b pol_startFun in
-    let varBindings = Utils.mapi (fun i v -> ("X_" ^ (string_of_int (i + 1)), Expexp.fromVar v)) vars in
+    let varBindings = Utils.mapi (fun i v ->
+      (Poly.mkVar (Printf.sprintf "X_%i" (i + 1)), Expexp.fromVar v)
+    ) vars in
     Complexity.P (Expexp.abs (Expexp.instantiate powterm varBindings))
 and getTerm concretePoly b ctrsobl pre_toOrient globalSizeComplexities vars f =
   let getTermForPreComrule f pol_f b ctrsobl globalSizeComplexities vars prerule =

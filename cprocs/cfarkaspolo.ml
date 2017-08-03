@@ -183,7 +183,7 @@ and create_is_mins trs =
     let map = List.map create_is_min funs in
       (map, List.map snd map)
 and create_is_min f =
-  (f, f ^ "_isMIN")
+  (f, Poly.mkVar (f ^ "_isMIN"))
 
 and getMinRestrictions isMINsVars =
   List.flatten (List.map getZeroOrOne isMINsVars)
@@ -248,7 +248,7 @@ and getC useSizeComplexities tgraph conc ctrsobl toOrient globalSizeComplexities
     Complexity.listAdd (List.map (getTerm conc ctrsobl pre_toOrient globalSizeComplexities vars) funs_toOrient)
   else
     let pol_start = List.assoc ctrsobl.ctrs.startFun conc in
-    let varBindings = Utils.mapi (fun i v -> ("X_" ^ (string_of_int (i + 1)), Expexp.fromVar v)) vars in
+    let varBindings = Utils.mapi (fun i v -> (Poly.mkVar (Printf.sprintf "X_%i" (i + 1)), Expexp.fromVar v)) vars in
     Complexity.P (Expexp.abs (Expexp.instantiate (Expexp.fromPoly (Utils.unboxOption pol_start)) varBindings))
 and getTerm conc ctrsobl pre_toOrient globalSizeComplexities vars f =
   let getTermForPreRule pol_f globalSizeComplexities vars prerule =
@@ -319,5 +319,11 @@ and pol_to_string_one (f, pol_opt) =
   "\tPol(" ^ f ^ ") = " ^ (if pol_opt = None then "-infty" else (Poly.toString (rename (Utils.unboxOption pol_opt))))
 and rename pol =
   let vars = Poly.getVars pol in
-  let mapping = List.map (fun x_i -> (x_i, Poly.fromVar ("V" ^ (String.sub x_i 1 ((String.length x_i) - 1))))) vars in
+  let mapping = List.map
+    (fun x_i ->
+      let string_x_i = Poly.stringOfVar x_i in
+      (* FIXME: This is a dangerous hack *)
+      let sub_in_xi = String.sub string_x_i 1 ((String.length string_x_i) - 1) in
+      (x_i, Poly.fromVar (Poly.mkVar ("V" ^ sub_in_xi)))
+    ) vars in
   Poly.instantiate pol mapping

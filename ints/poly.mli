@@ -1,4 +1,4 @@
-type var = string
+type var
 
 val mkVar : string -> var
 val stringOfVar : var -> string
@@ -18,9 +18,10 @@ val equal :  poly -> poly -> bool
 val equalMono : Big_int.big_int * monomial -> Big_int.big_int * monomial -> bool
 val equalMonoList : monomial -> monomial -> bool
 
+val compareVar : var -> var -> int
 val compareMonomial : monomial -> monomial -> int
 val compare : poly -> poly -> int
-val construct_poly : (Big_int.big_int * (String.t * int) list) list -> poly
+val construct_poly : (Big_int.big_int * (var * int) list) list -> poly
 val getNewMonomial : (var * int) list -> (var * int) list -> (var * int) list
 val fromVarPower : var -> int -> poly
 val fromVar : var -> poly
@@ -45,11 +46,10 @@ val toStringSimple : poly -> string
 val abs : poly -> poly
 
 val toSMT : poly -> string
-val toSMTone : Big_int.big_int * (var * int) list -> string
-val toSMTprods : string list -> string
-val expand : string * int -> string list
 val const_to_string : Big_int.big_int -> string
 val renameVars : (var * var) list -> poly -> poly
+val getFreshVarFrom : var list -> var -> var
+  
 val renameMonomial : (var * var) list -> monomial -> monomial
 val getVars : poly -> var list
 val hasVars : poly -> bool

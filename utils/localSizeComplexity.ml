@@ -335,8 +335,8 @@ module Make (RuleT : AbstractRule) = struct
     getDepsFixpoint tvars [] cond
 
   (* compute local size complexities *)
-  let maxBound = ref ""
-  let maxPlusConstantBound = ref ""
+  let maxBound = ref (Poly.mkVar "")
+  let maxPlusConstantBound = ref (Poly.mkVar "")
   let maxC = Big_int.big_int_of_int 1024
   let maxS = Big_int.big_int_of_int 1024
   let eConstant = ref Big_int.zero_big_int
@@ -371,8 +371,8 @@ module Make (RuleT : AbstractRule) = struct
         create_size_data (Max Big_int.zero_big_int, getVarNums lvarswithnums tvars)
       else
         (
-          maxBound := "";
-          maxPlusConstantBound := "";
+          maxBound := Poly.mkVar "";
+          maxPlusConstantBound := Poly.mkVar "";
           let deps = Utils.intersect lvars (getDependedVariables alltvars linCond) in
           if isLinear && isMaxBound linCond t maxC deps then
             let minimal = [!maxBound] in
