@@ -64,7 +64,7 @@ let getCand v =
     else if v.[0] = '_' then
       "underscore" ^ rest
     else
-      String.uncapitalize v
+      String.uncapitalize_ascii v
   in
   out
 
