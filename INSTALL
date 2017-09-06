@@ -55,3 +55,26 @@ Alternative Build Instructions for Linux using Opam (September 2016):
       * this builds the OCaml bindings and the _libz3.so_ library (in `~/.opam/system/lib/Z3` if the Opam configuration files were installed in the default location)
   5. update the `LD_LIBRARY_PATH` such that _libz3.so_ can be found _eg_ `export LD_LIBRARY_PATH=~/.opam/system/lib/Z3:$LD_LIBRARY_PATH`
   6. `make koat`
+
+Building KoAT on Windows (September 2017):
+---------------------------------------------------------------------
+On Windows, KoAT can currently only be compiled without apron and without the z3-ocaml bindings. Hence, the Windows version will be significantly weaker and slower than the Linux version.
+
+* install cygwin with the following additional packages
+  * curl
+  * gcc-core
+  * gcc-g++
+  * git
+  * libgmp-devel
+  * libmpfr-devel
+  * m4
+  * make
+  * mingw64-i686-gcc-core
+  * mingw64-x86_64-gcc-core
+  * patchutils
+  * python2-devel
+  * unzip
+* follow the instructions from https://github.com/fdopen/opam-repository-mingw to install opam
+* opam install ocamlfind camlp4 ocamlgraph yojson
+* set HAVE_APRON? and HAVE_Z3? to false in KoAT's Makefile
+* make
