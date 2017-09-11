@@ -1,6 +1,6 @@
 Requirements:
 -------------
-  OCaml (we use version 4.02.1, but it should be compatible with anything above 4.01)
+  OCaml (we use version 4.05.0)
   Opam  (we use version 1.2.2)
   OCamlgraph (we use version 1.8.6)
   One or more of the following SMT-solvers:
