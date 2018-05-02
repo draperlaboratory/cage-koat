@@ -75,9 +75,9 @@ let stringToCombine s printer =
   )
 
 IFDEF HAVE_Z3 THEN
-let supportedSmtSolvers = ["yices";"yices2";"z3";"cvc4";"mathsat5";"z3-internal"]
+let supportedSmtSolvers = ["yices";"yices2";"z3 (only supported until version 4.3)";"cvc4";"mathsat5";"z3-internal"]
 ELSE
-let supportedSmtSolvers = ["yices";"yices2";"z3";"cvc4";"mathsat5";"z3-internal"]
+let supportedSmtSolvers = ["yices";"yices2";"z3 (only supported until version 4.3)";"cvc4";"mathsat5";"z3-internal"]
 END
 
 let checkSmtSolver s printer =
