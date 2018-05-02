@@ -16,7 +16,7 @@ endif
 LIBPATH_Z3=
 PP_OPTS_Z3=
 ifeq (${HAVE_Z3},true)
-  LIBPATH_Z3= -package Z3 -cflags -I,+Z3 -lflags -I,+Z3 -lflags "-cclib -lz3"
+  LIBPATH_Z3= -package z3 -cflags -I,+z3 -lflags -I,+z3 -lflags "-cclib -lz3"
   LIBS=-libs graph,str
   PP_OPTS_Z3=-DHAVE_Z3
 endif
