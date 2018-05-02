@@ -61,7 +61,11 @@ and formula =
 
 let docleanup = true
 
-let smt_solver = ref Z3
+IFDEF HAVE_Z3 THEN
+  let smt_solver = ref Z3_Internal
+ELSE 
+  let smtsolver = ref Z3
+END
 
 let smt_time = ref 0.0
 
